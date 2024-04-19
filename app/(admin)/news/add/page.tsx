@@ -1,6 +1,7 @@
 'use client'
 import {InboxOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
+import dynamic from "next/dynamic";
 import React, {useState} from "react";
 import {
   Button,
@@ -16,7 +17,18 @@ import {
 } from 'antd';
 import axios from "axios";
 import {SizeType} from "antd/lib/config-provider/SizeContext";
-import ReactQuill from "react-quill";
+import type ReactQuill  from 'react-quill';
+
+const ReactQuillComponent = dynamic(
+    async () => {
+      const { default: RQ } = await import('react-quill');
+      // eslint-disable-next-line react/display-name
+      return ({ ...props }) => <RQ {...props} />;
+    },
+    {
+      ssr: false,
+    }
+) as typeof ReactQuill;
 import "react-quill/dist/quill.snow.css";
 
 const {RangePicker} = DatePicker;
@@ -159,7 +171,7 @@ export default function News() {
                           label={`Content`}
                           valuePropName="value"
                           getValueFromEvent={(value) => value}>
-                        <ReactQuill
+                        <ReactQuillComponent
                             modules={modules}
                             className={`textEditor border markGeo`}
                         />
