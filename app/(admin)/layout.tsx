@@ -1,22 +1,47 @@
 'use client'
-
-import {Button, Layout, Menu, theme} from 'antd';
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {Layout, Menu, MenuProps, theme} from 'antd';
 
 import {
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  UploadOutlined,
+  DesktopOutlined, FileOutlined,
+  TeamOutlined,
   UserOutlined,
-  VideoCameraOutlined,
 } from '@ant-design/icons';
+import Link from "next/link";
 import {useState} from "react";
 
-const {Header, Sider, Content} = Layout;
+type MenuItem = Required<MenuProps>['items'][number];
+const {Sider, Content} = Layout;
 
+function getItem(
+    label: React.ReactNode,
+    key: React.Key,
+    icon?: React.ReactNode,
+    children?: MenuItem[],
+): MenuItem {
+  return {
+    key,
+    icon,
+    children,
+    label,
+  } as MenuItem;
+}
 
-export default function AdminLayout({children,}: Readonly<{ children: React.ReactNode; }>) {
+const items: MenuItem[] = [
+  getItem((<Link href={"/news"}>news</Link>), '1', <FileOutlined/>),
+  getItem('Option 2', '2', <DesktopOutlined/>),
+  getItem('User', 'sub1', <UserOutlined/>, [
+    getItem('Tom', '3'),
+    getItem('Bill', '4'),
+    getItem('Alex', '5'),
+  ]),
+  getItem('Team', 'sub2', <TeamOutlined/>,
+      [getItem('Team 1', '6'), getItem('Team 2', '8')
+      ]),
+];
+
+export default function AdminLayout({children,}: Readonly<{ children: React.ReactNode }>) {
   const [collapsed, setCollapsed] = useState(false);
-
   const {
     token: {colorBgContainer, borderRadiusLG},
   } = theme.useToken();
@@ -25,31 +50,11 @@ export default function AdminLayout({children,}: Readonly<{ children: React.Reac
       <Layout className={"min-h-[100vh]"}>
         <Sider trigger={null} collapsible collapsed={collapsed}>
           <div
+              onClick={() => setCollapsed(!collapsed)}
               className="demo-logo-vertical min-h-[80px] bg-[gray] mx-[3px] roundex-xl flex items-center justify-center">
-            socar logo
+            <h1 className={"text-[#FFFFFF]"}>socar logo1</h1>
           </div>
-          <Menu
-              theme="dark"
-              mode="inline"
-              defaultSelectedKeys={['1']}
-              items={[
-                {
-                  key: '1',
-                  icon: <UserOutlined/>,
-                  label: 'nav 1',
-                },
-                {
-                  key: '2',
-                  icon: <VideoCameraOutlined/>,
-                  label: 'nav 2',
-                },
-                {
-                  key: '3',
-                  icon: <UploadOutlined/>,
-                  label: 'nav 3',
-                },
-              ]}
-          />
+          <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items}/>
         </Sider>
         <Layout>
           {/*<Header style={{padding: 0, background: colorBgContainer}}>*/}
@@ -65,9 +70,11 @@ export default function AdminLayout({children,}: Readonly<{ children: React.Reac
           {/*  />*/}
           {/*</Header>*/}
           <Content
+              className={"w-[calc(100%-32px)]"}
               style={{
-                margin: '24px 16px',
-                padding: 24,
+                maxWidth: "1440px",
+                margin: '16px auto',
+                padding: "12px 16px",
                 minHeight: 280,
                 background: colorBgContainer,
                 borderRadius: borderRadiusLG,
@@ -77,6 +84,5 @@ export default function AdminLayout({children,}: Readonly<{ children: React.Reac
           </Content>
         </Layout>
       </Layout>
-
   );
 }
