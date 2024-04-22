@@ -1,4 +1,5 @@
 'use client'
+import {axiosWithAuth} from "@/configs/axios";
 import {InboxOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
@@ -72,7 +73,7 @@ export default function News() {
     const formData = new FormData();
     formData.append("imageFile", e.file)
 
-    await axios.post(`${BASEAPI}/news-editor/upload-news-image`, formData)
+    await axiosWithAuth.post(`${BASEAPI}/news-editor/upload-news-image`, formData)
   }
 
   return (
