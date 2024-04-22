@@ -28,7 +28,7 @@ export default function Login() {
 
       });
 
-      Router.push('/news')
+     await Router.push('/news')
     }
 
     if (res.status === 401) {

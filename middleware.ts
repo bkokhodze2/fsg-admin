@@ -11,24 +11,22 @@ export async function middleware(request: NextRequest, response: NextResponse) {
   const refreshToken = cookies.get((EnumTokens.REFRESH_TOKEN))?.value;
   const accessToken = cookies.get((EnumTokens.ACCESS_TOKEN))?.value;
 
-  console.log("=---refreshToken", refreshToken)
-  console.log("====accessToken", accessToken)
   const isAuthPage = url.includes('/login');
 
   //aqve reqeust rolebze;
 
-  // if (isAuthPage && refreshToken) {
-  //   return NextResponse.redirect(new URL(url))
-  // }
+  if (isAuthPage && accessToken) {
+    return NextResponse.redirect(new URL('/', url))
+  }
 
   // if (isAuthPage) return NextResponse.next();
 
-  if (!accessToken ) return NextResponse.redirect(new URL(`/login`, url))
+  if (!accessToken && !isAuthPage) return NextResponse.redirect(new URL(`/login`, url))
 
   return NextResponse.next();
 }
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: ['/'],
+  matcher:'/((?!api|_next|static|public|favicon.ico).*)',
 }

@@ -40,6 +40,12 @@ const items: MenuItem[] = [
       ]),
 ];
 
+const items2: MenuItem[] = [
+  {type: 'divider'},
+  getItem((<div onClick={() => console.log("logout click")}>Log out</div>), '1', <FileOutlined/>),
+];
+
+
 export default function AdminLayout({children,}: Readonly<{ children: React.ReactNode }>) {
   const [collapsed, setCollapsed] = useState(false);
   const {
@@ -47,14 +53,19 @@ export default function AdminLayout({children,}: Readonly<{ children: React.Reac
   } = theme.useToken();
 
   return (
-      <Layout className={"min-h-[100vh]"}>
-        <Sider trigger={null} collapsible collapsed={collapsed}>
-          <div
-              onClick={() => setCollapsed(!collapsed)}
-              className="demo-logo-vertical min-h-[80px] bg-[gray] mx-[3px] roundex-xl flex items-center justify-center">
-            <h1 className={"text-[#FFFFFF]"}>socar logo1</h1>
+      <Layout className={"min-h-[100vh] admin-layout"}>
+        <Sider trigger={null} collapsible collapsed={collapsed}
+               className={"flex flex-col justify-between "}>
+          <div>
+            <div
+                onClick={() => setCollapsed(!collapsed)}
+                className="demo-logo-vertical min-h-[80px] bg-[gray] mx-[3px] roundex-xl flex items-center justify-center">
+              <h1 className={"text-[#FFFFFF]"}>socar logo1</h1>
+            </div>
+            <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items}/>
           </div>
-          <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items}/>
+
+          <Menu theme="dark" mode="inline" items={items2}/>
         </Sider>
         <Layout>
           {/*<Header style={{padding: 0, background: colorBgContainer}}>*/}

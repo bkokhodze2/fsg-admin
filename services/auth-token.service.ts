@@ -6,7 +6,8 @@ export enum EnumTokens {
 }
 
 export const getAccessToken = () => {
-  const accessToken = Cookies.get(EnumTokens.ACCESS_TOKEN)
+  const accessToken = Cookies.get(EnumTokens.ACCESS_TOKEN);
+  console.log("aaaaa",EnumTokens.ACCESS_TOKEN)
   return accessToken || null;
 }
 export const geRefreshToken = () => {
@@ -15,6 +16,8 @@ export const geRefreshToken = () => {
 }
 
 export const saveTokenStorage = (accessToken: string, refreshToken?: string) => {
+  alert('saveTokenStorage')
+
   if (!accessToken && !refreshToken) return;
 
   accessToken && Cookies.set(EnumTokens.ACCESS_TOKEN, accessToken, {
@@ -31,5 +34,8 @@ export const saveTokenStorage = (accessToken: string, refreshToken?: string) => 
 }
 
 export const removeFromStorage = () => {
+  alert('removeFromCookie')
   Cookies.remove(EnumTokens.ACCESS_TOKEN)
+  Cookies.remove(EnumTokens.REFRESH_TOKEN)
+  window.location.href = '/'
 }

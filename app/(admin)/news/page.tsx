@@ -1,11 +1,16 @@
 'use client'
+import {axiosWithAuth} from "@/configs/axios";
 import {DeleteOutlined, EditOutlined, PlusOutlined, QuestionCircleOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
 import {Button, notification, Popconfirm, Space, Table, Tag, Tooltip} from 'antd';
 import type {TableProps} from 'antd';
 import axios from "axios";
+import dayjs from "dayjs";
 import Link from "next/link";
-import React from "react";
+import React, {useEffect} from "react";
+
+var customParseFormat = require('dayjs/plugin/customParseFormat')
+dayjs.extend(customParseFormat)
 
 interface DataType {
   id: number,
@@ -54,9 +59,9 @@ const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 
 const fetchNews = async () => {
   try {
-    const {data} = await axios.post(`${BASEAPI}/news-info/get-news`, {
-      language: 1,
-      pageNumber: 1,
+    const {data} = await axiosWithAuth.post(`${BASEAPI}/news-info/get-news`, {
+      languageId: 1,
+      pageNumber: 0,
       pageSize: 12
     });
 
@@ -69,36 +74,90 @@ const fetchNews = async () => {
       description:
           'Something went wrong while fetching news',
     });
+
   }
 }
-export default function News() {
-  // const {data, isLoading, isError} = useQuery({queryKey: ["news"], queryFn: fetchNews});
 
-  console.log("data", data)
+const fetchLanguages = async () => {
+  try {
+    const {data} = await axiosWithAuth.get(`${BASEAPI}/news-editor/get-languages`);
+
+    return data;
+
+  } catch (error: any) {
+    console.log("errr", error)
+    notification.open({
+      type: 'error',
+      message: `news`,
+      description:
+          'Something went wrong while fetching languages',
+    });
+  }
+}
+
+export default function News() {
+  const {data, isLoading, isError} = useQuery({queryKey: ["news"], queryFn: fetchNews});
+  const {data: dataLanguages,} = useQuery({queryKey: ["languages"], queryFn: fetchLanguages});
+
+  console.log("data", data, dataLanguages)
+
 
   const columns: TableProps<DataType>['columns'] = [
     {
-      title: 'title',
+      title: 'Title',
       dataIndex: 'title',
       key: 'title',
       render: (text) => <a>{text}</a>,
     },
     {
-      title: 'image',
-      dataIndex: 'imageUrl',
-      key: 'imageUrl',
+      title: 'Description',
+      dataIndex: 'content',
+      key: 'content',
+      render: (text) => (
+          <div
+              dangerouslySetInnerHTML={{__html: text}}/>
+      )
     },
     {
-      title: 'Address',
-      dataIndex: 'address',
-      key: 'address',
+      title: 'Image',
+      dataIndex: 'imageUrl',
+      key: 'imageUrl',
+      render: (text) => (
+          <div>
+            <img src={text}/>
+          </div>
+      )
+    },
+    {
+      title: 'Start',
+      dataIndex: 'useStartDateTime',
+      key: 'useStartDateTime',
+      render: (text, record) => (
+          <Space size="middle">
+            <p>
+              {dayjs(text, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
+            </p>
+          </Space>
+      )
+    },
+    {
+      title: 'End',
+      dataIndex: 'useEndDateTime',
+      key: 'useEndDateTime',
+      render: (text, record) => (
+          <Space size="middle">
+            <p>
+              {dayjs(text, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
+            </p>
+          </Space>
+      )
     },
     {
       title: 'Action',
       key: 'action',
       render: (_, record) => (
           <Space size="middle">
-            <Tooltip title="Edit">
+            <Tooltip title="Edit" placement={'bottom'}>
               <Button shape="circle" className={"flex items-center justify-center"} icon={<EditOutlined/>}/>
             </Tooltip>
 
@@ -106,10 +165,10 @@ export default function News() {
                 title="Delete the news"
                 description="Are you sure to delete this news?"
                 okText={"Yes"}
-                onConfirm={(e) => handleDeleteNewsById(record)}
+                onConfirm={() => handleDeleteNewsById(record)}
                 icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
             >
-              <Tooltip title="Delete">
+              <Tooltip title="Delete" placement={'bottom'}>
                 <Button danger shape="circle" className={"flex items-center justify-center"} icon={<DeleteOutlined/>}/>
               </Tooltip>
             </Popconfirm>
@@ -155,7 +214,7 @@ export default function News() {
           </Link>
         </div>
 
-        <Table columns={columns} dataSource={data}/>
+        <Table loading={isLoading} columns={columns} dataSource={data?.data}/>
       </main>
   );
 }

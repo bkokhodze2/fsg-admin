@@ -1,6 +1,6 @@
 'use client'
 import {axiosClassic} from "@/configs/axios";
-import {removeFromStorage, saveTokenStorage} from "@/services/auth-token.service";
+import {geRefreshToken, removeFromStorage, saveTokenStorage} from "@/services/auth-token.service";
 
 interface IAuthResponse {
   "message": "string",
@@ -27,11 +27,15 @@ export const authService = {
 
   },
   async getNewTokens() {
-    const response = await axiosClassic.post(`auth/refresh`); //albat body unda refreshis
-    const {token} = response.data;
+    alert('getNewTokens')
+    const refreshTokenData = geRefreshToken()
 
-    if (token) {
-      saveTokenStorage(token)
+    const response = await axiosClassic.post(`/auth/refresh-token`, {refreshToken: refreshTokenData}); //albat body unda refreshis
+    const newAccessToken = response.data;
+
+    if (newAccessToken) {
+      console.log("newAccessToken",newAccessToken)
+      saveTokenStorage(newAccessToken)
     }
     return response;
   },

@@ -26,7 +26,6 @@
 /*}*/
 
 
-
 * {
     font-family: avenirMedium, serif;
 }
@@ -42,7 +41,26 @@
 .ant-card-body {
     padding: 12px !important;
 }
-.loginForm .ant-form-item-label{
+
+.loginForm .ant-form-item-label {
     height: 35px;
 }
+
+.admin-layout .ant-layout-sider-children {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+
+.admin-layout .ant-menu-item-divider {
+    background-color: white;
+}
+
+
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+    transition: background-color 0s 600000s, color 0s 600000s !important;
+}
+
 
