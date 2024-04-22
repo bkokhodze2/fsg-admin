@@ -18,13 +18,13 @@ import {
 } from 'antd';
 import axios from "axios";
 import {SizeType} from "antd/lib/config-provider/SizeContext";
-import type ReactQuill  from 'react-quill';
+import type ReactQuill from 'react-quill';
 
 const ReactQuillComponent = dynamic(
     async () => {
-      const { default: RQ } = await import('react-quill');
+      const {default: RQ} = await import('react-quill');
       // eslint-disable-next-line react/display-name
-      return ({ ...props }) => <RQ {...props} />;
+      return ({...props}) => <RQ {...props} />;
     },
     {
       ssr: false,
@@ -69,11 +69,20 @@ export default function News() {
     return e?.fileList;
   };
 
-  const uploadImage = async (e: any) => {
-    const formData = new FormData();
-    formData.append("imageFile", e.file)
+  const uploadImage = async (options: any) => {
+    // const formData = new FormData();
+    // formData.append("imageFile", e.file)
 
-    await axiosWithAuth.post(`${BASEAPI}/news-editor/upload-news-image`, formData)
+
+    const {onSuccess, onError, file, onProgress} = options;
+
+    const formData = new FormData();
+    const config = {
+      headers: {"content-type": "multipart/form-data"},
+    };
+    formData.append("imageFile", file);
+
+    await axiosWithAuth.post(`${BASEAPI}/news-editor/upload-news-image`, formData, config)
   }
 
   return (
@@ -186,6 +195,7 @@ export default function News() {
                             maxCount={1}
                             multiple={false}
                             customRequest={(e) => uploadImage(e)}
+                            onPreview={(e)=>console.log(e)}
                             // action={`${BASEAPI}/news-editor/upload-news-image`}
                         >
                           <p className="ant-upload-drag-icon">
