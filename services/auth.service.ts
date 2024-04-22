@@ -1,3 +1,4 @@
+'use client'
 import {axiosClassic} from "@/configs/axios";
 import {removeFromStorage, saveTokenStorage} from "@/services/auth-token.service";
 
@@ -9,13 +10,20 @@ interface IAuthResponse {
 
 export const authService = {
   async login(type: 'login', data: IAuthForm) {
-    const response = await axiosClassic.post<IAuthResponse>(`auth/login`, data);
 
-    const {token, refresh} = response.data;
-    if (token && refresh) {
-      saveTokenStorage(token, refresh)
+    try {
+      const response = await axiosClassic.post<IAuthResponse>(`auth/login`, data);
+      const {token, refresh} = response.data;
+
+      if (token && refresh) {
+        await saveTokenStorage(token, refresh)
+      }
+      return response;
+
+    } catch (e: any) {
+      return e.response;
     }
-    return response;
+
 
   },
   async getNewTokens() {

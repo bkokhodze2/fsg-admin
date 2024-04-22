@@ -42,4 +42,7 @@
 .ant-card-body {
     padding: 12px !important;
 }
+.loginForm .ant-form-item-label{
+    height: 35px;
+}
 
