@@ -52,6 +52,7 @@ const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 
 export default function News() {
   const [form] = Form.useForm();
+  const [defaultFileList, setDefaultFileList] = useState([]);
 
   const onchange = (values: any) => {
     console.log("values", values)
@@ -60,14 +61,6 @@ export default function News() {
   const onFinish = (values: any) => {
     console.log("values", values)
   }
-
-  const normFile = (e: any) => {
-    console.log('Upload event:', e);
-    if (Array.isArray(e)) {
-      return e;
-    }
-    return e?.fileList;
-  };
 
   const uploadImage = async (options: any) => {
     // const formData = new FormData();
@@ -84,6 +77,19 @@ export default function News() {
 
     await axiosWithAuth.post(`${BASEAPI}/news-editor/upload-news-image`, formData, config)
   }
+
+  const handleOnChange = ({fileList}:any) => {
+    setDefaultFileList(fileList);
+  };
+
+  const normFile = (e: any) => {
+    console.log('Upload event:', e);
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return "sss";
+  };
+
 
   return (
       <main className="">
@@ -189,13 +195,18 @@ export default function News() {
                       </Form.Item>
 
                       {/*valuePropName="fileList"*/}
-                      <Form.Item label={'image'} name="image" getValueFromEvent={normFile} noStyle>
+                      <Form.Item label={'image'} name={[field.name, 'imageData']} valuePropName="value" getValueFromEvent={normFile} noStyle>
                         <Upload.Dragger
                             listType={"picture"}
                             maxCount={1}
                             multiple={false}
                             customRequest={(e) => uploadImage(e)}
-                            onPreview={(e)=>console.log(e)}
+                            onPreview={(e) => console.log("eee", e)}
+                            onChange={handleOnChange}
+                            defaultFileList={[
+
+                            ]}
+
                             // action={`${BASEAPI}/news-editor/upload-news-image`}
                         >
                           <p className="ant-upload-drag-icon">

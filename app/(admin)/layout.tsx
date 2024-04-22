@@ -1,4 +1,6 @@
 'use client'
+import {removeFromStorage} from "@/services/auth-token.service";
+import {authService} from "@/services/auth.service";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {Layout, Menu, MenuProps, theme} from 'antd';
 
@@ -42,7 +44,7 @@ const items: MenuItem[] = [
 
 const items2: MenuItem[] = [
   {type: 'divider'},
-  getItem((<div onClick={() => console.log("logout click")}>Log out</div>), '1', <FileOutlined/>),
+  getItem((<div onClick={() => authService.logout()}>Log out</div>), '1', <FileOutlined/>),
 ];
 
 
@@ -53,9 +55,9 @@ export default function AdminLayout({children,}: Readonly<{ children: React.Reac
   } = theme.useToken();
 
   return (
-      <Layout className={"min-h-[100vh] admin-layout"}>
+      <Layout className={" max-h-[100vh] overflow-y-scroll admin-layout"}>
         <Sider trigger={null} collapsible collapsed={collapsed}
-               className={"flex flex-col justify-between "}>
+               className={"flex flex-col justify-between h-[100vh]"}>
           <div>
             <div
                 onClick={() => setCollapsed(!collapsed)}

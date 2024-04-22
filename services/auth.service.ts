@@ -1,5 +1,5 @@
 'use client'
-import {axiosClassic} from "@/configs/axios";
+import {axiosClassic, axiosWithAuth} from "@/configs/axios";
 import {geRefreshToken, removeFromStorage, saveTokenStorage} from "@/services/auth-token.service";
 
 interface IAuthResponse {
@@ -40,7 +40,7 @@ export const authService = {
     return response;
   },
   async logout() {
-    const response = await axiosClassic.post('/auth/logout');
+    const response = await axiosWithAuth.post('/user/logout');
     if (response) removeFromStorage();
   }
 }
