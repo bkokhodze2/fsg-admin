@@ -14,7 +14,6 @@ interface IPageProps {
 
 export default function NewsEdit({params, searchParams}: IPageProps) {
 
-  console.log("ppp-sss", params, searchParams)
 
   return (
       <AddEditNews id={params.id as number}/>

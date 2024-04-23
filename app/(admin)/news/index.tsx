@@ -137,11 +137,9 @@ export default function AddEditNews({id}: IProps) {
     };
 
     // Do something with the modified form data, such as submitting it to a server
-    console.log('Modified form data:', modifiedValues);
 
     axiosWithAuth.post('/test', modifiedValues)
     // Log the FormData object or submit it to the server
-    console.log(JSON.stringify(modifiedValues));
     // You can also submit the formData to the server here
   };
 
@@ -223,10 +221,13 @@ export default function AddEditNews({id}: IProps) {
               return <div className={"flex flex-col gap-y-5"}>
                 {
                   fields.map((field, index, c) => {
+                    const languageId = form.getFieldValue(['newsDetails', field.name, 'languageId'])
+                    const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
+
                     return <Card
                         key={index}
                         className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2]"}>
-                      <Divider orientation="left" className={"!my-0"}><h3 className={"text-[25px]"}>English</h3>
+                      <Divider orientation="left" className={"!my-0"}><h3 className={"text-[25px]"}>{findLang}</h3>
 
                       </Divider>
                       <Form.Item
@@ -249,7 +250,6 @@ export default function AddEditNews({id}: IProps) {
                                  name={[field.name, 'imageData']}
                                  valuePropName="value"
                                  getValueFromEvent={(e: any) => {
-                                   console.log('Upload event:', e);
                                    if (Array.isArray(e)) {
                                      return e;
                                    }
@@ -325,7 +325,7 @@ export default function AddEditNews({id}: IProps) {
             </Radio.Group>
           </Form.Item>
 
-          <Form.Item name={"categoryIdList"}  label="category" className={"mt-2"}>
+          <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
             <Select mode={"multiple"}>
               {dataCategories?.map((e) => {
                 return <Select.Option value={e.id}>{e.category}</Select.Option>
