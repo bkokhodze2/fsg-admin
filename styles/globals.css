@@ -50,12 +50,22 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    min-height: 100vh;
 }
-
+.textDots2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
 
 .admin-layout .ant-menu-item-divider {
     background-color: white;
 }
+.ql-editor{
+    min-height: 150px;
+}
+.ql-toolbar.ql-snow{}
 
 
 input:-webkit-autofill,

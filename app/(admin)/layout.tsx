@@ -30,7 +30,7 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem((<Link href={"/news"}>news</Link>), '1', <FileOutlined/>),
+  getItem((<Link href={"/news"}>News</Link>), '1', <FileOutlined/>),
   getItem('Option 2', '2', <DesktopOutlined/>),
   getItem('User', 'sub1', <UserOutlined/>, [
     getItem('Tom', '3'),
@@ -55,21 +55,28 @@ export default function AdminLayout({children,}: Readonly<{ children: React.Reac
   } = theme.useToken();
 
   return (
-      <Layout className={" max-h-[100vh] overflow-y-scroll admin-layout"}>
-        <Sider trigger={null} collapsible collapsed={collapsed}
-               className={"flex flex-col justify-between h-[100vh]"}>
+      <Layout className={"overflow-y-scroll admin-layout"}>
+        <Sider trigger={null}
+               collapsible
+               collapsed={collapsed}
+               className={"flex flex-col justify-between !fixed left-0 bottom-0 top-0"}>
           <div>
             <div
                 onClick={() => setCollapsed(!collapsed)}
                 className="demo-logo-vertical min-h-[80px] bg-[gray] mx-[3px] roundex-xl flex items-center justify-center">
-              <h1 className={"text-[#FFFFFF]"}>socar logo1</h1>
+              <h1 className={"text-[#FFFFFF]"}>logo</h1>
             </div>
             <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items}/>
           </div>
 
           <Menu theme="dark" mode="inline" items={items2}/>
         </Sider>
-        <Layout>
+        <Layout className={"overflow-y-scroll min-h-[100vh]"}
+                style={{
+                  transition:'0.2s',
+                  marginLeft: collapsed ? "80px" : "200px"
+                }}
+        >
           {/*<Header style={{padding: 0, background: colorBgContainer}}>*/}
           {/*  <Button*/}
           {/*      type="text"*/}
@@ -87,7 +94,7 @@ export default function AdminLayout({children,}: Readonly<{ children: React.Reac
               style={{
                 maxWidth: "1440px",
                 margin: '16px auto',
-                padding: "12px 16px",
+                // padding: "12px 16px",
                 minHeight: 280,
                 background: colorBgContainer,
                 borderRadius: borderRadiusLG,
