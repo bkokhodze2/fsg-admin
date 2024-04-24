@@ -227,8 +227,8 @@ export default function AddEditNews({id}: IProps) {
                     return <Card
                         key={index}
                         className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2]"}>
-                      <Divider orientation="left" className={"!my-0"}><h3 className={"text-[25px]"}>{findLang}</h3>
-
+                      <Divider orientation="left" className={"!my-0"}>
+                        <h3 className={"text-[25px]"}>{findLang}</h3>
                       </Divider>
                       <Form.Item
                           name={[field.name, 'title']}
