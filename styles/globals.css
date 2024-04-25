@@ -67,6 +67,9 @@
 }
 .ql-toolbar.ql-snow{}
 
+ .ant-upload-list-picture-card{
+    margin-top: 20px;
+}
 
 input:-webkit-autofill,
 input:-webkit-autofill:focus {
