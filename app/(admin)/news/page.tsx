@@ -1,6 +1,13 @@
 'use client'
 import {axiosWithAuth} from "@/configs/axios";
-import {DeleteOutlined, EditOutlined, FilterOutlined, PlusOutlined, QuestionCircleOutlined} from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  FilterOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+  ReloadOutlined
+} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
 import {Button, notification, Popconfirm, Space, Table, Image, Tooltip, Drawer, Badge, Form, Input} from 'antd';
 import type {TableProps} from 'antd';
@@ -26,36 +33,13 @@ interface DataType {
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 const PAGE_SIZE = 10;
 
-
-const fetchLanguages = async () => {
-  try {
-    const {data} = await axiosWithAuth.get(`${BASEAPI}/news-editor/get-languages`);
-
-    return data;
-
-  } catch (error: any) {
-    console.log("errr", error)
-    notification.open({
-      type: 'error',
-      message: `news`,
-      description:
-          'Something went wrong while fetching languages',
-    });
-  }
-}
-
-interface IProps {
-  searchParams: {
-    page: number
-  }
-}
-
-const fetchNews = async (page: number) => {
+const fetchNews = async (filter: IFilter) => {
   try {
     const {data} = await axiosWithAuth.post(`${BASEAPI}/news-info/get-news`, {
+      ...filter,
       languageId: 1,
-      pageNumber: page - 1,
-      pageSize: PAGE_SIZE
+      pageSize: parseInt(String(filter.pageSize)) || PAGE_SIZE,
+      pageNumber: filter?.pageNumber ? (filter?.pageNumber - 1) : 0,
     });
     return data;
   } catch (error: any) {
@@ -68,30 +52,51 @@ const fetchNews = async (page: number) => {
 
   }
 }
-export default function News({searchParams}: IProps) {
-  const [page, setPage] = useState<number>(searchParams.page || 1);
-  const [isOpenFilter, setIsOpenFilter] = useState<boolean>(false);
-  const [filter, setFilter] = useState<any>(null);
-  const [form] = Form.useForm();
 
+interface IProps {
+  searchParams: IFilter
+}
+
+interface IFilter {
+  pageNumber?: number,
+  pageSize?: number,
+  slug?: undefined | string,
+  content?: undefined | string,
+  title?: undefined | string,
+}
+
+export default function News({searchParams}: IProps) {
+  const [isOpenFilter, setIsOpenFilter] = useState<boolean>(false);
+  const [filter, setFilter] = useState<IFilter>({
+    pageNumber: searchParams.pageNumber || undefined,
+    pageSize: searchParams.pageSize || undefined,
+    slug: searchParams.slug || undefined,
+    content: searchParams.content || undefined,
+    title: searchParams.title || undefined,
+  });
+  const [form] = Form.useForm();
   const Router = useRouter();
 
   const {data, isLoading, isError} = useQuery({
-    queryKey: ["news", page],
-    queryFn: () => fetchNews(page)
+    queryKey: ["news", filter],
+    queryFn: () => fetchNews(filter)
   });
 
   useEffect(() => {
-    Router.push(`/news?page=${page}`)
-  }, [page])
+    const clearFilter: any = Object.fromEntries(
+        Object.entries(filter).filter(([_, value]) => value !== undefined && value !== "")
+    );
+
+    const params = new URLSearchParams(clearFilter).toString();
+
+    Router.push(`/news?${params}`)
+  }, [filter])
 
 
   const columns: TableProps<DataType>['columns'] = [
     {
       title: 'Title',
       dataIndex: 'title',
-      showSorterTooltip: true,
-      sorter: true,
       key: 'title',
       align: "center",
       render: (text) => <p>{text}</p>,
@@ -100,8 +105,6 @@ export default function News({searchParams}: IProps) {
       title: 'Description',
       dataIndex: 'content',
       align: "center",
-      showSorterTooltip: true,
-      sorter: true,
       key: 'content',
       render: (text) => (
           <Tooltip placement="bottom"
@@ -218,23 +221,54 @@ export default function News({searchParams}: IProps) {
       console.error('Erroreeeeeee-----------:', error.message); // Log the error
     }
   };
+  console.log("filter", filter)
 
+  const onSubmit = (values: IFilter) => {
+    setFilter((prevState: IFilter) => ({
+      ...prevState,
+      ...values,
+      pageNumber: 1,
+    }))
 
-  const onSubmit = (values: any) => {
-    const params = new URLSearchParams({...values,page}).toString();
-
-    console.log("values", params)
-    Router.push(`/news?${params}`)
-  }
-  const onReset = ()=>{
-    form.resetFields();
-    Router.push(`/news?page=${page}`)
     setIsOpenFilter(false)
+  }
+  const onReset = () => {
+    setFilter({pageNumber: filter.pageNumber, pageSize: filter.pageSize})
+
+    // Router.push(`/news?page=${page}`)
+    setIsOpenFilter(false)
+    setTimeout(() => {
+      form.resetFields();
+    }, 100)
+
   }
 
   const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, extra) => {
-    console.log('params', pagination, filters, sorter, extra);
+    console.log('params', pagination);
+
+    if (filter.pageSize != pagination.pageSize) {
+      setFilter((prevState: IFilter) => ({
+        ...prevState,
+        pageNumber: 1,
+        pageSize: pagination.pageSize
+      }))
+
+    } else {
+      setFilter((prevState: IFilter) => ({
+        ...prevState,
+        pageNumber: pagination.current,
+        pageSize: pagination.pageSize
+      }))
+    }
   };
+
+  const getFilterCount = () => {
+    const filteredObject = Object.fromEntries(
+        Object.entries(filter).filter(([key, value]) => key !== 'pageSize' && key !== 'pageNumber' && value != undefined)
+    );
+
+    return Object.keys(filteredObject).length;
+  }
 
   return (
       <>
@@ -242,7 +276,14 @@ export default function News({searchParams}: IProps) {
           <h2 className={"text-[25px]"}>news</h2>
 
           <div className={"flex items-center flex-nowrap gap-x-4"}>
-            <Badge count={1} showZero={false}>
+            {getFilterCount() > 0 ?
+                <Button onClick={() => onReset()} type="default" className={"flex items-center gap-x-2"}>
+                  <ReloadOutlined/>
+                  <p>Reset filter</p>
+                </Button> : ""}
+
+
+            <Badge count={getFilterCount()} showZero={false}>
               <Button onClick={() => setIsOpenFilter(true)} type="primary" className={"flex items-center gap-x-2"}>
                 <FilterOutlined/>
                 <p>Filter</p>
@@ -256,7 +297,6 @@ export default function News({searchParams}: IProps) {
               </Button>
             </Link>
           </div>
-
         </div>
 
         <Drawer
@@ -269,8 +309,9 @@ export default function News({searchParams}: IProps) {
           <Form
               layout={"vertical"}
               form={form}
-              onFinish={onSubmit}>
-
+              onFinish={onSubmit}
+              initialValues={filter}
+          >
             <Form.Item name={"slug"} label="slug">
               <Input placeholder="input slug"/>
             </Form.Item>
@@ -285,7 +326,7 @@ export default function News({searchParams}: IProps) {
 
             <div className={"gap-x-2 flex flex-nowrap"}>
               <Button type="primary" htmlType={"submit"}>filter</Button>
-              <Button type="default" onClick={() =>onReset()}>reset</Button>
+              <Button type="default" onClick={() => onReset()}>reset</Button>
             </div>
           </Form>
         </Drawer>
@@ -301,11 +342,10 @@ export default function News({searchParams}: IProps) {
             columns={columns}
             pagination={{
               total: data?.allRecordsSize,
-              onChange: (e: number) => setPage(e),
-              current: page,
-              pageSize: PAGE_SIZE,
+              current: filter.pageNumber,
+              pageSize: filter.pageSize || PAGE_SIZE,
               showQuickJumper: false,
-              showSizeChanger: false,
+              showSizeChanger: true,
               position: ["bottomCenter"],
               // itemRender: itemRender,
             }}
