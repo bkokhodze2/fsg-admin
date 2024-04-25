@@ -175,7 +175,7 @@ export default function AddEditNews({id}: IProps) {
   }
 
   const handlePreview = async (file: any) => {
-    console.log("file", file,file?.response?.url || file?.url)
+    console.log("file", file, file?.response?.url || file?.url)
     setPreviewImage(file?.response?.url || file?.url);
     setPreviewOpen(true);
   };
@@ -200,10 +200,11 @@ export default function AddEditNews({id}: IProps) {
         "newsDetails":
             activeLanguages?.map(e => {
               return {
-                "newsDetailId": null,
+                "slug": null,
                 "useStartDateTime": null,
                 "useEndDateTime": null,
                 // "newsId": 0,
+                // "newsDetailId": null,
                 "useStartDateTimeMsec": null,
                 "useEndDateTimeMsec": null,
                 "title": null,
@@ -232,7 +233,7 @@ export default function AddEditNews({id}: IProps) {
   };
 
   return (
-      <div className={"p-2"}>
+      <div className={"p-2 pb-[60px]"}>
         <div className={"w-full flex justify-between items-center mb-4"}>
           <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit News" : "Add news"}</h2>
         </div>
@@ -245,12 +246,12 @@ export default function AddEditNews({id}: IProps) {
             // style={{maxWidth: 800}}
             initialValues={getDefaultValue()}>
 
-          <Form.Item
-              name={'slug'}
-              label={'slug'}
-          >
-            <Input placeholder="slug"/>
-          </Form.Item>
+          {/*<Form.Item*/}
+          {/*    name={'slug'}*/}
+          {/*    label={'slug'}*/}
+          {/*>*/}
+          {/*  <Input placeholder="slug"/>*/}
+          {/*</Form.Item>*/}
 
           <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
             <Select mode={"multiple"}>
@@ -272,8 +273,7 @@ export default function AddEditNews({id}: IProps) {
           <Form.List
               name="newsDetails">
             {(fields, v) => {
-              console.log(fields)
-              return <div key={fields[0].name} className={"flex flex-col gap-y-5"}>
+              return <div className={"flex flex-col gap-y-5"}>
                 {
                   fields.map((field, index, c) => {
                     const languageId = form.getFieldValue(['newsDetails', field.name, 'languageId'])
@@ -281,10 +281,10 @@ export default function AddEditNews({id}: IProps) {
                     const dataImg = form.getFieldValue(['newsDetails', field.name, 'imageData']);
                     let fileList = dataImg?.url ? [dataImg] : []
 
-
-                    console.log("dataImg", dataImg)
+                    // console.log("dataImg", dataImg)
+                    console.log("fields[0].name+''+index", fields[0].name + '' + index)
                     return <Card
-                        key={index}
+                        key={fields[0].name + '' + index}
                         className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2]"}>
                       <Divider orientation="left" className={"!my-0"}>
                         <h3 className={"text-[25px]"}>{findLang}</h3>
@@ -346,30 +346,24 @@ export default function AddEditNews({id}: IProps) {
                             multiple={false}
                             customRequest={(e) => uploadImage(e)}
                             onPreview={(e) => handlePreview(e)}
-
                         >
-
-                          {/*{<img className={"w-[100px] h-[30px]"} src={form.getFieldValue(['newsDetails', field.name, 'imageData'])?.url}/>}*/}
-
-
-                          {previewImage && (
-                              <Image
-                                  wrapperStyle={{display: 'none'}}
-                                  preview={{
-                                    visible: previewOpen,
-                                    onVisibleChange: (visible) => setPreviewOpen(visible),
-                                    afterOpenChange: (visible) => !visible && setPreviewImage(''),
-                                  }}
-                                  src={previewImage}
-                              />
-                          )}
-
                           <p className="ant-upload-drag-icon">
                             <InboxOutlined/>
                           </p>
 
                           <p className="ant-upload-text">Click or drag file to this area to upload</p>
                         </Upload.Dragger>
+                        {previewImage && (
+                            <Image
+                                wrapperStyle={{display: 'none'}}
+                                preview={{
+                                  visible: previewOpen,
+                                  onVisibleChange: (visible) => setPreviewOpen(visible),
+                                  afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                                }}
+                                src={previewImage}
+                            />
+                        )}
                       </Form.Item>
 
                       <Space className={"w-full mt-2 flex items-center justify-between"}>
@@ -426,7 +420,7 @@ export default function AddEditNews({id}: IProps) {
           </Form.List>
 
 
-          <Button type={"primary"} htmlType={"submit"}>Submit</Button>
+          <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>Submit</Button>
         </Form>
         }
       </div>

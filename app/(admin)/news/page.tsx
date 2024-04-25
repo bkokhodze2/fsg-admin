@@ -1,8 +1,8 @@
 'use client'
 import {axiosWithAuth} from "@/configs/axios";
-import {DeleteOutlined, EditOutlined, PlusOutlined, QuestionCircleOutlined} from "@ant-design/icons";
+import {DeleteOutlined, EditOutlined, FilterOutlined, PlusOutlined, QuestionCircleOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
-import {Button, notification, Popconfirm, Space, Table, Image, Tooltip} from 'antd';
+import {Button, notification, Popconfirm, Space, Table, Image, Tooltip, Drawer, Badge, Form, Input} from 'antd';
 import type {TableProps} from 'antd';
 import dayjs from "dayjs";
 import Link from "next/link";
@@ -69,14 +69,17 @@ const fetchNews = async (page: number) => {
   }
 }
 export default function News({searchParams}: IProps) {
-  const [page, setPage] = useState<number>(searchParams.page || 1)
+  const [page, setPage] = useState<number>(searchParams.page || 1);
+  const [isOpenFilter, setIsOpenFilter] = useState<boolean>(false);
+  const [filter, setFilter] = useState<any>(null);
+  const [form] = Form.useForm();
+
   const Router = useRouter();
 
   const {data, isLoading, isError} = useQuery({
     queryKey: ["news", page],
     queryFn: () => fetchNews(page)
   });
-  const {data: dataLanguages} = useQuery({queryKey: ["languages"], queryFn: fetchLanguages});
 
   useEffect(() => {
     Router.push(`/news?page=${page}`)
@@ -87,6 +90,8 @@ export default function News({searchParams}: IProps) {
     {
       title: 'Title',
       dataIndex: 'title',
+      showSorterTooltip: true,
+      sorter: true,
       key: 'title',
       align: "center",
       render: (text) => <p>{text}</p>,
@@ -95,7 +100,8 @@ export default function News({searchParams}: IProps) {
       title: 'Description',
       dataIndex: 'content',
       align: "center",
-
+      showSorterTooltip: true,
+      sorter: true,
       key: 'content',
       render: (text) => (
           <Tooltip placement="bottom"
@@ -213,19 +219,79 @@ export default function News({searchParams}: IProps) {
     }
   };
 
+
+  const onSubmit = (values: any) => {
+    const params = new URLSearchParams({...values,page}).toString();
+
+    console.log("values", params)
+    Router.push(`/news?${params}`)
+  }
+  const onReset = ()=>{
+    form.resetFields();
+    Router.push(`/news?page=${page}`)
+    setIsOpenFilter(false)
+  }
+
+  const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, extra) => {
+    console.log('params', pagination, filters, sorter, extra);
+  };
+
   return (
       <>
         <div className={"w-full p-2 flex justify-between items-center"}>
           <h2 className={"text-[25px]"}>news</h2>
-          <Link href={"/news/add"}>
-            <Button type="primary" className={"flex items-center gap-x-2"}>
-              <PlusOutlined/>
-              <p>Add news</p>
-            </Button>
-          </Link>
+
+          <div className={"flex items-center flex-nowrap gap-x-4"}>
+            <Badge count={1} showZero={false}>
+              <Button onClick={() => setIsOpenFilter(true)} type="primary" className={"flex items-center gap-x-2"}>
+                <FilterOutlined/>
+                <p>Filter</p>
+              </Button>
+            </Badge>
+
+            <Link href={"/news/add"}>
+              <Button type="primary" className={"flex items-center gap-x-2"}>
+                <PlusOutlined/>
+                <p>Add news</p>
+              </Button>
+            </Link>
+          </div>
+
         </div>
 
+        <Drawer
+            title="Filter"
+            placement={"right"}
+            closable={false}
+            onClose={() => setIsOpenFilter(false)}
+            open={isOpenFilter}
+        >
+          <Form
+              layout={"vertical"}
+              form={form}
+              onFinish={onSubmit}>
+
+            <Form.Item name={"slug"} label="slug">
+              <Input placeholder="input slug"/>
+            </Form.Item>
+
+            <Form.Item name={"title"} label="title">
+              <Input placeholder="input title"/>
+            </Form.Item>
+
+            <Form.Item name={"content"} label="content">
+              <Input placeholder="input title"/>
+            </Form.Item>
+
+            <div className={"gap-x-2 flex flex-nowrap"}>
+              <Button type="primary" htmlType={"submit"}>filter</Button>
+              <Button type="default" onClick={() =>onReset()}>reset</Button>
+            </div>
+          </Form>
+        </Drawer>
+
         <Table
+            onChange={onChange}
             sticky={{offsetHeader: 4}}
             scroll={{
               x: 200,
