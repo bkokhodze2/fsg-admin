@@ -4,9 +4,9 @@ import {InboxOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
 import dayjs, {unix} from "dayjs";
 import dynamic from "next/dynamic";
-import React from "react";
+import React, {useState} from "react";
 import {
-  Button, Checkbox,
+  Button, Image,
   DatePicker,
   Form,
   Input,
@@ -103,6 +103,8 @@ interface IProps {
 export default function AddEditNews({id}: IProps) {
   const [form] = Form.useForm();
   const isEditPage = !!id;
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
 
   const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
@@ -112,10 +114,15 @@ export default function AddEditNews({id}: IProps) {
     enabled: !!id
   });
 
-  console.log("dataNewsDetails2", dataNewsDetails)
-  console.log("dataLanguages", dataLanguages)
-  console.log("isEditPage", isEditPage)
-  console.log("dataCategories", dataCategories)
+  const [fileList, setFileList] = useState<any>([
+    {
+      uid: '-1',
+      name: 'image.png',
+      status: 'done',
+      url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
+    },
+
+  ]);
 
   const onchange = (values: any) => {
     console.log("values", values)
@@ -148,8 +155,6 @@ export default function AddEditNews({id}: IProps) {
   };
 
   const uploadImage = async (options: any) => {
-    // const formData = new FormData();
-    // formData.append("imageFile", e.file)
     const {onSuccess, onError, file, onProgress} = options;
 
     const formData = new FormData();
@@ -158,8 +163,23 @@ export default function AddEditNews({id}: IProps) {
     };
     formData.append("imageFile", file);
 
-    await axiosWithAuth.post(`${BASEAPI}/news-editor/upload-news-image`, formData, config)
+    try {
+      const res = await axiosWithAuth.post(`${BASEAPI}/news-editor/upload-news-image`, formData, config)
+      if (res.status == 200) {
+        onSuccess(res.data)
+      }
+    } catch (e: any) {
+      onError("failed")
+    }
+
   }
+
+  const handlePreview = async (file: any) => {
+    console.log("file", file, file?.response?.url || file?.url)
+    setPreviewImage(file?.response?.url || file?.url);
+    setPreviewOpen(true);
+  };
+
   const getDefaultValue = () => {
     if (isEditPage) {
       const newData = {
@@ -180,18 +200,24 @@ export default function AddEditNews({id}: IProps) {
         "newsDetails":
             activeLanguages?.map(e => {
               return {
-                "newsDetailId": null,
-                "title": null,
-                "content": null,
-                "imageName": null,
-                "imageSize": null,
-                "imageUrl": null,
+                "slug": null,
                 "useStartDateTime": null,
                 "useEndDateTime": null,
-                "languageId": e.id,
-                "newsId": null,
+                // "newsId": 0,
+                // "newsDetailId": null,
                 "useStartDateTimeMsec": null,
-                "useEndDateTimeMsec": null
+                "useEndDateTimeMsec": null,
+                "title": null,
+                "content": null,
+                "languageId": e.id,
+                "status": true,
+                "imageData": {
+                  "size": null,
+                  "originalFileName": null,
+                  "imageName": null,
+                  "contentType": null,
+                  "url": null
+                }
               }
             })
         ,
@@ -207,7 +233,7 @@ export default function AddEditNews({id}: IProps) {
   };
 
   return (
-      <div className={"p-2"}>
+      <div className={"p-2 pb-[60px]"}>
         <div className={"w-full flex justify-between items-center mb-4"}>
           <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit News" : "Add news"}</h2>
         </div>
@@ -219,6 +245,31 @@ export default function AddEditNews({id}: IProps) {
             size={'default' as SizeType}
             // style={{maxWidth: 800}}
             initialValues={getDefaultValue()}>
+
+          {/*<Form.Item*/}
+          {/*    name={'slug'}*/}
+          {/*    label={'slug'}*/}
+          {/*>*/}
+          {/*  <Input placeholder="slug"/>*/}
+          {/*</Form.Item>*/}
+
+          <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
+            <Select mode={"multiple"}>
+              {dataCategories?.map((e) => {
+                return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
+              })}
+            </Select>
+          </Form.Item>
+
+          <Form.Item className={"mb-0"} name={'status'} label="status"
+                     valuePropName={"value"}>
+            <Radio.Group buttonStyle="solid">
+              <Radio.Button value={true}>active</Radio.Button>
+              <Radio.Button className={""} value={false}>disable</Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+
+
           <Form.List
               name="newsDetails">
             {(fields, v) => {
@@ -227,9 +278,13 @@ export default function AddEditNews({id}: IProps) {
                   fields.map((field, index, c) => {
                     const languageId = form.getFieldValue(['newsDetails', field.name, 'languageId'])
                     const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
+                    const dataImg = form.getFieldValue(['newsDetails', field.name, 'imageData']);
+                    let fileList = dataImg?.url ? [dataImg] : []
 
+                    // console.log("dataImg", dataImg)
+                    console.log("fields[0].name+''+index", fields[0].name + '' + index)
                     return <Card
-                        key={index}
+                        key={fields[0].name + '' + index}
                         className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2]"}>
                       <Divider orientation="left" className={"!my-0"}>
                         <h3 className={"text-[25px]"}>{findLang}</h3>
@@ -241,6 +296,12 @@ export default function AddEditNews({id}: IProps) {
                         <Input placeholder="title"/>
                       </Form.Item>
                       <Form.Item
+                          name={[field.name, 'slug']}
+                          label={'slug'}
+                      >
+                        <Input placeholder="slug"/>
+                      </Form.Item>
+                      <Form.Item
                           name={[field.name, 'content']}
                           label={`Content`}
                           valuePropName="value"
@@ -250,64 +311,101 @@ export default function AddEditNews({id}: IProps) {
                             className={`textEditor border markGeo`}
                         />
                       </Form.Item>
+
                       <Form.Item label={'image'}
+
                                  name={[field.name, 'imageData']}
                                  valuePropName="value"
                                  getValueFromEvent={(e: any) => {
-                                   if (Array.isArray(e)) {
-                                     return e;
+                                   console.log("eee", e)
+                                   if (e.file.status === 'done') {
+                                     return e.file.response
+
+                                   } else {
+                                     return {
+                                       "size": null,
+                                       "originalFileName": null,
+                                       "imageName": null,
+                                       "contentType": null,
+                                       "url": null
+                                     }
                                    }
-                                   return "sss";
-                                 }} noStyle>
+                                 }}
+                                 noStyle>
+
                         <Upload.Dragger
-                            listType={"picture"}
+                            // fileList={getFileList()}
+                            defaultFileList={fileList}
+                            //     uid: '-1',
+                            // name: 'image.png',
+                            // status: 'done',
+                            // url: data?.url,
+                            listType={"picture-card"}
+                            showUploadList={true}
                             maxCount={1}
                             multiple={false}
                             customRequest={(e) => uploadImage(e)}
-                            onPreview={(e) => console.log("eee", e)}
-                            // onChange={handleOnChange}
-                            defaultFileList={[]}
-
-                            // action={`${BASEAPI}/news-editor/upload-news-image`}
+                            onPreview={(e) => handlePreview(e)}
                         >
                           <p className="ant-upload-drag-icon">
                             <InboxOutlined/>
                           </p>
+
                           <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                          <p className="ant-upload-hint">Support for a single or bulk upload.</p>
                         </Upload.Dragger>
+                        {previewImage && (
+                            <Image
+                                wrapperStyle={{display: 'none'}}
+                                preview={{
+                                  visible: previewOpen,
+                                  onVisibleChange: (visible) => setPreviewOpen(visible),
+                                  afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                                }}
+                                src={previewImage}
+                            />
+                        )}
                       </Form.Item>
-                      <Space className={"w-full mt-2 flex items-center justify-start"}>
-                        <Form.Item
-                            // initialValue={dayjs('YYYY-MM-DD HH:mm:ss')}
-                            // valuePropName={"aba"}
-                            // getValueFromEvent={(e: any) => {
-                            //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
-                            //   return date.valueOf();
-                            // }}
-                            // getValueProps={(e: string) => ({
-                            //   value: e ? dayjs(e) : "",
-                            // })}
-                            className={"mb-0"}
-                            name={[field.name, 'useStartDateTimeMsec']}
-                            label="useStartDate">
-                          <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+
+                      <Space className={"w-full mt-2 flex items-center justify-between"}>
+                        <Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"
+                                   valuePropName={"value"}>
+                          <Radio.Group buttonStyle="solid">
+                            <Radio.Button value={true}>active</Radio.Button>
+                            <Radio.Button className={""} value={false}>disable</Radio.Button>
+                          </Radio.Group>
                         </Form.Item>
 
-                        <Form.Item
-                            // getValueFromEvent={(e: any) => {
-                            //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
-                            //   return date.valueOf();
-                            // }}
-                            // getValueProps={(e: string) => ({
-                            //   value: e ? dayjs(e) : "",
-                            // })}
-                            className={"mb-0"}
-                            name={[field.name, 'useEndDateTimeMsec']
-                            } label="useEndDate">
-                          <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
-                        </Form.Item>
+                        <div className={"flex gap-x-2 flex-nowrap"}>
+                          <Form.Item
+                              // initialValue={dayjs('YYYY-MM-DD HH:mm:ss')}
+                              // valuePropName={"aba"}
+                              // getValueFromEvent={(e: any) => {
+                              //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
+                              //   return date.valueOf();
+                              // }}
+                              // getValueProps={(e: string) => ({
+                              //   value: e ? dayjs(e) : "",
+                              // })}
+                              className={"mb-0"}
+                              name={[field.name, 'useStartDateTimeMsec']}
+                              label="useStartDate">
+                            <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+                          </Form.Item>
 
+                          <Form.Item
+                              // getValueFromEvent={(e: any) => {
+                              //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
+                              //   return date.valueOf();
+                              // }}
+                              // getValueProps={(e: string) => ({
+                              //   value: e ? dayjs(e) : "",
+                              // })}
+                              className={"mb-0"}
+                              name={[field.name, 'useEndDateTimeMsec']
+                              } label="useEndDate">
+                            <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+                          </Form.Item>
+                        </div>
                         {/*<Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"*/}
                         {/*           valuePropName={"checked"}>*/}
                         {/*  <Checkbox/>*/}
@@ -321,44 +419,10 @@ export default function AddEditNews({id}: IProps) {
 
           </Form.List>
 
-          <Form.Item className={"mb-0"} name={'status'} label="status"
-                     valuePropName={"value"}>
-            <Radio.Group size={"large"} buttonStyle="solid">
-              <Radio.Button value={true}>active</Radio.Button>
-              <Radio.Button className={""} value={false}>disable</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
 
-          <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
-            <Select mode={"multiple"}>
-              {dataCategories?.map((e) => {
-                return <Select.Option value={e.id}>{e.category}</Select.Option>
-              })}
-            </Select>
-          </Form.Item>
-
-          {/*<Form.Item name="image" valuePropName="fileList" getValueFromEvent={normFile} noStyle>*/}
-          {/*  <Upload.Dragger name="files"*/}
-          {/*                  listType={"picture"}*/}
-          {/*                  maxCount={1}*/}
-          {/*                  multiple={false}*/}
-          {/*                  customRequest={(e) => uploadImage(e)}*/}
-          {/*      // action={`${BASEAPI}/news-editor/upload-news-image`}*/}
-          {/*  >*/}
-          {/*    <p className="ant-upload-drag-icon">*/}
-          {/*      <InboxOutlined/>*/}
-          {/*    </p>*/}
-          {/*    <p className="ant-upload-text">Click or drag file to this area to upload</p>*/}
-          {/*    <p className="ant-upload-hint">Support for a single or bulk upload.</p>*/}
-          {/*  </Upload.Dragger>*/}
-          {/*</Form.Item>*/}
-
-          {/*<Form.Item label="status" valuePropName="checked">*/}
-          {/*  <Checkbox value={true}/>*/}
-          {/*</Form.Item>*/}
-
-          <Button type={"primary"} htmlType={"submit"}>Submit</Button>
-        </Form>}
+          <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>Submit</Button>
+        </Form>
+        }
       </div>
   );
 }
