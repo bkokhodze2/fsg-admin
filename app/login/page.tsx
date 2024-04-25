@@ -17,6 +17,8 @@ type FieldType = {
 
 export default function Login() {
   const Router = useRouter();
+  const [form] = Form.useForm();
+
   const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
     values.grantType = 'SGP_GE_ADMIN';
     const res = await authService.login('login', values)
@@ -28,10 +30,23 @@ export default function Login() {
 
       });
 
-     await Router.push('/news')
+      await Router.push('/news')
     }
 
     if (res.status === 401) {
+      form.setFields([
+        {
+          name: "username",
+          value: values.username,
+          errors: ["invalid credentials"]
+        },
+        {
+          name: "password",
+          value: values.password,
+          errors: ["invalid credentials"]
+        }
+      ])
+
       notification.open({
         type: 'error',
         message: `Login`,
@@ -68,6 +83,7 @@ export default function Login() {
         >
           <Card className={"w-full max-w-[400px] h-min bg-white z-20 mb-[150px] mx-4 rounded-2xl"} title={""}>
             <Form
+                form={form}
                 className={"loginForm"}
                 layout={"vertical"}
                 size={'large'}
@@ -84,7 +100,7 @@ export default function Login() {
                   name="username"
                   rules={[{required: true, message: 'Please input your username!'}]}
               >
-                <Input prefix={<UserOutlined/>}/>
+                <Input placeholder={"type username"} prefix={<UserOutlined/>}/>
               </Form.Item>
 
               <Form.Item<FieldType>
@@ -92,7 +108,7 @@ export default function Login() {
                   name="password"
                   rules={[{required: true, message: 'Please input your password!'}]}
               >
-                <Input.Password prefix={<LockOutlined/>}/>
+                <Input.Password placeholder={"type password"} prefix={<LockOutlined/>}/>
               </Form.Item>
 
               <Form.Item<FieldType>

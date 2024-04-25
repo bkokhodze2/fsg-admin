@@ -129,15 +129,19 @@ export default function AddEditNews({id}: IProps) {
       newsDetails: values.newsDetails.map((detail: any) => ({
         ...detail,
         useStartDateTimeMsec: dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-        useStartDateTime: dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss'),
-
+        useStartDateTime: detail.useStartDateTimeMsec ? dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
         useEndDateTimeMsec: dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-        useEndDateTime: dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss'),
+        useEndDateTime: detail.useEndDateTimeMsec ? dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
       }))
     };
 
-    // Do something with the modified form data, such as submitting it to a server
 
+    notification.open({
+      type: 'error',
+      message: `error`,
+      description:
+          'something went wrong',
+    });
     axiosWithAuth.post('/test', modifiedValues)
     // Log the FormData object or submit it to the server
     // You can also submit the formData to the server here
