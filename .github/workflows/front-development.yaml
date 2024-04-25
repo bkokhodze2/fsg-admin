@@ -1,0 +1,56 @@
+name: socar cms development
+
+on:
+  push:
+    branches: 
+      - main
+
+jobs: 
+  checkout_and_build:
+    runs-on: [socar-runner]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Setting up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.17.0'
+          cache: 'npm'
+
+      - name: installing dependencies
+        run: npm install
+
+      - name: building
+        run: npm run build
+
+  install:
+    runs-on: [socar-runner]
+    needs: checkout_and_build
+
+    steps:
+      - name: moving built artifacts to destination directory
+        run: |
+          rm -rf .git .git*
+          rsync -ra ./ /var/www/socar-cms/
+
+      - name: setting up Node once again
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.17.0'
+          cache: 'npm' 
+
+      - name: starting, or restarting the cms
+        run: |
+          cd /var/www/socar-cms/
+          npm install || { echo "npm install failed"; exit 1; }
+          if pm2 list | grep -q "socar-cms-development"; then
+            echo "socar-cms-development is running, trying restart"
+            /home/runner/.nvm/versions/node/v18.17.0/bin/pm2 restart socar-cms-development
+          else
+            echo "socar-cms-development is not running, starting now "
+            /home/runner/.nvm/versions/node/v18.17.0/bin/pm2 start npm --name "socar-cms-development" -- start -- --port=3050
+          fi
+          /home/runner/.nvm/versions/node/v18.17.0/bin/pm2 save
+        shell: bash
