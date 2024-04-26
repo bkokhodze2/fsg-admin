@@ -1,9 +1,11 @@
 'use client'
 import {axiosWithAuth} from "@/configs/axios";
-import {InboxOutlined} from "@ant-design/icons";
+import {ArrowLeftOutlined, EditOutlined, InboxOutlined, LeftCircleOutlined, RollbackOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
 import dayjs, {unix} from "dayjs";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import {useRouter} from "next/navigation";
 import React, {useState} from "react";
 import {
   Button, Image,
@@ -11,7 +13,7 @@ import {
   Form,
   Input,
   Upload,
-  Select, Space, Card, Divider, notification, Radio,
+  Select, Space, Card, Divider, notification, Radio, Tooltip,
 } from 'antd';
 import {SizeType} from "antd/lib/config-provider/SizeContext";
 import type ReactQuill from 'react-quill';
@@ -102,6 +104,8 @@ interface IProps {
 
 export default function AddEditNews({id}: IProps) {
   const [form] = Form.useForm();
+  const Router = useRouter();
+
   const isEditPage = !!id;
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
@@ -235,8 +239,19 @@ export default function AddEditNews({id}: IProps) {
   return (
       <div className={"p-2 pb-[60px]"}>
         <div className={"w-full flex justify-between items-center mb-4"}>
+          <Button className={"flex items-center"} type="default" onClick={() => Router.back()}>
+            <ArrowLeftOutlined />back</Button>
+
+          {/*<Tooltip title="Edit" placement={'bottom'}>*/}
+          {/*  <Link href={``}>*/}
+          {/*    <Button shape="circle" className={"flex items-center justify-center"} icon={<EditOutlined/>}/>*/}
+          {/*  </Link>*/}
+          {/*</Tooltip>*/}
+
+
           <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit News" : "Add news"}</h2>
         </div>
+        <Divider className={"my-3"}/>
         {((isEditPage && dataNewsDetails) || (!isEditPage && dataLanguages)) && <Form
             form={form}
             layout="vertical"

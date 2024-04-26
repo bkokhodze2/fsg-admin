@@ -19,13 +19,9 @@ export const saveTokenStorage = (accessToken: string, refreshToken?: string) => 
   if (!accessToken && !refreshToken) return;
 
   accessToken && Cookies.set(EnumTokens.ACCESS_TOKEN, accessToken, {
-    domain: 'localhost',
-    sameSite: 'strict',
     expires: 1
   });
   refreshToken && Cookies.set(EnumTokens.REFRESH_TOKEN, refreshToken, {
-    domain: 'localhost',
-    sameSite: 'strict',
     expires: 1
   })
 
