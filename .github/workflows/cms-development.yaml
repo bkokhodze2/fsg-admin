@@ -33,6 +33,7 @@ jobs:
       - name: moving built artifacts to destination directory
         run: |
           rm -rf .git .git*
+          rm -rf /var/www/socar-cms/.next
           rsync -ra ./ /var/www/socar-cms/
 
       - name: setting up Node once again
@@ -40,11 +41,7 @@ jobs:
         with:
           node-version: '18.17.0'
           cache: 'npm' 
-
-      - name: starting, or restarting the cms
-        run: |
-          cd /var/www/socar-cms/
-
+          
       - name: starting, or restarting the cms
         run: |
           cd /var/www/socar-cms/
