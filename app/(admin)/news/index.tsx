@@ -144,8 +144,6 @@ export default function AddEditNews({id}: IProps) {
         notification.open({
           type: 'success',
           message: `news was added`,
-          description:
-              'good',
         });
         Router.push("/news")
       }

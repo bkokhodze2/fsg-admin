@@ -202,7 +202,7 @@ export default function News({searchParams}: IProps) {
   const handleDeleteNewsById = async (record: DataType): Promise<void> => {
     const {newsId, title} = record;
     try {
-      const res = await axiosWithAuth(`${BASEAPI}/news-editor/delete-news/${newsId}`);
+      const res = await axiosWithAuth.delete(`${BASEAPI}/news-editor/delete-news/${newsId}`);
       console.log(res);
 
       notification.open({
