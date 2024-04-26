@@ -264,7 +264,7 @@ export default function News({searchParams}: IProps) {
 
   const getFilterCount = () => {
     const filteredObject = Object.fromEntries(
-        Object.entries(filter).filter(([key, value]) => key !== 'pageSize' && key !== 'pageNumber' && value != undefined)
+        Object.entries(filter).filter(([key, value]) => key !== 'pageSize' && key !== 'pageNumber' && value != undefined && value !== "")
     );
 
     return Object.keys(filteredObject).length;
