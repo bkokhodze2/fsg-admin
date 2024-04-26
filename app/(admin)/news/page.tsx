@@ -1,6 +1,7 @@
 'use client'
 import {axiosWithAuth} from "@/configs/axios";
 import {
+  ArrowLeftOutlined, CloseCircleOutlined, CloseOutlined,
   DeleteOutlined,
   EditOutlined,
   FilterOutlined,
@@ -300,7 +301,14 @@ export default function News({searchParams}: IProps) {
         </div>
 
         <Drawer
-            title="Filter"
+            title={<div className={"flex items-center justify-between"}>
+              <h3>filter</h3>
+              <Tooltip title="Close" placement={'bottom'}>
+                <Button onClick={() => setIsOpenFilter(false)} shape="circle"
+                        className={"flex items-center justify-center"}
+                        icon={<CloseOutlined/>}/>
+              </Tooltip>
+            </div>}
             placement={"right"}
             closable={false}
             onClose={() => setIsOpenFilter(false)}
