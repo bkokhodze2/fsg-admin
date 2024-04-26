@@ -78,7 +78,7 @@ export default function News({searchParams}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
 
-  const {data, isLoading, isError} = useQuery({
+  const {data, isLoading, isError, refetch} = useQuery({
     queryKey: ["news", filter],
     queryFn: () => fetchNews(filter)
   });
@@ -211,6 +211,8 @@ export default function News({searchParams}: IProps) {
         description:
             'news successfully deleted',
       });
+
+      await refetch()
 
     } catch (error: any) {
       notification.open({
