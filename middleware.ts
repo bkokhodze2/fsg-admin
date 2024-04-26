@@ -11,6 +11,9 @@ export async function middleware(request: NextRequest, response: NextResponse) {
   const refreshToken = cookies.get((EnumTokens.REFRESH_TOKEN))?.value;
   const accessToken = cookies.get((EnumTokens.ACCESS_TOKEN))?.value;
 
+  console.log("-----p",path,accessToken)
+  console.log("-----ress",NextResponse)
+
   const isAuthPage = url.includes('/login');
 
   //aqve reqeust rolebze;
