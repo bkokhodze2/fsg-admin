@@ -78,7 +78,7 @@ export default function News({searchParams}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
 
-  const {data, isLoading, isError} = useQuery({
+  const {data, isLoading, isError, refetch} = useQuery({
     queryKey: ["news", filter],
     queryFn: () => fetchNews(filter)
   });
@@ -212,6 +212,8 @@ export default function News({searchParams}: IProps) {
             'news successfully deleted',
       });
 
+      await refetch()
+
     } catch (error: any) {
       notification.open({
         type: 'error',
@@ -247,7 +249,7 @@ export default function News({searchParams}: IProps) {
   const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, extra) => {
     console.log('params', pagination);
 
-    if (filter.pageSize != pagination.pageSize) {
+    if ((filter.pageSize !== undefined) && (filter.pageSize != pagination.pageSize)) {
       setFilter((prevState: IFilter) => ({
         ...prevState,
         pageNumber: 1,

@@ -128,6 +128,7 @@ export default function AddEditNews({id}: IProps) {
     // Modify the form data here before submitting
     const modifiedValues = {
       ...values,
+      id: isEditPage ? id : undefined,
       newsDetails: values.newsDetails.map((detail: any) => ({
         ...detail,
         useStartDateTimeMsec: dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
@@ -136,6 +137,7 @@ export default function AddEditNews({id}: IProps) {
         useEndDateTime: detail.useEndDateTimeMsec ? dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
       }))
     };
+    console.log("modifiedValues", modifiedValues)
 
 
     try {
@@ -194,6 +196,8 @@ export default function AddEditNews({id}: IProps) {
           useEndDateTimeMsec: detail.useEndDateTimeMsec ? dayjs.unix(detail.useEndDateTimeMsec / 1000) : null,
         }))
       };
+
+      console.log("data", newData)
 
       return newData;
     } else {
