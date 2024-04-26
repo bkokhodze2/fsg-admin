@@ -249,7 +249,7 @@ export default function News({searchParams}: IProps) {
   const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, extra) => {
     console.log('params', pagination);
 
-    if (filter.pageSize != pagination.pageSize) {
+    if ((filter.pageSize !== undefined) && (filter.pageSize != pagination.pageSize)) {
       setFilter((prevState: IFilter) => ({
         ...prevState,
         pageNumber: 1,
