@@ -79,7 +79,7 @@ const fetchCategories = async () => {
 }
 const fetchNewsDetailsById = async (id: number) => {
   try {
-    const {data} = await axiosWithAuth.get(`${BASEAPI}/news-editor/get-news-info-detail`, {
+    const {data} = await axiosWithAuth.get(`/news-editor/get-news-info-detail`, {
       params: {
         newsId: id
       }
@@ -118,20 +118,11 @@ export default function AddEditNews({id}: IProps) {
     enabled: !!id
   });
 
-  const [fileList, setFileList] = useState<any>([
-    {
-      uid: '-1',
-      name: 'image.png',
-      status: 'done',
-      url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-    },
-
-  ]);
 
   const onchange = (values: any) => {
     console.log("values", values)
   }
-  const onFinish = (values: any) => {
+  const onFinish = async (values: any) => {
     console.log("vv", values)
 
     // Modify the form data here before submitting
@@ -147,13 +138,25 @@ export default function AddEditNews({id}: IProps) {
     };
 
 
-    notification.open({
-      type: 'error',
-      message: `error`,
-      description:
-          'something went wrong',
-    });
-    axiosWithAuth.post('/test', modifiedValues)
+    try {
+      const res = await axiosWithAuth.post('/news-editor/add-or-modify-news', modifiedValues)
+      if (res.status == 200) {
+        notification.open({
+          type: 'success',
+          message: `news was added`,
+          description:
+              'good',
+        });
+        Router.push("/news")
+      }
+    } catch (e: any) {
+      console.log("e",)
+      notification.open({
+        type: 'error',
+        message: `${e.response.data.message || "error"}`,
+      });
+    }
+
     // Log the FormData object or submit it to the server
     // You can also submit the formData to the server here
   };
@@ -168,7 +171,7 @@ export default function AddEditNews({id}: IProps) {
     formData.append("imageFile", file);
 
     try {
-      const res = await axiosWithAuth.post(`${BASEAPI}/news-editor/upload-news-image`, formData, config)
+      const res = await axiosWithAuth.post(`/news-editor/upload-news-image`, formData, config)
       if (res.status == 200) {
         onSuccess(res.data)
       }
@@ -183,7 +186,6 @@ export default function AddEditNews({id}: IProps) {
     setPreviewImage(file?.response?.url || file?.url);
     setPreviewOpen(true);
   };
-
   const getDefaultValue = () => {
     if (isEditPage) {
       const newData = {
@@ -232,15 +234,12 @@ export default function AddEditNews({id}: IProps) {
     }
   }
 
-  const parseTimestamp = (dateString: string) => {
-    return dayjs(dateString, "DD-MM-YYYY HH:mm:ss").unix() * 1000;
-  };
 
   return (
       <div className={"p-2 pb-[60px]"}>
         <div className={"w-full flex justify-between items-center mb-4"}>
           <Button className={"flex items-center"} type="default" onClick={() => Router.back()}>
-            <ArrowLeftOutlined />back</Button>
+            <ArrowLeftOutlined/>back</Button>
 
           {/*<Tooltip title="Edit" placement={'bottom'}>*/}
           {/*  <Link href={``}>*/}
@@ -328,7 +327,6 @@ export default function AddEditNews({id}: IProps) {
                       </Form.Item>
 
                       <Form.Item label={'image'}
-
                                  name={[field.name, 'imageData']}
                                  valuePropName="value"
                                  getValueFromEvent={(e: any) => {
@@ -368,18 +366,18 @@ export default function AddEditNews({id}: IProps) {
 
                           <p className="ant-upload-text">Click or drag file to this area to upload</p>
                         </Upload.Dragger>
-                        {previewImage && (
-                            <Image
-                                wrapperStyle={{display: 'none'}}
-                                preview={{
-                                  visible: previewOpen,
-                                  onVisibleChange: (visible) => setPreviewOpen(visible),
-                                  afterOpenChange: (visible) => !visible && setPreviewImage(''),
-                                }}
-                                src={previewImage}
-                            />
-                        )}
                       </Form.Item>
+                      {previewImage && (
+                          <Image
+                              wrapperStyle={{display: 'none'}}
+                              preview={{
+                                visible: previewOpen,
+                                onVisibleChange: (visible) => setPreviewOpen(visible),
+                                afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                              }}
+                              src={previewImage}
+                          />
+                      )}
 
                       <Space className={"w-full mt-2 flex items-center justify-between"}>
                         <Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"
