@@ -49,13 +49,12 @@ jobs:
         run: |
           cd /var/www/socar-cms/
           npm install || { echo "npm install failed"; exit 1; }
-          # Check if the process is running
-          if /home/runner/.nvm/versions/node/v18.17.0/bin/pm2 list | grep -q "socar-cms-development"; then
-            echo "socar-cms-development is running, trying restart"
-            /home/runner/.nvm/versions/node/v18.17.0/bin/pm2 restart socar-cms-development || { echo "Restart failed"; exit 1; }
+          if /home/runner/.nvm/versions/node/v18.17.0/bin/pm2 jlist | jq -e '.[] | select(.name == "socar-cms-development")' > /dev/null; then
+              echo "socar-cms-development is running, trying restart"
+              /home/runner/.nvm/versions/node/v18.17.0/bin/pm2 restart socar-cms-development
           else
-            echo "socar-cms-development is not running, starting now "
-            /home/runner/.nvm/versions/node/v18.17.0/bin/pm2 start npm --name "socar-cms-development" -- start -- --port=3050 || { echo "Start failed"; exit 1; }
+              echo "socar-cms-development is not running, starting now "
+              /home/runner/.nvm/versions/node/v18.17.0/bin/pm2 start npm --name "socar-cms-development" -- start -- --port=3050
           fi
           /home/runner/.nvm/versions/node/v18.17.0/bin/pm2 save
         shell: bash
