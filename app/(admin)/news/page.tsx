@@ -127,6 +127,13 @@ export default function News({searchParams}: IProps) {
       )
     },
     {
+      title: 'Slug',
+      dataIndex: 'slug',
+      key: 'slug',
+      align: "center",
+      render: (text) => <p>{text}</p>,
+    },
+    {
       title: 'Image',
       dataIndex: 'imageUrl',
       key: 'imageUrl',
@@ -141,33 +148,37 @@ export default function News({searchParams}: IProps) {
       )
     },
     {
-      title: 'Start',
+      title: 'start-end date',
       dataIndex: 'useStartDateTime',
       key: 'useStartDateTime',
-      align: "center",
+      align: "left",
 
       render: (text, record) => (
-          <Space size="middle">
+          <Space size="middle" className={"flex flex-wrap"}>
             <p className={"whitespace-nowrap"}>
-              {dayjs(text, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
+              {dayjs(record.useStartDateTime, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
+            </p>
+
+            <p className={"whitespace-nowrap"}>
+              {dayjs(record.useEndDateTime, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
             </p>
           </Space>
       )
     },
-    {
-      title: 'End',
-      dataIndex: 'useEndDateTime',
-      key: 'useEndDateTime',
-      align: "center",
-
-      render: (text, record) => (
-          <Space size="middle">
-            <p className={"whitespace-nowrap"}>
-              {dayjs(text, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
-            </p>
-          </Space>
-      )
-    },
+    // {
+    //   title: 'End',
+    //   dataIndex: 'useEndDateTime',
+    //   key: 'useEndDateTime',
+    //   align: "center",
+    //
+    //   render: (text, record) => (
+    //       <Space size="middle">
+    //         <p className={"whitespace-nowrap"}>
+    //           {dayjs(text, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
+    //         </p>
+    //       </Space>
+    //   )
+    // },
     {
       title: 'Action',
       key: 'action',
