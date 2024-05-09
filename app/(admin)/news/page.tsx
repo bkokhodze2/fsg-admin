@@ -1,6 +1,7 @@
 'use client'
 import {axiosWithAuth} from "@/configs/axios";
 import {
+  ArrowLeftOutlined, CloseCircleOutlined, CloseOutlined,
   DeleteOutlined,
   EditOutlined,
   FilterOutlined,
@@ -77,7 +78,7 @@ export default function News({searchParams}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
 
-  const {data, isLoading, isError} = useQuery({
+  const {data, isLoading, isError, refetch} = useQuery({
     queryKey: ["news", filter],
     queryFn: () => fetchNews(filter)
   });
@@ -126,6 +127,13 @@ export default function News({searchParams}: IProps) {
       )
     },
     {
+      title: 'Slug',
+      dataIndex: 'slug',
+      key: 'slug',
+      align: "center",
+      render: (text) => <p>{text}</p>,
+    },
+    {
       title: 'Image',
       dataIndex: 'imageUrl',
       key: 'imageUrl',
@@ -140,33 +148,37 @@ export default function News({searchParams}: IProps) {
       )
     },
     {
-      title: 'Start',
+      title: 'start-end date',
       dataIndex: 'useStartDateTime',
       key: 'useStartDateTime',
-      align: "center",
+      align: "left",
 
       render: (text, record) => (
-          <Space size="middle">
+          <Space size="middle" className={"flex flex-wrap"}>
             <p className={"whitespace-nowrap"}>
-              {dayjs(text, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
+              {dayjs(record.useStartDateTime, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
+            </p>
+
+            <p className={"whitespace-nowrap"}>
+              {dayjs(record.useEndDateTime, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
             </p>
           </Space>
       )
     },
-    {
-      title: 'End',
-      dataIndex: 'useEndDateTime',
-      key: 'useEndDateTime',
-      align: "center",
-
-      render: (text, record) => (
-          <Space size="middle">
-            <p className={"whitespace-nowrap"}>
-              {dayjs(text, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
-            </p>
-          </Space>
-      )
-    },
+    // {
+    //   title: 'End',
+    //   dataIndex: 'useEndDateTime',
+    //   key: 'useEndDateTime',
+    //   align: "center",
+    //
+    //   render: (text, record) => (
+    //       <Space size="middle">
+    //         <p className={"whitespace-nowrap"}>
+    //           {dayjs(text, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
+    //         </p>
+    //       </Space>
+    //   )
+    // },
     {
       title: 'Action',
       key: 'action',
@@ -201,7 +213,7 @@ export default function News({searchParams}: IProps) {
   const handleDeleteNewsById = async (record: DataType): Promise<void> => {
     const {newsId, title} = record;
     try {
-      const res = await axiosWithAuth(`${BASEAPI}/news-editor/delete-news/${newsId}`);
+      const res = await axiosWithAuth.delete(`${BASEAPI}/news-editor/delete-news/${newsId}`);
       console.log(res);
 
       notification.open({
@@ -210,6 +222,8 @@ export default function News({searchParams}: IProps) {
         description:
             'news successfully deleted',
       });
+
+      await refetch()
 
     } catch (error: any) {
       notification.open({
@@ -246,7 +260,7 @@ export default function News({searchParams}: IProps) {
   const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, extra) => {
     console.log('params', pagination);
 
-    if (filter.pageSize != pagination.pageSize) {
+    if ((filter.pageSize !== undefined) && (filter.pageSize != pagination.pageSize)) {
       setFilter((prevState: IFilter) => ({
         ...prevState,
         pageNumber: 1,
@@ -300,7 +314,14 @@ export default function News({searchParams}: IProps) {
         </div>
 
         <Drawer
-            title="Filter"
+            title={<div className={"flex items-center justify-between"}>
+              <h3>filter</h3>
+              <Tooltip title="Close" placement={'bottom'}>
+                <Button onClick={() => setIsOpenFilter(false)} shape="circle"
+                        className={"flex items-center justify-center"}
+                        icon={<CloseOutlined/>}/>
+              </Tooltip>
+            </div>}
             placement={"right"}
             closable={false}
             onClose={() => setIsOpenFilter(false)}
