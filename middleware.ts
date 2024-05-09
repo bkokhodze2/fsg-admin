@@ -1,4 +1,4 @@
-import {EnumTokens} from "@/services/auth-token.service";
+import {EnumTokens} from "@/enums";
 import {NextResponse} from 'next/server'
 import type {NextRequest} from 'next/server'
 
