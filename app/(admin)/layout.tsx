@@ -31,7 +31,7 @@ function getItem(
 
 const items: MenuItem[] = [
   getItem((<Link href={"/news"}>News</Link>), '1', <FileOutlined/>),
-  getItem('Option 2', '2', <DesktopOutlined/>),
+  getItem((<Link href={"/slide"}>Main Slide</Link>), '2', <DesktopOutlined/>),
   getItem('User', 'sub1', <UserOutlined/>, [
     getItem('Tom', '3'),
     getItem('Bill', '4'),
