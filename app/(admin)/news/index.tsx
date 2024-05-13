@@ -285,6 +285,50 @@ export default function AddEditNews({id}: IProps) {
             </Radio.Group>
           </Form.Item>
 
+          <Form.Item label={'image'}
+                     name={'imagesList'}
+                     valuePropName="value"
+                     getValueFromEvent={(e: any) => {
+                       console.log("eee",)
+                       if (e.file.status === 'done') {
+                         return e.fileList.map((e: any) => {
+                           return e.response
+                         })
+
+                       } else {
+                         return {
+                           "size": null,
+                           "originalFileName": null,
+                           "imageName": null,
+                           "contentType": null,
+                           "url": null
+                         }
+                       }
+                     }}
+                     noStyle>
+
+            <Upload.Dragger
+                // fileList={getFileList()}
+                // defaultFileList={fileList}
+                //     uid: '-1',
+                // name: 'image.png',
+                // status: 'done',
+                // url: data?.url,
+                listType={"picture-card"}
+                showUploadList={true}
+                maxCount={12}
+                multiple={true}
+                customRequest={(e) => uploadImage(e)}
+                onPreview={(e) => handlePreview(e)}
+            >
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined/>
+              </p>
+
+              <p className="ant-upload-text">Click or drag file to this area to upload</p>
+            </Upload.Dragger>
+          </Form.Item>
+
 
           <Form.List
               name="newsDetails">
@@ -366,7 +410,7 @@ export default function AddEditNews({id}: IProps) {
                             <InboxOutlined/>
                           </p>
 
-                          <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                          <p className="ant-upload-text">Click or drag file to this area to upload main image</p>
                         </Upload.Dragger>
                       </Form.Item>
                       {previewImage && (
