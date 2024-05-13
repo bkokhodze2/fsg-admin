@@ -219,7 +219,7 @@ export default function AddEditSlide({id}: IProps) {
                 "content": null,
                 "languageId": e.id,
                 "status": true,
-                "imageData": {
+                "webImageData": {
                   "size": null,
                   "originalFileName": null,
                   "imageName": null,
@@ -302,7 +302,7 @@ export default function AddEditSlide({id}: IProps) {
                   fields.map((field, index, c) => {
                     const languageId = form.getFieldValue(['newsDetails', field.name, 'languageId'])
                     const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
-                    const dataImg = form.getFieldValue(['newsDetails', field.name, 'imageData']);
+                    const dataImg = form.getFieldValue(['newsDetails', field.name, 'webImageData']);
                     const mobileDataImg = form.getFieldValue(['newsDetails', field.name, 'mobileImageData']);
                     let fileList = dataImg?.url && mobileDataImg ? [dataImg, mobileDataImg] : []
 
@@ -364,7 +364,7 @@ export default function AddEditSlide({id}: IProps) {
 
                       <Form.Item
                         label={'image'}
-                        name={[field.name, 'imageData']}
+                        name={[field.name, 'webImageData']}
                         valuePropName="value"
                         getValueFromEvent={(e: any) => {
                           console.log("eee", e)
