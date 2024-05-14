@@ -277,13 +277,13 @@ export default function AddEditSlide({id}: IProps) {
           {/*  <Input placeholder="slug"/>*/}
           {/*</Form.Item>*/}
 
-          {/* <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
+          <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
             <Select mode={"multiple"}>
               {dataCategories?.map((e) => {
                 return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
               })}
             </Select>
-          </Form.Item> */}
+          </Form.Item>
 
           <Form.Item className={"mb-0"} name={'status'} label="status"
                      valuePropName={"value"}>
