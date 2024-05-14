@@ -219,7 +219,7 @@ export default function AddEditSlide({id}: IProps) {
                 "description": null,
                 // "content": null,
                 "languageId": e.id,
-                "status": true,
+                // "status": true,
                 "webImageData": {
                   "size": null,
                   "originalFileName": null,
@@ -237,7 +237,7 @@ export default function AddEditSlide({id}: IProps) {
               }
             })
         ,
-        "status": true
+        // "status": true
       }
 
 
@@ -285,13 +285,13 @@ export default function AddEditSlide({id}: IProps) {
             </Select>
           </Form.Item>
 
-          <Form.Item className={"mb-0"} name={'status'} label="status"
+          {/* <Form.Item className={"mb-0"} name={'status'} label="status"
                      valuePropName={"value"}>
             <Radio.Group buttonStyle="solid">
               <Radio.Button value={true}>active</Radio.Button>
               <Radio.Button className={""} value={false}>disable</Radio.Button>
             </Radio.Group>
-          </Form.Item>
+          </Form.Item> */}
 
 
           <Form.List
@@ -335,19 +335,21 @@ export default function AddEditSlide({id}: IProps) {
                         <Input placeholder="video link"/>
                       </Form.Item>
 
-                      <div className={"flex gap-x-2 flex-nowrap"}>
+                      <div className={"flex gap-x-4 w-full"}>
                         <Form.Item
                             name={[field.name, 'buttonText']}
                             label={'button text'}
+                            className="w-1/2"
                         >
-                            <Input placeholder="button text"/>
+                            <Input placeholder="button text" />
                         </Form.Item>
 
                         <Form.Item
                             name={[field.name, 'buttonLink']}
                             label={'button link'}
+                            className="w-1/2"
                         >
-                            <Input placeholder="button link"/>
+                            <Input placeholder="button link" />
                         </Form.Item>
                       </div>
 
