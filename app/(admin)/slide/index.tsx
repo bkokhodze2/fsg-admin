@@ -77,11 +77,11 @@ const fetchCategories = async () => {
     });
   }
 }
-const fetchNewsDetailsById = async (id: number) => {
+const fetchSlideDetailsById = async (id: number) => {
   try {
     const {data} = await axiosWithAuth.get(`/news-editor/get-news-info-detail`, {
       params: {
-        newsId: id
+        slideId: id
       }
     });
 
@@ -91,9 +91,9 @@ const fetchNewsDetailsById = async (id: number) => {
     console.log("errr", error)
     notification.open({
       type: 'error',
-      message: `news`,
+      message: `slide`,
       description:
-          'Something went wrong while fetching news details',
+          'Something went wrong while fetching slide details',
     });
   }
 }
@@ -112,9 +112,9 @@ export default function AddEditSlide({id}: IProps) {
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
 
   const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
-  const {data: dataNewsDetails} = useQuery({
-    queryKey: ['newsDetails', id],
-    queryFn: () => fetchNewsDetailsById(id as number),
+  const {data: dataSlideDetails} = useQuery({
+    queryKey: ['slideDetails', id],
+    queryFn: () => fetchSlideDetailsById(id as number),
     enabled: !!id
   });
 
@@ -129,23 +129,23 @@ export default function AddEditSlide({id}: IProps) {
     const modifiedValues = {
       ...values,
       id: isEditPage ? id : undefined,
-      newsDetails: values.newsDetails.map((detail: any) => ({
+      slideDetails: values.slideDetails.map((detail: any) => ({
         ...detail,
-        useStartDateTimeMsec: dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-        useStartDateTime: detail.useStartDateTimeMsec ? dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
-        useEndDateTimeMsec: dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-        useEndDateTime: detail.useEndDateTimeMsec ? dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
+        // useStartDateTimeMsec: dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
+        // useStartDateTime: detail.useStartDateTimeMsec ? dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
+        // useEndDateTimeMsec: dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
+        // useEndDateTime: detail.useEndDateTimeMsec ? dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
       }))
     };
     console.log("modifiedValues", modifiedValues)
 
 
     try {
-      const res = await axiosWithAuth.post('/news-editor/add-or-modify-news', modifiedValues)
+      const res = await axiosWithAuth.post('/#', modifiedValues)
       if (res.status == 200) {
         notification.open({
           type: 'success',
-          message: `news was added`,
+          message: `slide was added`,
         });
         Router.push("/slide")
       }
@@ -189,11 +189,11 @@ export default function AddEditSlide({id}: IProps) {
   const getDefaultValue = () => {
     if (isEditPage) {
       const newData = {
-        ...dataNewsDetails,
-        newsDetails: dataNewsDetails.newsDetails.map((detail: any) => ({
+        ...dataSlideDetails,
+        slideDetails: dataSlideDetails.slideDetails.map((detail: any) => ({
           ...detail,
-          useStartDateTimeMsec: detail.useStartDateTimeMsec ? dayjs.unix(detail.useStartDateTimeMsec / 1000) : null,
-          useEndDateTimeMsec: detail.useEndDateTimeMsec ? dayjs.unix(detail.useEndDateTimeMsec / 1000) : null,
+          // useStartDateTimeMsec: detail.useStartDateTimeMsec ? dayjs.unix(detail.useStartDateTimeMsec / 1000) : null,
+          // useEndDateTimeMsec: detail.useEndDateTimeMsec ? dayjs.unix(detail.useEndDateTimeMsec / 1000) : null,
         }))
       };
 
@@ -205,18 +205,19 @@ export default function AddEditSlide({id}: IProps) {
 
       return {
         "categoryIdList": [1],
-        "newsDetails":
+        "slideDetails":
             activeLanguages?.map(e => {
               return {
-                "slug": null,
-                "useStartDateTime": null,
-                "useEndDateTime": null,
-                // "newsId": 0,
-                // "newsDetailId": null,
-                "useStartDateTimeMsec": null,
-                "useEndDateTimeMsec": null,
+                // "slug": null,
+                // "useStartDateTime": null,
+                // "useEndDateTime": null,
+                // "slideId": 0,
+                // "slideDetailId": null,
+                // "useStartDateTimeMsec": null,
+                // "useEndDateTimeMsec": null,
                 "title": null,
-                "content": null,
+                "description": null,
+                // "content": null,
                 "languageId": e.id,
                 "status": true,
                 "webImageData": {
@@ -260,7 +261,7 @@ export default function AddEditSlide({id}: IProps) {
           <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Slide" : "Add Slide"}</h2>
         </div>
         <Divider className={"my-3"}/>
-        {((isEditPage && dataNewsDetails) || (!isEditPage && dataLanguages)) && <Form
+        {((isEditPage && dataSlideDetails) || (!isEditPage && dataLanguages)) && <Form
             form={form}
             layout="vertical"
             onValuesChange={onchange}
@@ -294,16 +295,16 @@ export default function AddEditSlide({id}: IProps) {
 
 
           <Form.List
-              name="newsDetails"
+              name="slideDetails"
           >
             {(fields, v) => {
               return <div className={"flex flex-col gap-y-5"}>
                 {
                   fields.map((field, index, c) => {
-                    const languageId = form.getFieldValue(['newsDetails', field.name, 'languageId'])
+                    const languageId = form.getFieldValue(['slideDetails', field.name, 'languageId'])
                     const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
-                    const dataImg = form.getFieldValue(['newsDetails', field.name, 'webImageData']);
-                    const mobileDataImg = form.getFieldValue(['newsDetails', field.name, 'mobileImageData']);
+                    const dataImg = form.getFieldValue(['slideDetails', field.name, 'webImageData']);
+                    const mobileDataImg = form.getFieldValue(['slideDetails', field.name, 'mobileImageData']);
                     let fileList = dataImg?.url && mobileDataImg ? [dataImg, mobileDataImg] : []
 
                     // console.log("dataImg", dataImg)
