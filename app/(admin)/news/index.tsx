@@ -285,51 +285,6 @@ export default function AddEditNews({id}: IProps) {
             </Radio.Group>
           </Form.Item>
 
-          <Form.Item label={'image'}
-                     name={'imagesList'}
-                     valuePropName="value"
-                     getValueFromEvent={(e: any) => {
-                       console.log("eee",)
-                       if (e.file.status === 'done') {
-                         return e.fileList.map((e: any) => {
-                           return e.response
-                         })
-
-                       } else {
-                         return {
-                           "size": null,
-                           "originalFileName": null,
-                           "imageName": null,
-                           "contentType": null,
-                           "url": null
-                         }
-                       }
-                     }}
-                     noStyle>
-
-            <Upload.Dragger
-                // fileList={getFileList()}
-                // defaultFileList={fileList}
-                //     uid: '-1',
-                // name: 'image.png',
-                // status: 'done',
-                // url: data?.url,
-                listType={"picture-card"}
-                showUploadList={true}
-                maxCount={12}
-                multiple={true}
-                customRequest={(e) => uploadImage(e)}
-                onPreview={(e) => handlePreview(e)}
-            >
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined/>
-              </p>
-
-              <p className="ant-upload-text">Click or drag file to this area to upload</p>
-            </Upload.Dragger>
-          </Form.Item>
-
-
           <Form.List
               name="newsDetails">
             {(fields, v) => {
@@ -339,7 +294,11 @@ export default function AddEditNews({id}: IProps) {
                     const languageId = form.getFieldValue(['newsDetails', field.name, 'languageId'])
                     const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
                     const dataImg = form.getFieldValue(['newsDetails', field.name, 'imageData']);
-                    let fileList = dataImg?.url ? [dataImg] : []
+
+                    const dataImgList = form.getFieldValue(['newsDetails', field.name, 'imageList']);
+
+                    let fileList = dataImg?.url ? [dataImg] : [];
+                    let fileImagesList = !!dataImgList.length ? dataImgList : [] ;
 
                     // console.log("dataImg", dataImg)
                     console.log("fields[0].name+''+index", fields[0].name + '' + index)
@@ -413,6 +372,51 @@ export default function AddEditNews({id}: IProps) {
                           <p className="ant-upload-text">Click or drag file to this area to upload main image</p>
                         </Upload.Dragger>
                       </Form.Item>
+
+                      <Form.Item label={'image'}
+                                 name={[field.name, 'imageList']}
+                                 valuePropName="value"
+                                 getValueFromEvent={(e: any) => {
+                                   console.log("eee",)
+                                   if (e.file.status === 'done') {
+                                     return e.fileList.map((e: any) => {
+                                       return e.response
+                                     })
+
+                                   } else {
+                                     return {
+                                       "size": null,
+                                       "originalFileName": null,
+                                       "imageName": null,
+                                       "contentType": null,
+                                       "url": null
+                                     }
+                                   }
+                                 }}
+                                 noStyle>
+
+                        <Upload.Dragger
+                            // fileList={getFileList()}
+                            defaultFileList={fileImagesList}
+                            //     uid: '-1',
+                            // name: 'image.png',
+                            // status: 'done',
+                            // url: data?.url,
+                            listType={"picture-card"}
+                            showUploadList={true}
+                            maxCount={12}
+                            multiple={true}
+                            customRequest={(e) => uploadImage(e)}
+                            onPreview={(e) => handlePreview(e)}
+                        >
+                          <p className="ant-upload-drag-icon">
+                            <InboxOutlined/>
+                          </p>
+
+                          <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                        </Upload.Dragger>
+                      </Form.Item>
+
                       {previewImage && (
                           <Image
                               wrapperStyle={{display: 'none'}}
