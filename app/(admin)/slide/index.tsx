@@ -217,6 +217,7 @@ export default function AddEditSlide({id}: IProps) {
                 // "useEndDateTimeMsec": null,
                 "title": null,
                 "description": null,
+                "alt": null,
                 // "content": null,
                 "languageId": e.id,
                 // "status": true,
@@ -326,6 +327,13 @@ export default function AddEditSlide({id}: IProps) {
                           label={'description'}
                       >
                         <Input placeholder="description"/>
+                      </Form.Item>
+
+                      <Form.Item
+                          name={[field.name, 'alt']}
+                          label={'alt'}
+                      >
+                        <Input placeholder="alt"/>
                       </Form.Item>
 
                       <Form.Item
