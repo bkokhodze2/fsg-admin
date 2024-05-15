@@ -219,6 +219,7 @@ export default function AddEditNews({id}: IProps) {
                 "content": null,
                 "languageId": e.id,
                 "status": true,
+                "imageList": [],
                 "imageData": {
                   "size": null,
                   "originalFileName": null,
@@ -298,7 +299,7 @@ export default function AddEditNews({id}: IProps) {
                     const dataImgList = form.getFieldValue(['newsDetails', field.name, 'imageList']);
 
                     let fileList = dataImg?.url ? [dataImg] : [];
-                    let fileImagesList = !!dataImgList.length ? dataImgList : [] ;
+                    let fileImagesList = !!dataImgList.length ? dataImgList : [];
 
                     // console.log("dataImg", dataImg)
                     console.log("fields[0].name+''+index", fields[0].name + '' + index)
