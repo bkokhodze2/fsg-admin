@@ -5,7 +5,7 @@ import {useQuery} from "@tanstack/react-query";
 import dayjs, {unix} from "dayjs";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import {useRouter} from "next/navigation";
+import {useRouter, useParams} from "next/navigation";
 import React, {useState} from "react";
 import {
   Button, Image,
@@ -105,6 +105,9 @@ interface IProps {
 export default function AddEditNews({id}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
+  const Params = useParams();
+
+  console.log("Params", Params)
 
   const isEditPage = !!id;
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -112,14 +115,19 @@ export default function AddEditNews({id}: IProps) {
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
 
   const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
-  const {data: dataNewsDetails} = useQuery({
+
+  const {data: dataNewsDetails, refetch} = useQuery({
     queryKey: ['newsDetails', id],
     queryFn: () => fetchNewsDetailsById(id as number),
-    enabled: !!id
+    enabled: !!id,
+    retry: 1,
+    initialData: undefined,
+    // retryDelay: 3000,
+    staleTime: 0,
   });
 
 
-  const onchange = (values: any,allValues:any) => {
+  const onchange = (values: any, allValues: any) => {
     console.log("values", values)
     console.log("allValues", allValues)
   }
@@ -148,6 +156,7 @@ export default function AddEditNews({id}: IProps) {
           type: 'success',
           message: `news was added`,
         });
+       await refetch();
         Router.push("/news")
       }
     } catch (e: any) {
@@ -189,6 +198,7 @@ export default function AddEditNews({id}: IProps) {
   };
   const getDefaultValue = () => {
     if (isEditPage) {
+      console.log("dataNewsDetails", dataNewsDetails)
       const newData = {
         ...dataNewsDetails,
         newsDetails: dataNewsDetails.newsDetails.map((detail: any) => ({
@@ -299,19 +309,16 @@ export default function AddEditNews({id}: IProps) {
 
                     const dataImgList = form.getFieldValue(['newsDetails', field.name, 'additionalImages']);
 
+                    console.log("----dataImgList", dataImgList, !!dataImgList?.length)
+
                     let fileList = dataImg?.url ? [dataImg] : [];
-                    let fileImagesList = !!dataImgList?.length ? dataImgList.map((e:any)=>{
+                    let fileImagesList = !!dataImgList?.length ? dataImgList.map((e: any) => {
                       return {
+                        ...e,
                         uid: e.url,
-                        percent: 100,
-                        name: e.imageName,
-                        status: 'done',
-                        url: e.url,
                       }
                     }) : [];
 
-                    // console.log("dataImg", dataImg)
-                    console.log("fields[0].name+''+index", fields[0].name + '' + index)
                     return <Card
                         key={fields[0].name + '' + index}
                         className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2]"}>
@@ -387,15 +394,15 @@ export default function AddEditNews({id}: IProps) {
                                  name={[field.name, 'additionalImages']}
                                  valuePropName="value"
                                  getValueFromEvent={(e: any) => {
-                                   console.log("eee",)
-                                   if (e.file.status === 'done') {
-                                     return e.fileList.map((e: any) => {
-                                       return e.response
-                                     })
+                                   console.log("eee", e)
+                                   // if (e.file.status === 'done') {
+                                   return e.fileList.map((e: any) => {
+                                     return e.response || e
+                                   })
 
-                                   } else {
-                                     return []
-                                   }
+                                   // } else {
+                                   //   return []
+                                   // }
                                  }}
                                  noStyle>
 
