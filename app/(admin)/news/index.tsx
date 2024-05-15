@@ -119,8 +119,9 @@ export default function AddEditNews({id}: IProps) {
   });
 
 
-  const onchange = (values: any) => {
+  const onchange = (values: any,allValues:any) => {
     console.log("values", values)
+    console.log("allValues", allValues)
   }
   const onFinish = async (values: any) => {
     console.log("vv", values)
@@ -219,7 +220,7 @@ export default function AddEditNews({id}: IProps) {
                 "content": null,
                 "languageId": e.id,
                 "status": true,
-                "imageList": [],
+                "additionalImages": [],
                 "imageData": {
                   "size": null,
                   "originalFileName": null,
@@ -296,10 +297,18 @@ export default function AddEditNews({id}: IProps) {
                     const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
                     const dataImg = form.getFieldValue(['newsDetails', field.name, 'imageData']);
 
-                    const dataImgList = form.getFieldValue(['newsDetails', field.name, 'imageList']);
+                    const dataImgList = form.getFieldValue(['newsDetails', field.name, 'additionalImages']);
 
                     let fileList = dataImg?.url ? [dataImg] : [];
-                    let fileImagesList = !!dataImgList.length ? dataImgList : [];
+                    let fileImagesList = !!dataImgList?.length ? dataImgList.map((e:any)=>{
+                      return {
+                        uid: e.url,
+                        percent: 100,
+                        name: e.imageName,
+                        status: 'done',
+                        url: e.url,
+                      }
+                    }) : [];
 
                     // console.log("dataImg", dataImg)
                     console.log("fields[0].name+''+index", fields[0].name + '' + index)
@@ -375,7 +384,7 @@ export default function AddEditNews({id}: IProps) {
                       </Form.Item>
 
                       <Form.Item label={'image'}
-                                 name={[field.name, 'imageList']}
+                                 name={[field.name, 'additionalImages']}
                                  valuePropName="value"
                                  getValueFromEvent={(e: any) => {
                                    console.log("eee",)
@@ -385,13 +394,7 @@ export default function AddEditNews({id}: IProps) {
                                      })
 
                                    } else {
-                                     return {
-                                       "size": null,
-                                       "originalFileName": null,
-                                       "imageName": null,
-                                       "contentType": null,
-                                       "url": null
-                                     }
+                                     return []
                                    }
                                  }}
                                  noStyle>
