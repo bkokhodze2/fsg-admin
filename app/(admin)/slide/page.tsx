@@ -21,18 +21,18 @@ var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
 
 interface DataType {
-  slideId: number,
-  key: string | number,
-  title: string,
-  content: string,
-  imageUrl: string,
-  useStartDateTime: number,
-  useEndDateTime: number,
-  status: boolean,
+  slideId: number;
+  id?: number;
+  title: string;
+  description: string;
+  buttonText: string;
+  status: boolean;
+  alt: string;
+  webImageData: ImageData;
 }
 
+
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
-const PAGE_SIZE = 10;
 
 const fetchSlide = async (filter: IFilter) => {
   try {
@@ -62,17 +62,18 @@ interface IFilter {
   pageNumber?: number,
   pageSize?: number,
   slug?: undefined | string,
-  content?: undefined | string,
+  id?: undefined | number,
+  description?: undefined | string,
   title?: undefined | string,
+  buttonText?: undefined | string,
 }
 
 export default function Slide({searchParams}: IProps) {
-  const [isOpenFilter, setIsOpenFilter] = useState<boolean>(false);
   const [filter, setFilter] = useState<IFilter>({
     pageNumber: searchParams.pageNumber || undefined,
     pageSize: searchParams.pageSize || undefined,
     slug: searchParams.slug || undefined,
-    content: searchParams.content || undefined,
+    description: searchParams.description || undefined,
     title: searchParams.title || undefined,
   });
   const [form] = Form.useForm();
@@ -83,9 +84,12 @@ export default function Slide({searchParams}: IProps) {
     queryFn: () => fetchSlide(filter)
   });
 
+  console.log("სლაიდის data:", data)
+
+
   useEffect(() => {
     const clearFilter: any = Object.fromEntries(
-        Object.entries(filter).filter(([_, value]) => value !== undefined && value !== "")
+      Object.entries(filter).filter(([_, value]) => value !== undefined && value !== "")
     );
 
     const params = new URLSearchParams(clearFilter).toString();
@@ -104,9 +108,9 @@ export default function Slide({searchParams}: IProps) {
     },
     {
       title: 'Description',
-      dataIndex: 'content',
+      dataIndex: 'description',
       align: "center",
-      key: 'content',
+      key: 'description',
       render: (text) => (
           <Tooltip placement="bottom"
                    destroyTooltipOnHide={true}
@@ -135,10 +139,9 @@ export default function Slide({searchParams}: IProps) {
     },
     {
       title: 'Image',
-      dataIndex: 'imageUrl',
-      key: 'imageUrl',
+      dataIndex: 'webImageUrl',
+      key: 'webImageUrl',
       align: "center",
-
       render: (text) => (
           <Image
               width={100}
@@ -147,38 +150,6 @@ export default function Slide({searchParams}: IProps) {
           />
       )
     },
-    // {
-    //   title: 'start-end date',
-    //   dataIndex: 'useStartDateTime',
-    //   key: 'useStartDateTime',
-    //   align: "left",
-
-    //   render: (text, record) => (
-    //       <Space size="middle" className={"flex flex-wrap"}>
-    //         <p className={"whitespace-nowrap"}>
-    //           {dayjs(record.useStartDateTime, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
-    //         </p>
-
-    //         <p className={"whitespace-nowrap"}>
-    //           {dayjs(record.useEndDateTime, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
-    //         </p>
-    //       </Space>
-    //   )
-    // },
-    // {
-    //   title: 'End',
-    //   dataIndex: 'useEndDateTime',
-    //   key: 'useEndDateTime',
-    //   align: "center",
-    //
-    //   render: (text, record) => (
-    //       <Space size="middle">
-    //         <p className={"whitespace-nowrap"}>
-    //           {dayjs(text, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
-    //         </p>
-    //       </Space>
-    //   )
-    // },
     {
       title: 'Action',
       key: 'action',
@@ -187,16 +158,16 @@ export default function Slide({searchParams}: IProps) {
       render: (_, record) => (
           <Space size="middle">
             <Tooltip title="Edit" placement={'bottom'}>
-              <Link href={`/slide/edit/${record?.slideId}`}>
+              <Link href={`/slide/edit/${record?.id}`}>
                 <Button shape="circle" className={"flex items-center justify-center"} icon={<EditOutlined/>}/>
               </Link>
             </Tooltip>
 
             <Popconfirm
-                title="Delete the news"
-                description="Are you sure to delete this news?"
+                title="Delete the Slide"
+                description="Are you sure to delete this Slide"
                 okText={"Yes"}
-                onConfirm={() => handleDeleteNewsById(record)}
+                onConfirm={() => handleDeleteSlideById(record)}
                 icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
             >
               <Tooltip title="Delete" placement={'bottom'}>
@@ -210,10 +181,10 @@ export default function Slide({searchParams}: IProps) {
     },
   ];
 
-  const handleDeleteNewsById = async (record: DataType): Promise<void> => {
-    const {slideId, title} = record;
+  const handleDeleteSlideById = async (record: DataType): Promise<void> => {
+    const {id, title} = record;
     try {
-      const res = await axiosWithAuth.delete(`${BASEAPI}/slide-editor/delete-slide/${slideId}`);
+      const res = await axiosWithAuth.delete(`${BASEAPI}/slide-editor/delete-slide/${id}`);
       console.log(res);
 
       notification.open({
@@ -235,27 +206,6 @@ export default function Slide({searchParams}: IProps) {
       console.error('Erroreeeeeee-----------:', error.message); // Log the error
     }
   };
-  console.log("filter", filter)
-
-  const onSubmit = (values: IFilter) => {
-    setFilter((prevState: IFilter) => ({
-      ...prevState,
-      ...values,
-      pageNumber: 1,
-    }))
-
-    setIsOpenFilter(false)
-  }
-  const onReset = () => {
-    setFilter({pageNumber: filter.pageNumber, pageSize: filter.pageSize})
-
-    // Router.push(`/news?page=${page}`)
-    setIsOpenFilter(false)
-    setTimeout(() => {
-      form.resetFields();
-    }, 100)
-
-  }
 
   const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, extra) => {
     console.log('params', pagination);
@@ -276,13 +226,14 @@ export default function Slide({searchParams}: IProps) {
     }
   };
 
-  const getFilterCount = () => {
-    const filteredObject = Object.fromEntries(
-        Object.entries(filter).filter(([key, value]) => key !== 'pageSize' && key !== 'pageNumber' && value != undefined && value !== "")
-    );
-
-    return Object.keys(filteredObject).length;
-  }
+  const SlidesData = data?.map((item:any) => ({
+    key: item.id,
+    id: item.id,
+    title: item.slideDetails[0].title,
+    description: item.slideDetails[0].description,
+    webImageUrl: item.slideDetails[0].webImageData.url,
+    buttonText: item.slideDetails[0].buttonText,
+  }))
 
   return (
       <>
@@ -290,20 +241,6 @@ export default function Slide({searchParams}: IProps) {
           <h2 className={"text-[25px]"}>Slides</h2>
 
           <div className={"flex items-center flex-nowrap gap-x-4"}>
-            {getFilterCount() > 0 ?
-                <Button onClick={() => onReset()} type="default" className={"flex items-center gap-x-2"}>
-                  <ReloadOutlined/>
-                  <p>Reset filter</p>
-                </Button> : ""}
-
-
-            {/* <Badge count={getFilterCount()} showZero={false}>
-              <Button onClick={() => setIsOpenFilter(true)} type="primary" className={"flex items-center gap-x-2"}>
-                <FilterOutlined/>
-                <p>Filter</p>
-              </Button>
-            </Badge> */}
-
             <Link href={"/slide/add"}>
               <Button type="primary" className={"flex items-center gap-x-2"}>
                 <PlusOutlined/>
@@ -312,45 +249,6 @@ export default function Slide({searchParams}: IProps) {
             </Link>
           </div>
         </div>
-
-        {/* <Drawer
-            title={<div className={"flex items-center justify-between"}>
-              <h3>filter</h3>
-              <Tooltip title="Close" placement={'bottom'}>
-                <Button onClick={() => setIsOpenFilter(false)} shape="circle"
-                        className={"flex items-center justify-center"}
-                        icon={<CloseOutlined/>}/>
-              </Tooltip>
-            </div>}
-            placement={"right"}
-            closable={false}
-            onClose={() => setIsOpenFilter(false)}
-            open={isOpenFilter}
-        >
-          <Form
-              layout={"vertical"}
-              form={form}
-              onFinish={onSubmit}
-              initialValues={filter}
-          >
-            <Form.Item name={"slug"} label="slug">
-              <Input placeholder="input slug"/>
-            </Form.Item>
-
-            <Form.Item name={"title"} label="title">
-              <Input placeholder="input title"/>
-            </Form.Item>
-
-            <Form.Item name={"content"} label="content">
-              <Input placeholder="input title"/>
-            </Form.Item>
-
-            <div className={"gap-x-2 flex flex-nowrap"}>
-              <Button type="primary" htmlType={"submit"}>filter</Button>
-              <Button type="default" onClick={() => onReset()}>reset</Button>
-            </div>
-          </Form>
-        </Drawer> */}
 
         <Table
             onChange={onChange}
@@ -361,17 +259,8 @@ export default function Slide({searchParams}: IProps) {
             }}
             loading={isLoading}
             columns={columns}
-            pagination={{
-              total: data?.allRecordsSize,
-              current: filter.pageNumber,
-              pageSize: filter.pageSize || PAGE_SIZE,
-              showQuickJumper: false,
-              showSizeChanger: true,
-              position: ["bottomCenter"],
-              // itemRender: itemRender,
-            }}
-            dataSource={data?.data && [...data?.data]}
-            rowKey={"slideId"}
+            dataSource={SlidesData}
+            rowKey={"id"}
         >
         </Table>
       </>
