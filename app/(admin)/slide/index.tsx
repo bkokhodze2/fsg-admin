@@ -305,11 +305,11 @@ export default function AddEditSlide({id}: IProps) {
                     const languageId = form.getFieldValue(['slideDetails', field.name, 'languageId'])
                     const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
                     const dataImg = form.getFieldValue(['slideDetails', field.name, 'webImageData']);
-                    const mobileDataImg = form.getFieldValue(['slideDetails', field.name, 'mobileImageData']);
-                    let fileList = dataImg?.url && mobileDataImg ? [dataImg, mobileDataImg] : []
+                    const dataImgMob = form.getFieldValue(['slideDetails', field.name, 'mobileImageData']);
 
-                    // console.log("dataImg", dataImg)
-                    console.log("fields[0].name+''+index", fields[0].name + '' + index)
+                    let fileList = dataImg?.url ? [dataImg] : [];
+                    let fileListMob = dataImgMob?.url ? [dataImgMob] : [];
+
                     return <Card
                         key={fields[0].name + '' + index}
                         className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2]"}>
@@ -446,7 +446,7 @@ export default function AddEditSlide({id}: IProps) {
 
                         <Upload.Dragger
                             // fileList={getFileList()}
-                            defaultFileList={fileList}
+                            defaultFileList={fileListMob}
                             //     uid: '-1',
                             // name: 'image.png',
                             // status: 'done',
