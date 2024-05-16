@@ -65,7 +65,7 @@ const fetchLanguages = async () => {
 }
 const fetchCategories = async () => {
   try {
-    const {data} = await axiosWithAuth.get(`${BASEAPI}/news-editor/get-news-categories`);
+    const {data} = await axiosWithAuth.get(`${BASEAPI}/slide-editor/get-slide-categories`);
     return data;
   } catch (error: any) {
     console.log("errr", error)
@@ -79,7 +79,7 @@ const fetchCategories = async () => {
 }
 const fetchSlideDetailsById = async (id: number) => {
   try {
-    const {data} = await axiosWithAuth.get(`/news-editor/get-news-info-detail`, {
+    const {data} = await axiosWithAuth.get(`/slide-editor/get-slide-detail`, {
       params: {
         slideId: id
       }
@@ -141,7 +141,7 @@ export default function AddEditSlide({id}: IProps) {
 
 
     try {
-      const res = await axiosWithAuth.post('/#', modifiedValues)
+      const res = await axiosWithAuth.post('/slide-editor/add-or-modify-slide', modifiedValues)
       if (res.status == 200) {
         notification.open({
           type: 'success',
@@ -171,7 +171,7 @@ export default function AddEditSlide({id}: IProps) {
     formData.append("imageFile", file);
 
     try {
-      const res = await axiosWithAuth.post(`/news-editor/upload-news-image`, formData, config)
+      const res = await axiosWithAuth.post(`/slide-editor/upload-slide-image`, formData, config)
       if (res.status == 200) {
         onSuccess(res.data)
       }
@@ -334,13 +334,6 @@ export default function AddEditSlide({id}: IProps) {
                           label={'alt'}
                       >
                         <Input placeholder="alt"/>
-                      </Form.Item>
-
-                      <Form.Item
-                          name={[field.name, 'videoLink']}
-                          label={'video link'}
-                      >
-                        <Input placeholder="video link"/>
                       </Form.Item>
 
                       <div className={"flex gap-x-4 w-full"}>

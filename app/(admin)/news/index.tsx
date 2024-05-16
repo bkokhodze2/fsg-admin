@@ -241,7 +241,8 @@ export default function AddEditNews({id}: IProps) {
               }
             })
         ,
-        "status": true
+        "status": true,
+        "videoLink": null,
       }
 
 
@@ -295,6 +296,13 @@ export default function AddEditNews({id}: IProps) {
               <Radio.Button value={true}>active</Radio.Button>
               <Radio.Button className={""} value={false}>disable</Radio.Button>
             </Radio.Group>
+          </Form.Item>
+
+          <Form.Item
+              name={"videoLink"}
+              label={'video link'}
+          >
+            <Input placeholder="video link"/>
           </Form.Item>
 
           <Form.List

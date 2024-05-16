@@ -21,7 +21,7 @@ var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
 
 interface DataType {
-  newsId: number,
+  slideId: number,
   key: string | number,
   title: string,
   content: string,
@@ -36,11 +36,11 @@ const PAGE_SIZE = 10;
 
 const fetchSlide = async (filter: IFilter) => {
   try {
-    const {data} = await axiosWithAuth.post(`${BASEAPI}/news-info/get-news`, {
+    const {data} = await axiosWithAuth.post(`${BASEAPI}/slide-editor/get-slides`, {
       ...filter,
       languageId: 1,
-      pageSize: parseInt(String(filter.pageSize)) || PAGE_SIZE,
-      pageNumber: filter?.pageNumber ? (filter?.pageNumber - 1) : 0,
+      // pageSize: parseInt(String(filter.pageSize)) || PAGE_SIZE,
+      // pageNumber: filter?.pageNumber ? (filter?.pageNumber - 1) : 0,
     });
     return data;
   } catch (error: any) {
@@ -79,7 +79,7 @@ export default function Slide({searchParams}: IProps) {
   const Router = useRouter();
 
   const {data, isLoading, isError, refetch} = useQuery({
-    queryKey: ["news", filter],
+    queryKey: ["slide", filter],
     queryFn: () => fetchSlide(filter)
   });
 
@@ -187,7 +187,7 @@ export default function Slide({searchParams}: IProps) {
       render: (_, record) => (
           <Space size="middle">
             <Tooltip title="Edit" placement={'bottom'}>
-              <Link href={`/slide/edit/${record?.newsId}`}>
+              <Link href={`/slide/edit/${record?.slideId}`}>
                 <Button shape="circle" className={"flex items-center justify-center"} icon={<EditOutlined/>}/>
               </Link>
             </Tooltip>
@@ -211,9 +211,9 @@ export default function Slide({searchParams}: IProps) {
   ];
 
   const handleDeleteNewsById = async (record: DataType): Promise<void> => {
-    const {newsId, title} = record;
+    const {slideId, title} = record;
     try {
-      const res = await axiosWithAuth.delete(`${BASEAPI}/news-editor/delete-news/${newsId}`);
+      const res = await axiosWithAuth.delete(`${BASEAPI}/slide-editor/delete-slide/${slideId}`);
       console.log(res);
 
       notification.open({
@@ -371,7 +371,7 @@ export default function Slide({searchParams}: IProps) {
               // itemRender: itemRender,
             }}
             dataSource={data?.data && [...data?.data]}
-            rowKey={"newsId"}
+            rowKey={"slideId"}
         >
         </Table>
       </>
