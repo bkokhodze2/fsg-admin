@@ -5,7 +5,7 @@ import {useQuery} from "@tanstack/react-query";
 import dayjs, {unix} from "dayjs";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import {useRouter, useParams} from "next/navigation";
+import {useRouter} from "next/navigation";
 import React, {useState} from "react";
 import {
   Button, Image,
@@ -65,7 +65,7 @@ const fetchLanguages = async () => {
 }
 const fetchCategories = async () => {
   try {
-    const {data} = await axiosWithAuth.get(`${BASEAPI}/news-editor/get-news-categories`);
+    const {data} = await axiosWithAuth.get(`${BASEAPI}/slide-editor/get-slide-categories`);
     return data;
   } catch (error: any) {
     console.log("errr", error)
@@ -77,11 +77,11 @@ const fetchCategories = async () => {
     });
   }
 }
-const fetchNewsDetailsById = async (id: number) => {
+const fetchSlideDetailsById = async (id: number) => {
   try {
-    const {data} = await axiosWithAuth.get(`/news-editor/get-news-info-detail`, {
+    const {data} = await axiosWithAuth.get(`/slide-editor/get-slide-detail`, {
       params: {
-        newsId: id
+        slideId: id
       }
     });
 
@@ -91,9 +91,9 @@ const fetchNewsDetailsById = async (id: number) => {
     console.log("errr", error)
     notification.open({
       type: 'error',
-      message: `news`,
+      message: `slide`,
       description:
-          'Something went wrong while fetching news details',
+          'Something went wrong while fetching slide details',
     });
   }
 }
@@ -102,12 +102,9 @@ interface IProps {
   id?: number
 }
 
-export default function AddEditNews({id}: IProps) {
+export default function AddEditSlide({id}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
-  const Params = useParams();
-
-  console.log("Params", Params)
 
   const isEditPage = !!id;
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -115,21 +112,15 @@ export default function AddEditNews({id}: IProps) {
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
 
   const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
-
-  const {data: dataNewsDetails, refetch} = useQuery({
-    queryKey: ['newsDetails', id],
-    queryFn: () => fetchNewsDetailsById(id as number),
-    enabled: !!id,
-    retry: 1,
-    initialData: undefined,
-    // retryDelay: 3000,
-    staleTime: 0,
+  const {data: dataSlideDetails} = useQuery({
+    queryKey: ['slideDetails', id],
+    queryFn: () => fetchSlideDetailsById(id as number),
+    enabled: !!id
   });
 
 
-  const onchange = (values: any, allValues: any) => {
+  const onchange = (values: any) => {
     console.log("values", values)
-    console.log("allValues", allValues)
   }
   const onFinish = async (values: any) => {
     console.log("vv", values)
@@ -138,26 +129,25 @@ export default function AddEditNews({id}: IProps) {
     const modifiedValues = {
       ...values,
       id: isEditPage ? id : undefined,
-      newsDetails: values.newsDetails.map((detail: any) => ({
+      slideDetails: values.slideDetails.map((detail: any) => ({
         ...detail,
-        useStartDateTimeMsec: dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-        useStartDateTime: detail.useStartDateTimeMsec ? dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
-        useEndDateTimeMsec: dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-        useEndDateTime: detail.useEndDateTimeMsec ? dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
+        // useStartDateTimeMsec: dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
+        // useStartDateTime: detail.useStartDateTimeMsec ? dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
+        // useEndDateTimeMsec: dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
+        // useEndDateTime: detail.useEndDateTimeMsec ? dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
       }))
     };
     console.log("modifiedValues", modifiedValues)
 
 
     try {
-      const res = await axiosWithAuth.post('/news-editor/add-or-modify-news', modifiedValues)
+      const res = await axiosWithAuth.post('/slide-editor/add-or-modify-slide', modifiedValues)
       if (res.status == 200) {
         notification.open({
           type: 'success',
-          message: `news was added`,
+          message: `slide was added`,
         });
-       await refetch();
-        Router.push("/news")
+        Router.push("/slide")
       }
     } catch (e: any) {
       console.log("e",)
@@ -181,7 +171,7 @@ export default function AddEditNews({id}: IProps) {
     formData.append("imageFile", file);
 
     try {
-      const res = await axiosWithAuth.post(`/news-editor/upload-news-image`, formData, config)
+      const res = await axiosWithAuth.post(`/slide-editor/upload-slide-image`, formData, config)
       if (res.status == 200) {
         onSuccess(res.data)
       }
@@ -198,13 +188,12 @@ export default function AddEditNews({id}: IProps) {
   };
   const getDefaultValue = () => {
     if (isEditPage) {
-      console.log("dataNewsDetails", dataNewsDetails)
       const newData = {
-        ...dataNewsDetails,
-        newsDetails: dataNewsDetails.newsDetails.map((detail: any) => ({
+        ...dataSlideDetails,
+        slideDetails: dataSlideDetails.slideDetails.map((detail: any) => ({
           ...detail,
-          useStartDateTimeMsec: detail.useStartDateTimeMsec ? dayjs.unix(detail.useStartDateTimeMsec / 1000) : null,
-          useEndDateTimeMsec: detail.useEndDateTimeMsec ? dayjs.unix(detail.useEndDateTimeMsec / 1000) : null,
+          // useStartDateTimeMsec: detail.useStartDateTimeMsec ? dayjs.unix(detail.useStartDateTimeMsec / 1000) : null,
+          // useEndDateTimeMsec: detail.useEndDateTimeMsec ? dayjs.unix(detail.useEndDateTimeMsec / 1000) : null,
         }))
       };
 
@@ -216,33 +205,40 @@ export default function AddEditNews({id}: IProps) {
 
       return {
         "categoryIdList": [1],
-        "newsDetails":
+        "slideDetails":
             activeLanguages?.map(e => {
               return {
-                "slug": null,
-                "useStartDateTime": null,
-                "useEndDateTime": null,
-                // "newsId": 0,
-                // "newsDetailId": null,
-                "useStartDateTimeMsec": null,
-                "useEndDateTimeMsec": null,
+                // "slug": null,
+                // "useStartDateTime": null,
+                // "useEndDateTime": null,
+                // "slideId": 0,
+                // "slideDetailId": null,
+                // "useStartDateTimeMsec": null,
+                // "useEndDateTimeMsec": null,
                 "title": null,
-                "content": null,
+                "description": null,
+                "alt": null,
+                // "content": null,
                 "languageId": e.id,
-                "status": true,
-                "additionalImages": [],
-                "imageData": {
+                // "status": true,
+                "webImageData": {
                   "size": null,
                   "originalFileName": null,
                   "imageName": null,
                   "contentType": null,
                   "url": null
-                }
+                },
+                "mobileImageData": {
+                  "size": null,
+                  "originalFileName": null,
+                  "imageName": null,
+                  "contentType": null,
+                  "url": null
+                },
               }
             })
         ,
-        "status": true,
-        "videoLink": null,
+        // "status": true
       }
 
 
@@ -263,10 +259,10 @@ export default function AddEditNews({id}: IProps) {
           {/*</Tooltip>*/}
 
 
-          <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit News" : "Add news"}</h2>
+          <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Slide" : "Add Slide"}</h2>
         </div>
         <Divider className={"my-3"}/>
-        {((isEditPage && dataNewsDetails) || (!isEditPage && dataLanguages)) && <Form
+        {((isEditPage && dataSlideDetails) || (!isEditPage && dataLanguages)) && <Form
             form={form}
             layout="vertical"
             onValuesChange={onchange}
@@ -290,42 +286,29 @@ export default function AddEditNews({id}: IProps) {
             </Select>
           </Form.Item>
 
-          <Form.Item className={"mb-0"} name={'status'} label="status"
+          {/* <Form.Item className={"mb-0"} name={'status'} label="status"
                      valuePropName={"value"}>
             <Radio.Group buttonStyle="solid">
               <Radio.Button value={true}>active</Radio.Button>
               <Radio.Button className={""} value={false}>disable</Radio.Button>
             </Radio.Group>
-          </Form.Item>
+          </Form.Item> */}
 
-          <Form.Item
-              name={"videoLink"}
-              label={'video link'}
-          >
-            <Input placeholder="video link"/>
-          </Form.Item>
 
           <Form.List
-              name="newsDetails">
+              name="slideDetails"
+          >
             {(fields, v) => {
               return <div className={"flex flex-col gap-y-5"}>
                 {
                   fields.map((field, index, c) => {
-                    const languageId = form.getFieldValue(['newsDetails', field.name, 'languageId'])
+                    const languageId = form.getFieldValue(['slideDetails', field.name, 'languageId'])
                     const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
-                    const dataImg = form.getFieldValue(['newsDetails', field.name, 'imageData']);
-
-                    const dataImgList = form.getFieldValue(['newsDetails', field.name, 'additionalImages']);
-
-                    console.log("----dataImgList", dataImgList, !!dataImgList?.length)
+                    const dataImg = form.getFieldValue(['slideDetails', field.name, 'webImageData']);
+                    const dataImgMob = form.getFieldValue(['slideDetails', field.name, 'mobileImageData']);
 
                     let fileList = dataImg?.url ? [dataImg] : [];
-                    let fileImagesList = !!dataImgList?.length ? dataImgList.map((e: any) => {
-                      return {
-                        ...e,
-                        uid: e.url,
-                      }
-                    }) : [];
+                    let fileListMob = dataImgMob?.url ? [dataImgMob] : [];
 
                     return <Card
                         key={fields[0].name + '' + index}
@@ -340,12 +323,39 @@ export default function AddEditNews({id}: IProps) {
                         <Input placeholder="title"/>
                       </Form.Item>
                       <Form.Item
-                          name={[field.name, 'slug']}
-                          label={'slug'}
+                          name={[field.name, 'description']}
+                          label={'description'}
                       >
-                        <Input placeholder="slug"/>
+                        <Input placeholder="description"/>
                       </Form.Item>
+
                       <Form.Item
+                          name={[field.name, 'alt']}
+                          label={'alt'}
+                      >
+                        <Input placeholder="alt"/>
+                      </Form.Item>
+
+                      <div className={"flex gap-x-4 w-full"}>
+                        <Form.Item
+                            name={[field.name, 'buttonText']}
+                            label={'button text'}
+                            className="w-1/2"
+                        >
+                            <Input placeholder="button text" />
+                        </Form.Item>
+
+                        <Form.Item
+                            name={[field.name, 'buttonLink']}
+                            label={'button link'}
+                            className="w-1/2"
+                        >
+                            <Input placeholder="button link" />
+                        </Form.Item>
+                      </div>
+
+            
+                      {/* <Form.Item
                           name={[field.name, 'content']}
                           label={`Content`}
                           valuePropName="value"
@@ -354,27 +364,29 @@ export default function AddEditNews({id}: IProps) {
                             modules={modules}
                             className={`textEditor border markGeo`}
                         />
-                      </Form.Item>
+                      </Form.Item> */}
 
-                      <Form.Item label={'image'}
-                                 name={[field.name, 'imageData']}
-                                 valuePropName="value"
-                                 getValueFromEvent={(e: any) => {
-                                   console.log("eee", e)
-                                   if (e.file.status === 'done') {
-                                     return e.file.response
+                      <Form.Item
+                        label={'image'}
+                        name={[field.name, 'webImageData']}
+                        valuePropName="value"
+                        getValueFromEvent={(e: any) => {
+                          console.log("eee", e)
+                          if (e.file.status === 'done') {
+                            return e.file.response
 
-                                   } else {
-                                     return {
-                                       "size": null,
-                                       "originalFileName": null,
-                                       "imageName": null,
-                                       "contentType": null,
-                                       "url": null
-                                     }
-                                   }
-                                 }}
-                                 noStyle>
+                          } else {
+                            return {
+                              "size": null,
+                              "originalFileName": null,
+                              "imageName": null,
+                              "contentType": null,
+                              "url": null
+                            }
+                          }
+                        }}
+                        noStyle
+                      >
 
                         <Upload.Dragger
                             // fileList={getFileList()}
@@ -394,48 +406,9 @@ export default function AddEditNews({id}: IProps) {
                             <InboxOutlined/>
                           </p>
 
-                          <p className="ant-upload-text">Click or drag file to this area to upload main image</p>
-                        </Upload.Dragger>
-                      </Form.Item>
-
-                      <Form.Item label={'image'}
-                                 name={[field.name, 'additionalImages']}
-                                 valuePropName="value"
-                                 getValueFromEvent={(e: any) => {
-                                   console.log("eee", e)
-                                   // if (e.file.status === 'done') {
-                                   return e.fileList.map((e: any) => {
-                                     return e.response || e
-                                   })
-
-                                   // } else {
-                                   //   return []
-                                   // }
-                                 }}
-                                 noStyle>
-
-                        <Upload.Dragger
-                            // fileList={getFileList()}
-                            defaultFileList={fileImagesList}
-                            //     uid: '-1',
-                            // name: 'image.png',
-                            // status: 'done',
-                            // url: data?.url,
-                            listType={"picture-card"}
-                            showUploadList={true}
-                            maxCount={12}
-                            multiple={true}
-                            customRequest={(e) => uploadImage(e)}
-                            onPreview={(e) => handlePreview(e)}
-                        >
-                          <p className="ant-upload-drag-icon">
-                            <InboxOutlined/>
-                          </p>
-
                           <p className="ant-upload-text">Click or drag file to this area to upload</p>
                         </Upload.Dragger>
                       </Form.Item>
-
                       {previewImage && (
                           <Image
                               wrapperStyle={{display: 'none'}}
@@ -448,16 +421,72 @@ export default function AddEditNews({id}: IProps) {
                           />
                       )}
 
-                      <Space className={"w-full mt-2 flex items-center justify-between"}>
-                        <Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"
+
+                      <Form.Item 
+                            label={'image'}
+                            name={[field.name, 'mobileImageData']}
+                            valuePropName="value"
+                            getValueFromEvent={(e: any) => {
+                            console.log("eee", e)
+                            if (e.file.status === 'done') {
+                                return e.file.response
+
+                            } else {
+                                return {
+                                "size": null,
+                                "originalFileName": null,
+                                "imageName": null,
+                                "contentType": null,
+                                "url": null
+                                }
+                            }
+                            }}
+                            noStyle
+                        >
+
+                        <Upload.Dragger
+                            // fileList={getFileList()}
+                            defaultFileList={fileListMob}
+                            //     uid: '-1',
+                            // name: 'image.png',
+                            // status: 'done',
+                            // url: data?.url,
+                            listType={"picture-card"}
+                            showUploadList={true}
+                            maxCount={1}
+                            multiple={false}
+                            customRequest={(e) => uploadImage(e)}
+                            onPreview={(e) => handlePreview(e)}
+                        >
+                          <p className="ant-upload-drag-icon">
+                            <InboxOutlined/>
+                          </p>
+
+                          <p className="ant-upload-text">Click or drag file to this area to upload mobile image</p>
+                        </Upload.Dragger>
+                      </Form.Item>
+                      {previewImage && (
+                          <Image
+                              wrapperStyle={{display: 'none'}}
+                              preview={{
+                                visible: previewOpen,
+                                onVisibleChange: (visible) => setPreviewOpen(visible),
+                                afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                              }}
+                              src={previewImage}
+                          />
+                      )}
+
+                      {/* <Space className={"w-full mt-2 flex items-center justify-between"}> */}
+                        {/* <Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"
                                    valuePropName={"value"}>
                           <Radio.Group buttonStyle="solid">
                             <Radio.Button value={true}>active</Radio.Button>
                             <Radio.Button className={""} value={false}>disable</Radio.Button>
                           </Radio.Group>
-                        </Form.Item>
+                        </Form.Item> */}
 
-                        <div className={"flex gap-x-2 flex-nowrap"}>
+                        {/* <div className={"flex gap-x-2 flex-nowrap"}>
                           <Form.Item
                               // initialValue={dayjs('YYYY-MM-DD HH:mm:ss')}
                               // valuePropName={"aba"}
@@ -487,13 +516,13 @@ export default function AddEditNews({id}: IProps) {
                               } label="useEndDate">
                             <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
                           </Form.Item>
-                        </div>
+                        </div> */}
                         {/*<Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"*/}
                         {/*           valuePropName={"checked"}>*/}
                         {/*  <Checkbox/>*/}
                         {/*</Form.Item>*/}
 
-                      </Space>
+                      {/* </Space> */}
                     </Card>
                   })}
               </div>

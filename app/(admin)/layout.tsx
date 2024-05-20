@@ -1,13 +1,10 @@
 'use client'
-import {removeFromStorage} from "@/services/auth-token.service";
 import {authService} from "@/services/auth.service";
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {Layout, Menu, MenuProps, theme} from 'antd';
 
 import {
-  DesktopOutlined, FileOutlined,
+  DesktopOutlined, FileOutlined, FolderOpenOutlined,
   TeamOutlined,
-  UserOutlined,
 } from '@ant-design/icons';
 import Link from "next/link";
 import {useState} from "react";
@@ -30,21 +27,36 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem((<Link href={"/news"}>News</Link>), '1', <FileOutlined/>),
-  getItem('Option 2', '2', <DesktopOutlined/>),
-  getItem('User', 'sub1', <UserOutlined/>, [
-    getItem('Tom', '3'),
-    getItem('Bill', '4'),
-    getItem('Alex', '5'),
+  getItem('Products & Services', '1', <FolderOpenOutlined/>, [
+    getItem((<Link href={"/E-card"}>E-card</Link>), '1-1',),
+    getItem((<Link href={"/E-chargers"}>E-chargers</Link>), '1-2'),
+    getItem((<Link href={"/self-service"}>Self service</Link>), '1-3'),
+    getItem((<Link href={"/service-centers"}>Service centers</Link>), '1-4'),
+    getItem((<Link href={"/way-mart"}>Way mart</Link>), '1-5'),
+    getItem((<Link href={"/quality"}>Quality</Link>), '1-6'),
+    getItem((<Link href={"/price-archive"}>Price archive</Link>), '1-7'),
+    getItem((<Link href={"/locations"}>Locations </Link>), '1-8'),
   ]),
-  getItem('Team', 'sub2', <TeamOutlined/>,
-      [getItem('Team 1', '6'), getItem('Team 2', '8')
-      ]),
+  getItem('Company', '2', <FolderOpenOutlined/>, [
+    getItem((<Link href={"/about-company"}>About Company</Link>), '2-1',),
+    getItem((<Link href={"/socar-global"}>SOCAR Global</Link>), '2-2'),
+    getItem((<Link href={"/management"}>Management</Link>), '2-3'),
+  ]),
+  getItem('Business', '3', <FolderOpenOutlined/>, [
+    getItem((<Link href={"/about-company"}>Corporate Services</Link>), '3-1',),
+    getItem((<Link href={"/corporate-cabinet"}>Corporate Cabinet</Link>), '3-2'),
+    getItem((<Link href={"/tenders"}>Tenders</Link>), '3-3'),
+  ]),
+
+  getItem((<Link href={"/slide"}>Main Slide</Link>), '4', <DesktopOutlined/>),
+
+  getItem((<Link href={"/news"}>News</Link>), '5', <FileOutlined/>),
+
 ];
 
 const items2: MenuItem[] = [
   {type: 'divider'},
-  getItem((<div onClick={() => authService.logout()}>Log out</div>), '1', <FileOutlined/>),
+  getItem((<div onClick={() => authService.logout()}>Log out</div>), '0', <FileOutlined/>),
 ];
 
 
@@ -66,14 +78,14 @@ export default function AdminLayout({children,}: Readonly<{ children: React.Reac
                 className="demo-logo-vertical min-h-[80px] bg-[gray] mx-[3px] roundex-xl flex items-center justify-center">
               <h1 className={"text-[#FFFFFF]"}>logo</h1>
             </div>
-            <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items}/>
+            <Menu theme="dark" mode="vertical" defaultSelectedKeys={['']} items={items}/>
           </div>
 
           <Menu theme="dark" mode="inline" items={items2}/>
         </Sider>
         <Layout className={"overflow-y-scroll min-h-[100vh]"}
                 style={{
-                  transition:'0.2s',
+                  transition: '0.2s',
                   marginLeft: collapsed ? "80px" : "200px"
                 }}
         >
