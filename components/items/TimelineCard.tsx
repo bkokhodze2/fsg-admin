@@ -111,7 +111,7 @@ const CardItem: React.FC<ComponentProps> = ({ data, index, refetchCardsNewData }
           </div>
 
           {imageData &&
-              <img alt={imageData.originalFileName} src={imageData.url} className="mt-4 w-full h-40 rounded-lg"/>}
+              <img alt={imageData.originalFileName} src={imageData.url} className="mt-4 w-full object-cover h-48 rounded-lg"/>}
         </Card>
       </div>
   );
