@@ -21,7 +21,7 @@ var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
 
 interface DataType {
-  slideId: number;
+  timelineId: number;
   id?: number;
   title: string;
   description: string;
@@ -34,9 +34,9 @@ interface DataType {
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 
-const fetchSlide = async (filter: IFilter) => {
+const fetchTimeline = async (filter: IFilter) => {
   try {
-    const {data} = await axiosWithAuth.post(`${BASEAPI}/api/timeline-editor/get-timelines`, {
+    const {data} = await axiosWithAuth.post(`${BASEAPI}/timeline-editor/get-timelines`, {
       ...filter,
       languageId: 1,
       // pageSize: parseInt(String(filter.pageSize)) || PAGE_SIZE,
@@ -46,9 +46,9 @@ const fetchSlide = async (filter: IFilter) => {
   } catch (error: any) {
     notification.open({
       type: 'error',
-      message: `slide`,
+      message: `timeline`,
       description:
-          'Something went wrong while fetching slide',
+          'Something went wrong while fetching timeline',
     });
 
   }
@@ -68,7 +68,7 @@ interface IFilter {
   buttonText?: undefined | string,
 }
 
-export default function Slide({searchParams}: IProps) {
+export default function Timeline({searchParams}: IProps) {
   const [filter, setFilter] = useState<IFilter>({
     pageNumber: searchParams.pageNumber || undefined,
     pageSize: searchParams.pageSize || undefined,
@@ -80,11 +80,11 @@ export default function Slide({searchParams}: IProps) {
   const Router = useRouter();
 
   const {data, isLoading, isError, refetch} = useQuery({
-    queryKey: ["slide", filter],
-    queryFn: () => fetchSlide(filter)
+    queryKey: ["timeline", filter],
+    queryFn: () => fetchTimeline(filter)
   });
 
-  console.log("სლაიდის data:", data)
+  console.log("timeline data:", data)
 
 
   useEffect(() => {
@@ -138,19 +138,6 @@ export default function Slide({searchParams}: IProps) {
       render: (text) => <p>{text}</p>,
     },
     {
-      title: 'Image',
-      dataIndex: 'webImageUrl',
-      key: 'webImageUrl',
-      align: "center",
-      render: (text) => (
-          <Image
-              width={100}
-              src={text}
-              alt={"slide image"}
-          />
-      )
-    },
-    {
       title: 'Action',
       key: 'action',
       width: "130px",
@@ -158,16 +145,16 @@ export default function Slide({searchParams}: IProps) {
       render: (_, record) => (
           <Space size="middle">
             <Tooltip title="Edit" placement={'bottom'}>
-              <Link href={`/slide/edit/${record?.id}`}>
+              <Link href={`/timeline/edit/${record?.id}`}>
                 <Button shape="circle" className={"flex items-center justify-center"} icon={<EditOutlined/>}/>
               </Link>
             </Tooltip>
 
             <Popconfirm
-                title="Delete the Slide"
-                description="Are you sure to delete this Slide"
+                title="Delete the Timeline"
+                description="Are you sure to delete this Timeline"
                 okText={"Yes"}
-                onConfirm={() => handleDeleteSlideById(record)}
+                onConfirm={() => handleDeleteTimelineById(record)}
                 icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
             >
               <Tooltip title="Delete" placement={'bottom'}>
@@ -181,17 +168,17 @@ export default function Slide({searchParams}: IProps) {
     },
   ];
 
-  const handleDeleteSlideById = async (record: DataType): Promise<void> => {
+  const handleDeleteTimelineById = async (record: DataType): Promise<void> => {
     const {id, title} = record;
     try {
-      const res = await axiosWithAuth.delete(`${BASEAPI}/slide-editor/delete-slide/${id}`);
+      const res = await axiosWithAuth.delete(`${BASEAPI}/timeline-editor/delete-timeline/${id}`);
       console.log(res);
 
       notification.open({
         type: 'success',
-        message: `slide - ${title}`,
+        message: `timeline - ${title}`,
         description:
-            'slide successfully deleted',
+            'timeline successfully deleted',
       });
 
       await refetch()
@@ -199,9 +186,9 @@ export default function Slide({searchParams}: IProps) {
     } catch (error: any) {
       notification.open({
         type: 'error',
-        message: `slide - ${title}`,
+        message: `timeline - ${title}`,
         description:
-            'Something went wrong while deleting slide',
+            'Something went wrong while deleting timeline',
       });
       console.error('Erroreeeeeee-----------:', error.message); // Log the error
     }
@@ -226,13 +213,15 @@ export default function Slide({searchParams}: IProps) {
     }
   };
 
-  const SlidesData = data?.map((item:any) => ({
+  // console.log('dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', data)
+
+  const TimelinesData = data?.map((item:any) => ({
     key: item.id,
     id: item.id,
-    title: item.slideDetails[0].title,
-    description: item.slideDetails[0].description,
-    webImageUrl: item.slideDetails[0].webImageData.url,
-    buttonText: item.slideDetails[0].buttonText,
+    title: item.details[0].title,
+    description: item.details[0].subTitle,
+    // webImageUrl: item.timelineDetails[0].webImageData.url,
+    buttonText: item.details[0].buttonText,
   }))
 
   return (
@@ -259,7 +248,7 @@ export default function Slide({searchParams}: IProps) {
             }}
             loading={isLoading}
             columns={columns}
-            dataSource={SlidesData}
+            dataSource={TimelinesData}
             rowKey={"id"}
         >
         </Table>

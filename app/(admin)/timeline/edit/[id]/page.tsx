@@ -14,7 +14,6 @@ interface IPageProps {
 
 export default function TimelineEdit({params, searchParams}: IPageProps) {
 
-
   return (
       <AddEditTimeline id={params.id as number}/>
   );
