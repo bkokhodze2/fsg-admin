@@ -1,16 +1,13 @@
 'use client'
 import {axiosWithAuth} from "@/configs/axios";
 import {
-  ArrowLeftOutlined, CloseCircleOutlined, CloseOutlined,
   DeleteOutlined,
   EditOutlined,
-  FilterOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
-  ReloadOutlined
 } from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
-import {Button, notification, Popconfirm, Space, Table, Image, Tooltip, Drawer, Badge, Form, Input} from 'antd';
+import {Button, notification, Popconfirm, Space, Table, Tooltip, Form} from 'antd';
 import type {TableProps} from 'antd';
 import dayjs from "dayjs";
 import Link from "next/link";
@@ -19,17 +16,6 @@ import React, {useEffect, useState} from "react";
 
 var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
-
-interface DataType {
-  timelineId: number;
-  id?: number;
-  title: string;
-  description: string;
-  buttonText: string;
-  status: boolean;
-  alt: string;
-  webImageData: ImageData;
-}
 
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
@@ -52,6 +38,52 @@ const fetchTimeline = async (filter: IFilter) => {
     });
 
   }
+}
+const fetchCategories = async () => {
+  try {
+    const {data} = await axiosWithAuth.get(`${BASEAPI}/timeline-editor/get-timeline-categories`);
+    return data;
+  } catch (error: any) {
+    console.log("errr", error)
+    notification.open({
+      type: 'error',
+      message: `categories`,
+      description:
+          'Something went wrong while fetching categories',
+    });
+  }
+}
+
+interface DataType {
+  "id": number,
+  "categoryIdList": number[],
+  "status": null,
+  "timelineDetails": null,
+  "details":
+      {
+        "timelineLangDetailId": number,
+        "timelineId": number,
+        "title": string,
+        "subTitle": string,
+        "navText": string,
+        "navLink": string,
+        "buttonLink": string,
+        "buttonText": string,
+        "languageId": number,
+        "useStartDateTime": string,
+        "useEndDateTime": string,
+        "useStartDateTimeMsec": number,
+        "useEndDateTimeMsec": number,
+        "status": null,
+        "fileDTO": {
+          "size": null,
+          "originalFileName": null,
+          "fileName": null,
+          "contentType": null,
+          "url": null
+        }
+      }[]
+
 }
 
 interface IProps {
@@ -84,12 +116,11 @@ export default function Timeline({searchParams}: IProps) {
     queryFn: () => fetchTimeline(filter)
   });
 
-  console.log("timeline data:", data)
-
+  const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
 
   useEffect(() => {
     const clearFilter: any = Object.fromEntries(
-      Object.entries(filter).filter(([_, value]) => value !== undefined && value !== "")
+        Object.entries(filter).filter(([_, value]) => value !== undefined && value !== "")
     );
 
     const params = new URLSearchParams(clearFilter).toString();
@@ -100,42 +131,33 @@ export default function Timeline({searchParams}: IProps) {
 
   const columns: TableProps<DataType>['columns'] = [
     {
-      title: 'Title',
-      dataIndex: 'title',
-      key: 'title',
+      title: 'details',
+      dataIndex: 'details',
       align: "center",
-      render: (text) => <p>{text}</p>,
+      key: 'details',
+      render: (text, obj) => {
+        console.log("obj", obj)
+        return <p>{obj?.details?.[0]?.title}</p>
+      }
     },
     {
-      title: 'Description',
-      dataIndex: 'description',
+      title: 'details',
+      dataIndex: 'details',
       align: "center",
-      key: 'description',
-      render: (text) => (
-          <Tooltip placement="bottom"
-                   destroyTooltipOnHide={true}
-                   overlayInnerStyle={{
-                     width: "500px",
-                     maxHeight: "600px",
-                     overflowY: "scroll"
-                   }}
-                   overlayClassName={"w-[500px]"}
-                   className={""}
-                   title={() => <div
-                       dangerouslySetInnerHTML={{__html: text}}/>}>
-
-            <div
-                className={'textDots2 cursor-zoom-in'}
-                dangerouslySetInnerHTML={{__html: text}}/>
-          </Tooltip>
-      )
+      key: 'details',
+      render: (text, obj) => {
+        console.log("obj", obj)
+        return <p>{obj?.details?.[0]?.subTitle}</p>
+      }
     },
     {
-      title: 'Button Text',
-      dataIndex: 'buttonText',
-      key: 'buttonText',
+      title: 'category (pages)',
+      dataIndex: 'categoryIdList',
+      key: 'categoryIdList',
       align: "center",
-      render: (text) => <p>{text}</p>,
+      render: (categories) => {
+        return getCategoryNameById(categories) && <p>{getCategoryNameById(categories)?.toString()}</p>
+      },
     },
     {
       title: 'Action',
@@ -169,14 +191,14 @@ export default function Timeline({searchParams}: IProps) {
   ];
 
   const handleDeleteTimelineById = async (record: DataType): Promise<void> => {
-    const {id, title} = record;
+    const {id} = record;
     try {
       const res = await axiosWithAuth.delete(`${BASEAPI}/timeline-editor/delete-timeline/${id}`);
       console.log(res);
 
       notification.open({
         type: 'success',
-        message: `timeline - ${title}`,
+        message: `timeline with id - ${id}`,
         description:
             'timeline successfully deleted',
       });
@@ -186,13 +208,20 @@ export default function Timeline({searchParams}: IProps) {
     } catch (error: any) {
       notification.open({
         type: 'error',
-        message: `timeline - ${title}`,
+        message: `timeline with id - ${id}`,
         description:
             'Something went wrong while deleting timeline',
       });
       console.error('Erroreeeeeee-----------:', error.message); // Log the error
     }
   };
+
+  const getCategoryNameById = (arr: number[]): string[] => arr.map((e): string => {
+    return dataCategories?.find((item) => {
+      return item?.id === e
+    })?.category || ""
+
+  })
 
   const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, extra) => {
     console.log('params', pagination);
@@ -212,17 +241,6 @@ export default function Timeline({searchParams}: IProps) {
       }))
     }
   };
-
-  // console.log('dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', data)
-
-  const TimelinesData = data?.map((item:any) => ({
-    key: item.id,
-    id: item.id,
-    title: item.details[0].title,
-    description: item.details[0].subTitle,
-    // webImageUrl: item.timelineDetails[0].webImageData.url,
-    buttonText: item.details[0].buttonText,
-  }))
 
   return (
       <>
@@ -248,7 +266,7 @@ export default function Timeline({searchParams}: IProps) {
             }}
             loading={isLoading}
             columns={columns}
-            dataSource={TimelinesData}
+            dataSource={data}
             rowKey={"id"}
         >
         </Table>
