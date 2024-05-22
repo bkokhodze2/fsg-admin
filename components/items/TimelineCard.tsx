@@ -39,7 +39,7 @@ interface ImageData {
   interface ComponentProps {
     data: CardItemProps;
     index: number;
-    refetchCardsData: any;
+    refetchCardsNewData: any;
   }
 
   
@@ -51,7 +51,7 @@ interface ImageData {
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
   
 
-const CardItem: React.FC<ComponentProps> = ({ data, index, refetchCardsData }) => {
+const CardItem: React.FC<ComponentProps> = ({ data, index, refetchCardsNewData }) => {
 
 const { title, subTitle, imageData, id } = data
 
@@ -69,7 +69,7 @@ const handleDeleteTimelineCardById = async (record: TimelineCardDataType): Promi
           'timeline card successfully deleted',
     });
 
-    await refetchCardsData()
+    await refetchCardsNewData()
 
   } catch (error: any) {
     notification.open({

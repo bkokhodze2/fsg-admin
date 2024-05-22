@@ -317,7 +317,7 @@ export default function AddEditTimeline({id}: IProps) {
             >
               {dataTimelineDetails?.timelineDetails?.map((timelineCard:any, index:number) => (
                   <TimelineCard
-                      refetchCardsData={refetch}
+                      refetchCardsNewData={refetch}
                       key={timelineCard.timelineDetailId}
                       data={{
                               title: timelineCard.title,
