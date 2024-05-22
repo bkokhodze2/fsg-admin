@@ -1,0 +1,371 @@
+'use client'
+import {axiosWithAuth} from "@/configs/axios";
+import {ArrowLeftOutlined, EditOutlined, InboxOutlined, LeftCircleOutlined, RollbackOutlined} from "@ant-design/icons";
+import {useQuery} from "@tanstack/react-query";
+import dayjs, {unix} from "dayjs";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import {useRouter} from "next/navigation";
+import React, {useState} from "react";
+import {
+  Button, Image,
+  DatePicker,
+  Form,
+  Input,
+  Upload,
+  Select, Space, Card, Divider, notification, Radio, Tooltip,
+} from 'antd';
+import {SizeType} from "antd/lib/config-provider/SizeContext";
+import type ReactQuill from 'react-quill';
+
+var customParseFormat = require('dayjs/plugin/customParseFormat')
+dayjs.extend(customParseFormat)
+
+const ReactQuillComponent = dynamic(
+    async () => {
+      const {default: RQ} = await import('react-quill');
+      // eslint-disable-next-line react/display-name
+      return ({...props}) => <RQ {...props} />;
+    },
+    {
+      ssr: false,
+    }
+) as typeof ReactQuill;
+import "react-quill/dist/quill.snow.css";
+
+const modules = {
+  toolbar: {
+    container: [
+      ["bold", "italic", "underline", "strike"], // Custom toolbar buttons
+      [{header: [1, 2, 3, 4, 5, 6, false]}],
+      [{list: "ordered"}, {list: "bullet"}],
+      [{indent: "-1"}, {indent: "+1"}],
+      [{align: []}],
+      [{color: []}, {background: []}], // Dropdown with color options
+      ["link", "image", "video", "formula"],
+      ["clean"], // Remove formatting button
+    ],
+  },
+};
+
+const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
+const fetchLanguages = async () => {
+  try {
+    const {data} = await axiosWithAuth.get(`${BASEAPI}/news-editor/get-languages`);
+    return data;
+  } catch (error: any) {
+    console.log("errr", error)
+    notification.open({
+      type: 'error',
+      message: `languages`,
+      description:
+          'Something went wrong while fetching languages',
+    });
+  }
+}
+const fetchCategories = async () => {
+  try {
+    const {data} = await axiosWithAuth.get(`${BASEAPI}/timeline-editor/get-timeline-categories`);
+    return data;
+  } catch (error: any) {
+    console.log("errr", error)
+    notification.open({
+      type: 'error',
+      message: `categories`,
+      description:
+          'Something went wrong while fetching categories',
+    });
+  }
+}
+const fetchTimelineDetailsById = async (id: number) => {
+  try {
+    const {data} = await axiosWithAuth.get(`/timeline-editor/get-timeline-item-detail`, {
+      params: {
+        timelineDetailId: id
+      }
+    });
+
+    return data;
+
+  } catch (error: any) {
+    console.log("errr", error)
+    notification.open({
+      type: 'error',
+      message: `timeline`,
+      description:
+          'Something went wrong while fetching timeline card details',
+    });
+  }
+}
+
+interface IProps {
+  id?: number
+  parentId?: number
+}
+
+export default function AddEditTimelineCard({id,parentId}: IProps) {
+  const [form] = Form.useForm();
+  const Router = useRouter();
+
+  const isEditPage = !!id;
+
+  // const isAddPage = parentId
+
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
+
+  const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
+  
+  const {data: dataTimelineDetails} = useQuery({
+    queryKey: ['timelineDetails', id],
+    queryFn: () => fetchTimelineDetailsById(id as number),
+    enabled: !!id
+  });
+  // console.log("parentId", parentId)
+
+  const onchange = (values: any) => {
+    console.log("values", values)
+  }
+  const onFinish = async (values: any) => {
+    console.log("vv", values)
+
+    // Modify the form data here before submitting
+    const modifiedValues = {
+      ...values,
+      timelineId: isEditPage ? id : parentId,
+      timelineDetails: values.timelineDetails.map((detail: any) => ({
+        ...detail,
+      }))
+    };
+    console.log("modifiedValues", modifiedValues)
+    console.log('alex', parentId)
+
+
+    try {
+      const res = await axiosWithAuth.post('timeline-editor/add-or-modify-timeline-detail', modifiedValues)
+      if (res.status == 200) {
+        notification.open({
+          type: 'success',
+          message: `timeline card was added`,
+        });
+        Router.push(`/timeline/edit/${id || parentId}`)
+      }
+    } catch (e: any) {
+      console.log("e",)
+      notification.open({
+        type: 'error',
+        message: `${e.response.data.message || "error"}`,
+      });
+    }
+
+    // Log the FormData object or submit it to the server
+    // You can also submit the formData to the server here
+  };
+
+  const uploadImage = async (options: any) => {
+    const {onSuccess, onError, file, onProgress} = options;
+
+    const formData = new FormData();
+    const config = {
+      headers: {"content-type": "multipart/form-data"},
+    };
+    formData.append("imageFile", file);
+
+    try {
+      const res = await axiosWithAuth.post(`/timeline-editor/upload-timeline-detail-image`, formData, config)
+      if (res.status == 200) {
+        onSuccess(res.data)
+      }
+    } catch (e: any) {
+      onError("failed")
+    }
+
+  }
+
+  const handlePreview = async (file: any) => {
+    console.log("file", file, file?.response?.url || file?.url)
+    setPreviewImage(file?.response?.url || file?.url);
+    setPreviewOpen(true);
+  };
+
+  console.log("vvvvvv",[dataCategories?.[0]?.id])
+
+  const getDefaultValue = () => {
+    if (isEditPage) {
+      const newData = {
+        ...dataTimelineDetails,
+        timelineDetails: dataTimelineDetails?.timelineDetails?.map((detail: any) => ({
+          ...detail,
+        }))
+      };
+
+      console.log("data", newData)
+
+      return newData;
+    } else {
+      const activeLanguages = dataLanguages?.filter(e => e.active === true)
+      return {
+        "id": 0,
+        "categoryIdList": [dataCategories?.[0]?.id],
+        "timelineId": id,
+        "timelineDetails":
+            activeLanguages?.map(e => {
+              return {
+                "title": null,
+                "subTitle": null,
+                "timelineId": id,
+                "alt": null,
+                "languageId": e.id,
+                "imageData": {
+                  "size": null,
+                  "originalFileName": null,
+                  "imageName": null,
+                  "contentType": null,
+                  "url": null
+                },
+              }
+            })
+        ,
+        "status": true,
+        "title": null,
+        "subTitle": null,
+      }
+    }
+  }
+
+
+  return (
+      <div className={"p-2 pb-[60px]"}>
+            <div className={"w-full flex justify-between items-center mb-4"}>
+            <Button className={"flex items-center"} type="default" onClick={() => Router.back()}>
+                <ArrowLeftOutlined/>back</Button>
+
+            <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Timeline Card" : "Add Timeline Card"}</h2>
+            </div>
+            <Divider className={"my-3"}/>
+            {((isEditPage && dataTimelineDetails) || (!isEditPage && dataLanguages)) && <Form
+                form={form}
+                layout="vertical"
+                onValuesChange={onchange}
+                onFinish={onFinish}
+                size={'default' as SizeType}
+                initialValues={getDefaultValue()}>
+
+            <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
+                <Select mode={"multiple"}>
+                {dataCategories?.map((e) => {
+                    return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
+                })}
+                </Select>
+            </Form.Item>
+            
+            <Form.List
+                name="timelineDetails"
+            >
+                {(fields, v) => {
+                return <div className={"flex flex-col gap-y-5"}>
+                    {
+                    fields.map((field, index, c) => {
+                        const languageId = form.getFieldValue(['timelineDetails', field.name, 'languageId'])
+                        const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
+                        const dataImg = form.getFieldValue(['timelineDetails', field.name, 'imageData']);
+
+                        let fileList = dataImg?.url ? [dataImg] : [];
+
+                        return (
+                            <Card
+                                key={fields[0].name + '' + index}
+                                className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2]"}
+                            >
+                                <Divider orientation="left" className={"!my-0"}>
+                                    <h3 className={"text-[25px]"}>{findLang}</h3>
+                                </Divider>
+                                <Form.Item
+                                    name={[field.name, 'title']}
+                                    label={'title'}
+                                >
+                                    <Input placeholder="title"/>
+                                </Form.Item>
+                                <Form.Item
+                                    name={[field.name, 'subTitle']}
+                                    label={'subTitle'}
+                                >
+                                    <Input placeholder="subTitle"/>
+                                </Form.Item>
+
+                                    <Form.Item
+                                        name={[field.name, 'alt']}
+                                        label={'alt'}
+                                    >
+                                      <Input placeholder="alt"/>
+                                    </Form.Item>
+
+                                    <Form.Item
+                                      label={'image'}
+                                      name={[field.name, 'imageData']}
+                                      valuePropName="value"
+                                      getValueFromEvent={(e: any) => {
+                                        console.log("eee", e)
+                                        if (e.file.status === 'done') {
+                                          return e.file.response
+
+                                        } else {
+                                          return {
+                                            "size": null,
+                                            "originalFileName": null,
+                                            "imageName": null,
+                                            "contentType": null,
+                                            "url": null
+                                          }
+                                        }
+                                      }}
+                                      noStyle
+                                    >
+
+                                      <Upload.Dragger
+                                          // fileList={getFileList()}
+                                          defaultFileList={fileList}
+                                          //     uid: '-1',
+                                          // name: 'image.png',
+                                          // status: 'done',
+                                          // url: data?.url,
+                                          listType={"picture-card"}
+                                          showUploadList={true}
+                                          maxCount={1}
+                                          multiple={false}
+                                          customRequest={(e) => uploadImage(e)}
+                                          onPreview={(e) => handlePreview(e)}
+                                      >
+                                        <p className="ant-upload-drag-icon">
+                                          <InboxOutlined/>
+                                        </p>
+
+                                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                                      </Upload.Dragger>
+                                    </Form.Item>
+                                    {previewImage && (
+                                        <Image
+                                            wrapperStyle={{display: 'none'}}
+                                            preview={{
+                                              visible: previewOpen,
+                                              onVisibleChange: (visible) => setPreviewOpen(visible),
+                                              afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                                            }}
+                                            src={previewImage}
+                                        />
+                                    )}
+                            </Card>
+                        )
+                    })}
+                </div>
+                }}
+
+            </Form.List>
+
+            <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>Submit</Button>
+            </Form>
+            }
+      </div>
+  );
+}

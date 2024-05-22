@@ -51,6 +51,8 @@ const items: MenuItem[] = [
   getItem((<Link href={"/slide"}>Main Slide</Link>), '4', <DesktopOutlined/>),
 
   getItem((<Link href={"/news"}>News</Link>), '5', <FileOutlined/>),
+  getItem((<Link href={"/timeline"}>Timeline</Link>), '6', <DesktopOutlined/>),
+
 
 ];
 
