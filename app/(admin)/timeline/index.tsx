@@ -112,7 +112,7 @@ export default function AddEditTimeline({id}: IProps) {
 
   const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
   
-  const {data: dataTimelineDetails} = useQuery({
+  const {data: dataTimelineDetails, refetch} = useQuery({
     queryKey: ['details', id],
     queryFn: () => fetchTimelineDetailsById(id as number),
     enabled: !!id
@@ -317,6 +317,7 @@ export default function AddEditTimeline({id}: IProps) {
             >
               {dataTimelineDetails?.timelineDetails?.map((timelineCard:any, index:number) => (
                   <TimelineCard
+                      refetchCardsData={refetch}
                       key={timelineCard.timelineDetailId}
                       data={{
                               title: timelineCard.title,
