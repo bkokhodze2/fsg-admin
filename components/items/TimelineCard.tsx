@@ -58,7 +58,7 @@ const CardItem: React.FC<ComponentProps> = ({ data, index, refetchCardsNewData }
     const {id, title} = record;
 
     try {
-      const res = await axiosWithAuth.delete(`${BASEAPI}/timeline-editor/delete-timeline-detail/${id}`);
+      const res = await axiosWithAuth.delete(`${BASEAPI}/timeline-editor/delete-timeline-item/${id}`);
       console.log(res);
 
     await refetchCardsNewData()

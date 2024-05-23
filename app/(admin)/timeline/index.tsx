@@ -315,20 +315,20 @@ export default function AddEditTimeline({id}: IProps) {
               // className={"overflow-y-auto h-3/5 mt-5"}
               className={"mt-9"}
             >
-              {dataTimelineDetails?.timelineDetails?.map((timelineCard:any, index:number) => (
+              {dataTimelineDetails?.timelineItems?.map((timelineCard:any, index:number) => (
                   <TimelineCard
                       refetchCardsNewData={refetch}
                       key={timelineCard.timelineDetailId}
                       data={{
-                              title: timelineCard.title,
-                              subTitle: timelineCard.subTitle,
-                              id: timelineCard.timelineDetailId,
+                              title: timelineCard.title || "title",
+                              subTitle: timelineCard.subTitle || "subTitle",
+                              id: timelineCard.timelineItemId,
                               imageData: {
-                                  size: timelineCard.imageData.size,
-                                  originalFileName: timelineCard.imageData.originalFileName,
-                                  imageName: timelineCard.imageData.imageName,
-                                  contentType: timelineCard.imageData.contentType,
-                                  url: timelineCard.imageData.url || "https://www.socarenergy.ch/files/media/files/901844e646b84353f174e1fc373a90da/2-_SOCAR_Tankstelle_Graz.jpg"
+                                  // size: timelineCard.imageData.size,
+                                  originalFileName: timelineCard?.imageData?.originalFileName || "original filename",
+                                  imageName: timelineCard?.imageData?.imageName || "image name",
+                                  contentType: timelineCard?.imageData?.contentType || "content type",
+                                  url: timelineCard?.imageData?.url || "https://www.socarenergy.ch/files/media/files/901844e646b84353f174e1fc373a90da/2-_SOCAR_Tankstelle_Graz.jpg"
                               }
                           }}
                       index={index+1}
