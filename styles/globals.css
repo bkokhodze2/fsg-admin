@@ -29,6 +29,9 @@
 * {
     font-family: avenirMedium, serif;
 }
+.button, [role="button"]{
+    cursor: auto;
+}
 
 .ant-form-item {
     margin-bottom: 12px;

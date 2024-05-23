@@ -81,7 +81,7 @@ const CardItem: React.FC<ComponentProps> = ({ data, index, refetchCardsNewData }
         <div
             className="flex items-center justify-center w-12 h-10 bg-slate-200 rounded-full">
           <h1
-              className="text-3xl">
+              className="text-xl">
             {index}
           </h1>
         </div>

@@ -1,4 +1,5 @@
 'use client'
+import TimelineCard from "@/components/items/TimelineCard";
 import React, {useState, useContext, useMemo, useId} from "react";
 import {axiosWithAuth} from "@/configs/axios";
 import {ArrowLeftOutlined, EditOutlined, InboxOutlined, LeftCircleOutlined, RollbackOutlined} from "@ant-design/icons";
@@ -33,6 +34,7 @@ import {CSS} from '@dnd-kit/utilities';
 var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
 import type {ColumnsType} from 'antd/es/table';
+
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 const fetchLanguages = async () => {
   try {
@@ -101,7 +103,7 @@ const DragHandle: React.FC = () => {
   return (
       <Button
           type="text"
-          size="small"
+          size="large"
           icon={<HolderOutlined/>}
           style={{cursor: 'move'}}
           ref={setActivatorNodeRef}
@@ -123,9 +125,10 @@ const Row: React.FC<RowProps> = (props) => {
 
   const style: React.CSSProperties = {
     ...props.style,
-    transform: CSS.Translate.toString(transform),
+    transform: CSS.Transform.toString(transform && {...transform, scaleY: 1.05}),
     transition,
-    ...(isDragging ? {position: 'relative', zIndex: 9999} : {}),
+    position: isDragging ? "relative" : "static",
+    zIndex: isDragging ? 9999 : "auto",
   };
 
   const contextValue = useMemo<RowContextProps>(
@@ -140,17 +143,6 @@ const Row: React.FC<RowProps> = (props) => {
   );
 };
 
-const columns: ColumnsType<DataType> = [
-  {key: 'sort', align: 'center', width: 80, render: () => <DragHandle/>},
-  {
-    title: 'Timeline Items',
-    dataIndex: 'timelineItemId',
-
-    // render: (_, record) => {
-    //   console.log("reccccc",record)
-    // return <TimelineCard refetchCardsNewData={refetch} data={record} index={record?.timelineItemId} />}, // Index can be passed if needed
-  },
-];
 
 export default function AddEditTimeline({id}: IProps) {
   const [form] = Form.useForm();
@@ -193,8 +185,18 @@ export default function AddEditTimeline({id}: IProps) {
     enabled: !!id
   });
 
-  console.log("dataTimelineDetails", dataTimelineDetails)
+  const columns: ColumnsType<DataType> = [
+    {key: 'sort', align: 'center', width: 80, render: () => <DragHandle/>},
+    {
+      title: 'Timeline Items',
+      dataIndex: 'timelineItemId',
 
+      render: (_, record, a) => {
+        console.log("reccccc", record, a)
+        return <TimelineCard refetchCardsNewData={refetch} data={record} index={a + 1}/>
+      }, // Index can be passed if needed
+    },
+  ];
 
   const onchange = (values: any) => {
     console.log("values", values)
@@ -293,7 +295,6 @@ export default function AddEditTimeline({id}: IProps) {
       console.error('Error posting sorted data:', error);
     }
   };
-
 
 
   const onDragEnd = async ({active, over}: any) => {
@@ -423,19 +424,23 @@ export default function AddEditTimeline({id}: IProps) {
           >
 
             {dataTimelineDetails && <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
-              <SortableContext items={dataSource} strategy={verticalListSortingStrategy}>
+              <SortableContext items={dataSource.map((i: any) => i.timelineItemId)}
+                               strategy={verticalListSortingStrategy}>
                 <Table
                     components={{
                       body: {
                         row: Row,
                       },
                     }}
+                    showHeader={false}
+                    pagination={false}
                     rowKey="timelineItemId"
                     columns={columns}
                     dataSource={dataSource}
                 />
               </SortableContext>
-            </DndContext>}
+            </DndContext>
+            }
           </div>
           <div className="mt-10 ml-14">
             <Link href={`/timeline/add-card/${dataTimelineDetails?.id}`}>
