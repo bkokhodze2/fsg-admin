@@ -1,5 +1,5 @@
 'use client'
-import React from "react";
+import React, { useState } from "react";
 import {axiosWithAuth} from "@/configs/axios";
 import {ArrowLeftOutlined, EditOutlined, InboxOutlined, LeftCircleOutlined, RollbackOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
@@ -15,6 +15,20 @@ import {
   Upload,
   Select, Space, Card, Divider, notification, Radio, Tooltip,
 } from 'antd';
+
+import type { DragEndEvent } from '@dnd-kit/core';
+import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+
 import {SizeType} from "antd/lib/config-provider/SizeContext";
 import type ReactQuill from 'react-quill';
 import TimelineCard from "@/components/items/TimelineCard";
@@ -78,34 +92,79 @@ const fetchCategories = async () => {
     });
   }
 }
-const fetchTimelineDetailsById = async (id: number) => {
-  try {
-    const {data} = await axiosWithAuth.get(`/timeline-editor/get-timeline-detail`, {
-      params: {
-        timelineId: id
-      }
-    });
 
-    return data;
-
-  } catch (error: any) {
-    console.log("errr", error)
-    notification.open({
-      type: 'error',
-      message: `timeline`,
-      description:
-          'Something went wrong while fetching timeline details',
-    });
-  }
-}
 
 interface IProps {
   id?: number
 }
 
+interface DataType {
+  key: string;
+  title: string;
+  subTitle: string;
+  id: number;
+  timelineItemId: number; 
+  imageData: {
+    originalFileName: string;
+    imageName: string;
+    contentType: string;
+    url: string;
+  };
+}
+
+
+
+const Row: React.FC<any> = ({ children, ...props }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: props['data-row-key'],
+  });
+
+  const style: React.CSSProperties = {
+    ...props.style,
+    transform: CSS.Translate.toString(transform),
+    transition,
+    cursor: 'move',
+    ...(isDragging ? { position: 'relative', zIndex: 9999 } : {}),
+  };
+
+  return (
+    <tr {...props} ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {children}
+    </tr>
+  );
+};
+
+
 export default function AddEditTimeline({id}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
+  const [dataSource, setDataSource] = useState<DataType[]>([
+  ]);
+
+  console.log('adatasocrce', dataSource)
+
+  const fetchTimelineDetailsById = async (id: number) => {
+    try {
+      const {data} = await axiosWithAuth.get(`/timeline-editor/get-timeline-detail`, {
+        params: {
+          timelineId: id
+        }
+      });
+      setDataSource(data?.timelineItems)
+      return data;
+  
+    } catch (error: any) {
+      console.log("errr", error)
+      notification.open({
+        type: 'error',
+        message: `timeline`,
+        description:
+            'Something went wrong while fetching timeline details',
+      });
+    }
+  }
+
+  
 
   const isEditPage = !!id;
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
@@ -117,6 +176,8 @@ export default function AddEditTimeline({id}: IProps) {
     queryFn: () => fetchTimelineDetailsById(id as number),
     enabled: !!id
   });
+
+  console.log("dataTimelineDetails", dataTimelineDetails)
 
 
   const onchange = (values: any) => {
@@ -203,6 +264,52 @@ export default function AddEditTimeline({id}: IProps) {
       }
     }
   }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 1,
+      },
+    })
+  );
+
+
+  const postSortedData = async (sortedData: DataType[]) => {
+    const sortElements = sortedData.map((item, index) => ({
+      timelineItemId: item.id,
+      sortOrder: index,
+    }));
+
+    try {
+      await axiosWithAuth.post('/timeline-editor/sort-timeline-items', { sortElements });
+    } catch (error) {
+      console.error('Error posting sorted data:', error);
+    }
+  };
+
+  const columns: ColumnsType<DataType> = [
+    {
+      title: 'Timeline Items',
+      dataIndex: 'timelineItemId',
+    
+      // render: (_, record) => {
+      //   console.log("reccccc",record)
+      // return <TimelineCard refetchCardsNewData={refetch} data={record} index={record?.timelineItemId} />}, // Index can be passed if needed
+    },
+  ];
+
+  const onDragEnd = async ({ active, over }: any) => {
+    console.log("aaaa----bbb",active,over)
+    if (active.id !== over?.id) {
+      setDataSource((prev) => {
+        const activeIndex = prev.findIndex((item) => item.timelineItemId === active.id);
+        const overIndex = prev.findIndex((item) => item.timelineItemId === over?.id);
+        const newData = arrayMove(prev, activeIndex, overIndex);
+        // postSortedData(newData);
+        return newData;
+      });
+    }
+  };
 
   return (
       <div className={"p-2 pb-[60px] flex gap-x-20 w-full"}>
@@ -308,6 +415,7 @@ export default function AddEditTimeline({id}: IProps) {
             </Form>
             }
         </div>
+        
         <div className="w-1/2">
             <h2 className={"text-center text-[30px] w-full mb-4"}>Timeline Cards</h2>
             <Divider className={"my-3"}/>
@@ -315,7 +423,7 @@ export default function AddEditTimeline({id}: IProps) {
               // className={"overflow-y-auto h-3/5 mt-5"}
               className={"mt-9"}
             >
-              {dataTimelineDetails?.timelineItems?.map((timelineCard:any, index:number) => (
+              {/* {dataTimelineDetails?.timelineItems?.map((timelineCard:any, index:number) => (
                   <TimelineCard
                       refetchCardsNewData={refetch}
                       key={timelineCard.timelineDetailId}
@@ -333,7 +441,23 @@ export default function AddEditTimeline({id}: IProps) {
                           }}
                       index={index+1}
                   />
-              ))}
+              ))} */}
+
+
+              {dataTimelineDetails && <DndContext sensors={sensors} onDragEnd={onDragEnd}>
+                <SortableContext items={dataSource} strategy={verticalListSortingStrategy}>
+                  <Table
+                  components={{
+                    body: {
+                      row: Row,
+                    },
+                  }}
+                    rowKey="timelineItemId"
+                    columns={columns}
+                    dataSource={dataSource}
+                  />
+                </SortableContext>
+              </DndContext>}
             </div>
             <div className="mt-10 ml-14">
                 <Link href={`/timeline/add-card/${dataTimelineDetails?.id}`}>
