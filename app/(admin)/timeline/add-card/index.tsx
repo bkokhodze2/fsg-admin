@@ -143,7 +143,7 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
 
 
     try {
-      const res = await axiosWithAuth.post('timeline-editor/add-or-modify-timeline-detail', modifiedValues)
+      const res = await axiosWithAuth.post('/timeline-editor/add-or-modify-timeline-item', modifiedValues)
       if (res.status == 200) {
         notification.open({
           type: 'success',
@@ -207,7 +207,7 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
       const activeLanguages = dataLanguages?.filter(e => e.active === true)
       return {
         "id": 0,
-        "categoryIdList": [dataCategories?.[0]?.id],
+        // "categoryIdList": [dataCategories?.[0]?.id],
         "timelineId": id,
         "timelineDetails":
             activeLanguages?.map(e => {
@@ -252,13 +252,13 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
                 size={'default' as SizeType}
                 initialValues={getDefaultValue()}>
 
-            <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
+            {/* <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
                 <Select mode={"multiple"}>
                 {dataCategories?.map((e) => {
                     return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
                 })}
                 </Select>
-            </Form.Item>
+            </Form.Item> */}
             
             <Form.List
                 name="timelineDetails"
