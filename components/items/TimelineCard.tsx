@@ -22,11 +22,13 @@ interface ImageData {
     title: string;
     subTitle?: string;
     imageData?: ImageData;
-    id: number;
+    timelineItemId?: number;
+    id?: number;
   }
   
   interface DataType {
     timelineId: number;
+    timelineItemId?: number;
     id?: number;
     title: string;
     description: string;
@@ -39,26 +41,28 @@ interface ImageData {
   interface ComponentProps {
     data: CardItemProps;
     index: number;
+    timelineId?: number;
     refetchCardsNewData: any;
   }
 
   
   interface TimelineCardDataType {
-    id: number,
-    title: string,
+    id?: number;
+    timelineItemId?: number;
+    title: string;
   }
   
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 
 const CardItem: React.FC<ComponentProps> = ({ data, index, refetchCardsNewData }) => {
 
-  const {title, subTitle, imageData, id} = data
+  const {title, subTitle, imageData, timelineItemId} = data
 
   const handleDeleteTimelineCardById = async (record: TimelineCardDataType): Promise<void> => {
-    const {id, title} = record;
+    const {timelineItemId, title} = record;
 
     try {
-      const res = await axiosWithAuth.delete(`${BASEAPI}/timeline-editor/delete-timeline-item/${id}`);
+      const res = await axiosWithAuth.delete(`${BASEAPI}/timeline-editor/delete-timeline-item/${timelineItemId}`);
       console.log(res);
 
     await refetchCardsNewData()
@@ -91,7 +95,7 @@ const CardItem: React.FC<ComponentProps> = ({ data, index, refetchCardsNewData }
           <div className="flex justify-between items-center mb-4">
             <Meta title={title} description={subTitle}/>
             <div className='flex gap-x-2.5'>
-              <Link href={`/timeline/edit-card/${id}`}>
+              <Link href={`/timeline/edit-card/${timelineItemId}`}>
                 <Button type="primary">Edit</Button>
               </Link>
 
@@ -99,7 +103,7 @@ const CardItem: React.FC<ComponentProps> = ({ data, index, refetchCardsNewData }
                   title="Delete the Timeline Card"
                   description="Are you sure to delete this Timeline Card?"
                   okText={"Yes"}
-                  onConfirm={() => handleDeleteTimelineCardById({id, title})}
+                  onConfirm={() => handleDeleteTimelineCardById({timelineItemId, title})}
                   icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
               >
                 <Tooltip title="Delete" placement={'bottom'}>
@@ -110,7 +114,7 @@ const CardItem: React.FC<ComponentProps> = ({ data, index, refetchCardsNewData }
             </div>
           </div>
 
-          {imageData &&
+          {imageData?.url &&
               <img alt={imageData.originalFileName} src={imageData.url} className="mt-4 w-full object-cover h-48 rounded-lg"/>}
         </Card>
       </div>

@@ -75,12 +75,21 @@ interface DataType {
   subTitle: string;
   id: number;
   timelineItemId: number;
+  timelineDetailId: number;
+  timelineId?: number;
   imageData: {
     originalFileName: string;
     imageName: string;
     contentType: string;
     url: string;
   };
+  timelineDetails?: any;
+}
+
+interface TimelineDetails {
+  timelineItemId?: number;
+  timelineId: number;
+  timelineDetails: [DataType];
 }
 
 interface RowContextProps {
@@ -152,12 +161,14 @@ export default function AddEditTimeline({id}: IProps) {
   console.log('adatasocrce', dataSource)
 
   const fetchTimelineDetailsById = async (id: number) => {
+    console.log('id', id)
     try {
       const {data} = await axiosWithAuth.get(`/timeline-editor/get-timeline-detail`, {
         params: {
           timelineId: id
         }
       });
+      console.log('timelineData', data)
       setDataSource(data?.timelineItems)
       return data;
 
@@ -193,7 +204,15 @@ export default function AddEditTimeline({id}: IProps) {
 
       render: (_, record, a) => {
         console.log("reccccc", record, a)
-        return <TimelineCard refetchCardsNewData={refetch} data={record} index={a + 1}/>
+        console.log('taimlainis data::::', record?.timelineDetails?.[0])
+        return (
+          <TimelineCard 
+            timelineId={record.timelineId}
+            refetchCardsNewData={refetch}
+            index={a + 1}
+            data={record?.timelineDetails?.[0]}
+            />
+        )
       }, // Index can be passed if needed
     },
   ];
@@ -241,7 +260,7 @@ export default function AddEditTimeline({id}: IProps) {
     if (isEditPage) {
       const newData = {
         ...dataTimelineDetails,
-        details: dataTimelineDetails.details.map((detail: any) => ({
+        details: dataTimelineDetails?.details.map((detail: any) => ({
           ...detail,
         }))
       };
@@ -257,6 +276,7 @@ export default function AddEditTimeline({id}: IProps) {
         "categoryIdList": [dataCategories?.[0]?.id],
         "details":
             activeLanguages?.map(e => {
+              console.log('event', e)
               return {
                 "title": null,
                 "subTitle": null,
@@ -284,10 +304,14 @@ export default function AddEditTimeline({id}: IProps) {
   }
 
   const postSortedData = async (sortedData: DataType[]) => {
-    const sortElements = sortedData.map((item, index) => ({
-      timelineItemId: item.id,
+    const sortElements = sortedData.map((item, index) => {
+    // console.log('item', item)
+     return {
+      timelineItemId: item.timelineItemId,
       sortOrder: index,
-    }));
+    }
+    }
+  );
 
     try {
       await axiosWithAuth.post('/timeline-editor/sort-timeline-items', {sortElements});
@@ -422,10 +446,13 @@ export default function AddEditTimeline({id}: IProps) {
               // className={"overflow-y-auto h-3/5 mt-5"}
               className={"mt-9"}
           >
+            {/* {console.log('dataSource', dataSource)} */}
 
-            {dataTimelineDetails && <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
-              <SortableContext items={dataSource.map((i: any) => i.timelineItemId)}
-                               strategy={verticalListSortingStrategy}>
+            {dataSource && <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
+              <SortableContext 
+                items={dataSource?.map((i: any) => i.timelineItemId)}
+                strategy={verticalListSortingStrategy}
+              >
                 <Table
                     components={{
                       body: {
@@ -442,12 +469,14 @@ export default function AddEditTimeline({id}: IProps) {
             </DndContext>
             }
           </div>
-          <div className="mt-10 ml-14">
+          <div className="mt-10 ml-14 flex gap-x-4">
             <Link href={`/timeline/add-card/${dataTimelineDetails?.id}`}>
               <Button disabled={!id} type="primary" className={"flex items-center gap-x-2"}>
                 <p>Add Timeline Card</p>
               </Button>
             </Link>
+            
+           {dataSource?.length > 1 && <Button type="primary" className="" onClick={() => postSortedData(dataSource)}>Save Cards Ordering</Button> }
           </div>
         </div>
       </div>

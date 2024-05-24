@@ -81,7 +81,7 @@ const fetchTimelineDetailsById = async (id: number) => {
   try {
     const {data} = await axiosWithAuth.get(`/timeline-editor/get-timeline-item-detail`, {
       params: {
-        timelineDetailId: id
+        timelineItemId: id
       }
     });
 
@@ -109,11 +109,13 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
 
   const isEditPage = !!id;
 
-  // const isAddPage = parentId
+  console.log('params id,::', id)
+  console.log('params parentId,:', parentId)
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
+  console.log('dataLanguages', dataLanguages)
 
   const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
   
@@ -122,7 +124,6 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
     queryFn: () => fetchTimelineDetailsById(id as number),
     enabled: !!id
   });
-  // console.log("parentId", parentId)
 
   const onchange = (values: any) => {
     console.log("values", values)
@@ -131,16 +132,20 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
     console.log("vv", values)
 
     // Modify the form data here before submitting
+
+    console.log("values", values?.timelineDetails)
     const modifiedValues = {
       ...values,
-      timelineId: isEditPage ? id : parentId,
-      timelineDetails: values.timelineDetails.map((detail: any) => ({
+      // timelineId: isEditPage ? id : parentId,
+      timelineId: id ? dataTimelineDetails.timelineId : parentId, 
+      timelineItemId:  id ? Number(id) : null,
+      timelineDetails: values?.timelineDetails.map((detail: any) => ({
         ...detail,
+        languageId: 1,
       }))
     };
     console.log("modifiedValues", modifiedValues)
-    console.log('alex', parentId)
-
+    console.log("dataTimelineDetails", dataTimelineDetails)
 
     try {
       const res = await axiosWithAuth.post('/timeline-editor/add-or-modify-timeline-item', modifiedValues)
@@ -149,7 +154,7 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
           type: 'success',
           message: `timeline card was added`,
         });
-        Router.push(`/timeline/edit/${id || parentId}`)
+        Router.push(`/timeline/edit/${parentId|| dataTimelineDetails.timelineId || id}`)
       }
     } catch (e: any) {
       console.log("e",)
