@@ -131,7 +131,7 @@ export default function Timeline({searchParams}: IProps) {
 
   const columns: TableProps<DataType>['columns'] = [
     {
-      title: 'details',
+      title: 'Title',
       dataIndex: 'details',
       align: "center",
       key: 'details',
@@ -141,7 +141,7 @@ export default function Timeline({searchParams}: IProps) {
       }
     },
     {
-      title: 'details',
+      title: 'SubTitle',
       dataIndex: 'details',
       align: "center",
       key: 'details',
@@ -151,7 +151,7 @@ export default function Timeline({searchParams}: IProps) {
       }
     },
     {
-      title: 'category (pages)',
+      title: 'Category (pages)',
       dataIndex: 'categoryIdList',
       key: 'categoryIdList',
       align: "center",
