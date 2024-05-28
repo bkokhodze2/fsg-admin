@@ -156,7 +156,7 @@ export default function AddEditInfoCard({id}: IProps) {
           type: 'success',
           message: `Info card was added`,
         });
-       await refetch();
+      isEditPage ? await refetch() : null;
         Router.push("/info-card")
       }
     } catch (e: any) {
@@ -191,8 +191,6 @@ export default function AddEditInfoCard({id}: IProps) {
 
   }
 
-  console.log('alex', dataInfoCardDetails)
-
   const handlePreview = async (file: any) => {
     console.log("file", file, file?.response?.url || file?.url)
     setPreviewImage(file?.response?.url || file?.url);
@@ -217,7 +215,14 @@ export default function AddEditInfoCard({id}: IProps) {
       const activeLanguages = dataLanguages?.filter(e => e.active === true)
 
       return {
-        "categoryIdList": [1],
+        "categoryIdList": [dataCategories?.[0]?.id],
+        "imageData": {
+          "size": null,
+          "originalFileName": null,
+          "imageName": null,
+          "contentType": null,
+          "url": null
+        },
         "details":
             activeLanguages?.map(e => {
               return {
@@ -231,14 +236,6 @@ export default function AddEditInfoCard({id}: IProps) {
                 "title": null,
                 "languageId": e.id,
                 "status": true,
-                // "additionalImages": [],
-                "imageData": {
-                  "size": null,
-                  "originalFileName": null,
-                  "imageName": null,
-                  "contentType": null,
-                  "url": null
-                }
               }
             })
         ,
@@ -249,7 +246,8 @@ export default function AddEditInfoCard({id}: IProps) {
     }
   }
 
-  {console.log('dataCategories', dataCategories)}
+  const dataImg = form.getFieldValue('imageData');
+  let fileList = dataImg?.url ? [dataImg] : (dataInfoCardDetails ? [dataInfoCardDetails?.imageData] : []);
 
   return (
       <div className={"p-2 pb-[60px]"}>
@@ -291,6 +289,62 @@ export default function AddEditInfoCard({id}: IProps) {
             </Radio.Group>
           </Form.Item>
 
+
+          <Form.Item label={'image'}
+            name={"imageData"}
+            valuePropName="value"
+            getValueFromEvent={(e: any) => {
+              console.log("eee", e)
+              if (e.file.status === 'done') {
+                return e.file.response
+
+              } else {
+                return {
+                  "size": null,
+                  "originalFileName": null,
+                  "imageName": null,
+                  "contentType": null,
+                  "url": null
+                }
+              }
+            }}
+            noStyle
+          >
+
+            <Upload.Dragger
+              // fileList={getFileList()}
+              defaultFileList={fileList}
+              //     uid: '-1',
+              // name: 'image.png',
+              // status: 'done',
+              // url: data?.url,
+              listType={"picture-card"}
+              showUploadList={true}
+              maxCount={1}
+              multiple={false}
+              customRequest={(e) => uploadImage(e)}
+              onPreview={(e) => handlePreview(e)}
+            >
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined/>
+              </p>
+
+              <p className="ant-upload-text">Click or drag file to this area to upload main image</p>
+            </Upload.Dragger>
+          </Form.Item>
+
+          {previewImage && (
+              <Image
+                  wrapperStyle={{display: 'none'}}
+                  preview={{
+                    visible: previewOpen,
+                    onVisibleChange: (visible) => setPreviewOpen(visible),
+                    afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                  }}
+                  src={previewImage}
+              />
+          )}
+
           <Form.List
               name="details">
             {(fields, v) => {
@@ -299,10 +353,6 @@ export default function AddEditInfoCard({id}: IProps) {
                   fields.map((field, index, c) => {
                     const languageId = form.getFieldValue(['details', field.name, 'languageId'])
                     const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
-                    const dataImg = form.getFieldValue(['details', field.name, 'imageData']);
-
-                    let fileList = dataImg?.url ? [dataImg] : [];
-
                     return <Card
                         key={fields[0].name + '' + index}
                         className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2]"}>
@@ -322,60 +372,6 @@ export default function AddEditInfoCard({id}: IProps) {
                       >
                         <Input placeholder="subTitle"/>
                       </Form.Item>
-
-                      <Form.Item label={'image'}
-                                 name={[field.name, 'imageData']}
-                                 valuePropName="value"
-                                 getValueFromEvent={(e: any) => {
-                                   console.log("eee", e)
-                                   if (e.file.status === 'done') {
-                                     return e.file.response
-
-                                   } else {
-                                     return {
-                                       "size": null,
-                                       "originalFileName": null,
-                                       "imageName": null,
-                                       "contentType": null,
-                                       "url": null
-                                     }
-                                   }
-                                 }}
-                                 noStyle>
-
-                        <Upload.Dragger
-                            // fileList={getFileList()}
-                            defaultFileList={fileList}
-                            //     uid: '-1',
-                            // name: 'image.png',
-                            // status: 'done',
-                            // url: data?.url,
-                            listType={"picture-card"}
-                            showUploadList={true}
-                            maxCount={1}
-                            multiple={false}
-                            customRequest={(e) => uploadImage(e)}
-                            onPreview={(e) => handlePreview(e)}
-                        >
-                          <p className="ant-upload-drag-icon">
-                            <InboxOutlined/>
-                          </p>
-
-                          <p className="ant-upload-text">Click or drag file to this area to upload main image</p>
-                        </Upload.Dragger>
-                      </Form.Item>
-
-                      {previewImage && (
-                          <Image
-                              wrapperStyle={{display: 'none'}}
-                              preview={{
-                                visible: previewOpen,
-                                onVisibleChange: (visible) => setPreviewOpen(visible),
-                                afterOpenChange: (visible) => !visible && setPreviewImage(''),
-                              }}
-                              src={previewImage}
-                          />
-                      )}
 
                       <Space className={"w-full mt-2 flex items-center justify-between"}>
                         {/* <Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"

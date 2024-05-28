@@ -21,14 +21,26 @@ var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
 
 interface DataType {
-  infoCardId: number,
+  infoCardId?: number,
+  id: number,
   key: string | number,
   title: string,
+  subTitle: string,
   content: string,
   imageUrl: string,
   useStartDateTime: number,
   useEndDateTime: number,
   status: boolean,
+
+  details?:
+  {
+    "infoCardDetailid": number,
+    "infoCardId": number,
+    "title": string,
+    "subTitle": string,
+    "languageId": number,
+    "status": null,
+  }[]
 }
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
@@ -64,6 +76,7 @@ interface IFilter {
   slug?: undefined | string,
   content?: undefined | string,
   title?: undefined | string,
+  subTitle?: undefined | string,
 }
 
 export default function InfoCard({searchParams}: IProps) {
@@ -74,6 +87,7 @@ export default function InfoCard({searchParams}: IProps) {
     slug: searchParams.slug || undefined,
     content: searchParams.content || undefined,
     title: searchParams.title || undefined,
+    subTitle: searchParams.subTitle || undefined
   });
   const [form] = Form.useForm();
   const Router = useRouter();
@@ -100,31 +114,20 @@ export default function InfoCard({searchParams}: IProps) {
       dataIndex: 'title',
       key: 'title',
       align: "center",
-      render: (text) => <p>{text}</p>,
+      render: (text, obj) => {
+        console.log("obj", obj)
+        return <p>{obj?.details?.[0]?.title}</p>
+      }
     },
     {
       title: 'Subtitle',
-      dataIndex: 'content',
+      dataIndex: 'subTitle',
       align: "center",
-      key: 'content',
-      render: (text) => (
-          <Tooltip placement="bottom"
-                   destroyTooltipOnHide={true}
-                   overlayInnerStyle={{
-                     width: "500px",
-                     maxHeight: "600px",
-                     overflowY: "scroll"
-                   }}
-                   overlayClassName={"w-[500px]"}
-                   className={""}
-                   title={() => <div
-                       dangerouslySetInnerHTML={{__html: text}}/>}>
-
-            <div
-                className={'textDots2 cursor-zoom-in'}
-                dangerouslySetInnerHTML={{__html: text}}/>
-          </Tooltip>
-      )
+      key: 'subTitle',
+      render: (text, obj) => {
+        console.log("obj", obj)
+        return <p>{obj?.details?.[0]?.subTitle}</p>
+      }
     },
 
     // {
@@ -167,7 +170,7 @@ export default function InfoCard({searchParams}: IProps) {
       render: (_, record) => (
           <Space size="middle">
             <Tooltip title="Edit" placement={'bottom'}>
-              <Link href={`/info-card/edit/${record?.infoCardId}`}>
+              <Link href={`/info-card/edit/${record?.id}`}>
                 <Button shape="circle" className={"flex items-center justify-center"} icon={<EditOutlined/>}/>
               </Link>
             </Tooltip>
@@ -191,14 +194,14 @@ export default function InfoCard({searchParams}: IProps) {
   ];
 
   const handleDeleteInfoCardById = async (record: DataType): Promise<void> => {
-    const {infoCardId, title} = record;
+    const {id} = record;
     try {
-      const res = await axiosWithAuth.delete(`${BASEAPI}/info-card-editor/delete-info-card/${infoCardId}`);
+      const res = await axiosWithAuth.delete(`${BASEAPI}/info-card-editor/delete-info-card/${id}`);
       console.log(res);
 
       notification.open({
         type: 'success',
-        message: `info card - ${title}`,
+        message: `info card Id - ${id}`,
         description:
             'info card successfully deleted',
       });
@@ -208,7 +211,7 @@ export default function InfoCard({searchParams}: IProps) {
     } catch (error: any) {
       notification.open({
         type: 'error',
-        message: `info card - ${title}`,
+        message: `info card Id - ${id}`,
         description:
             'Something went wrong while deleting info card',
       });
@@ -270,7 +273,6 @@ export default function InfoCard({searchParams}: IProps) {
             </Link>
           </div>
         </div>
-
         <Table
             onChange={onChange}
             sticky={{offsetHeader: 4}}
@@ -289,7 +291,7 @@ export default function InfoCard({searchParams}: IProps) {
               position: ["bottomCenter"],
               // itemRender: itemRender,
             }}
-            dataSource={data?.data && [...data?.data]}
+            dataSource={data}
             rowKey={"infoCardId"}
         >
         </Table>
