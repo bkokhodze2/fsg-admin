@@ -4,7 +4,7 @@ import {Layout, Menu, MenuProps, theme} from 'antd';
 
 import {
   DesktopOutlined, FileOutlined, FolderOpenOutlined,
-  TeamOutlined,
+  TeamOutlined, UserOutlined,
 } from '@ant-design/icons';
 import Link from "next/link";
 import {useState} from "react";
@@ -53,7 +53,7 @@ const items: MenuItem[] = [
   getItem((<Link href={"/news"}>News</Link>), '5', <FileOutlined/>),
   getItem((<Link href={"/timeline"}>Timeline</Link>), '6', <DesktopOutlined/>),
   getItem((<Link href={"/info-card"}>Info Card</Link>), '7', <FileOutlined/>),
-
+  getItem((<Link href={"/management"}>Management Persons</Link>), '8', <UserOutlined/>),
 ];
 
 const items2: MenuItem[] = [
