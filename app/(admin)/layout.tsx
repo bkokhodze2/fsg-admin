@@ -1,11 +1,11 @@
 'use client'
 import {authService} from "@/services/auth.service";
 import {Layout, Menu, MenuProps, theme} from 'antd';
+import Image from "next/image";
+import logoWithText from "../../public/images/logo.svg"
+import logo from "../../public/images/favIcon.png"
 
-import {
-  DesktopOutlined, FileOutlined, FolderOpenOutlined,
-  TeamOutlined, UserOutlined,
-} from '@ant-design/icons';
+import { DesktopOutlined, FileOutlined, FolderOpenOutlined, UserOutlined } from '@ant-design/icons';
 import Link from "next/link";
 import {useState} from "react";
 
@@ -77,8 +77,13 @@ export default function AdminLayout({children,}: Readonly<{ children: React.Reac
           <div>
             <div
                 onClick={() => setCollapsed(!collapsed)}
-                className="demo-logo-vertical min-h-[80px] bg-[gray] mx-[3px] roundex-xl flex items-center justify-center">
-              <h1 className={"text-[#FFFFFF]"}>logo</h1>
+                className="demo-logo-vertical min-h-[80px] roundex-xl flex items-center justify-center border-b-[1px]">
+              {
+                collapsed ? 
+                  <Image src={logo} width={50} height={50} alt='logo' className="cursor-pointer"/>
+                :
+                  <Image src={logoWithText} width={100} height={100} alt='logo' className="cursor-pointer" />
+              }
             </div>
             <Menu theme="dark" mode="vertical" defaultSelectedKeys={['']} items={items}/>
           </div>

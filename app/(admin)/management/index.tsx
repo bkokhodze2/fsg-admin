@@ -4,7 +4,6 @@ import {ArrowLeftOutlined, InboxOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
-// import Link from "next/link";
 import {useRouter, useParams} from "next/navigation";
 import React, {useState} from "react";
 import {

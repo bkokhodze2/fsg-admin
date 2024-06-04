@@ -1,7 +1,7 @@
 'use client'
 import {axiosWithAuth} from "@/configs/axios";
 import {
-  ArrowLeftOutlined, CloseCircleOutlined, CloseOutlined,
+  CloseOutlined,
   DeleteOutlined,
   EditOutlined,
   FilterOutlined,

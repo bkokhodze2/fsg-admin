@@ -1,7 +1,6 @@
 'use client'
 import AddEditManagementPerson from "@/app/(admin)/management";
 import React from "react";
-// import {useRouter} from "next/navigation";
 
 interface IPageProps {
   params: {

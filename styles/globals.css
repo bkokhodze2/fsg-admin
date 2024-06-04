@@ -71,12 +71,10 @@
 .ql-toolbar.ql-snow{}
 
  .ant-upload-list-picture-card{
-    margin-top: 20px;
+    margin: 20px 0px;
 }
 
 input:-webkit-autofill,
 input:-webkit-autofill:focus {
     transition: background-color 0s 600000s, color 0s 600000s !important;
 }
-
-

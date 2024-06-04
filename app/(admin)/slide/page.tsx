@@ -1,16 +1,13 @@
 'use client'
 import {axiosWithAuth} from "@/configs/axios";
 import {
-  ArrowLeftOutlined, CloseCircleOutlined, CloseOutlined,
   DeleteOutlined,
   EditOutlined,
-  FilterOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
-  ReloadOutlined
 } from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
-import {Button, notification, Popconfirm, Space, Table, Image, Tooltip, Drawer, Badge, Form, Input} from 'antd';
+import {Button, notification, Popconfirm, Space, Table, Image, Tooltip, Form} from 'antd';
 import type {TableProps} from 'antd';
 import dayjs from "dayjs";
 import Link from "next/link";

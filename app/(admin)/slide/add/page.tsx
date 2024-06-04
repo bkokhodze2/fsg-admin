@@ -1,6 +1,6 @@
 'use client'
 import AddEditSlide from "@/app/(admin)/slide";
-import React, {useState} from "react";
+import React from "react";
 
 export default function SlideAdd() {
   return (

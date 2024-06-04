@@ -1,7 +1,6 @@
 'use client'
 import AddEditTimeline from "@/app/(admin)/timeline";
-import React, {useState} from "react";
-import {useRouter} from "next/navigation";
+import React from "react";
 
 interface IPageProps {
   params: {
