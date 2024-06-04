@@ -402,7 +402,7 @@ export default function ManagementPerson({searchParams}: IProps) {
           <h2 className={"text-[25px]"}>Management Persons</h2>
 
           <div className={"flex items-center flex-nowrap gap-x-4"}>
-            {dataSource?.length > 1 && <Button type="primary" className="" onClick={() => postSortedData(dataSource)}>Save Cards Ordering</Button> }
+            {dataSource?.length > 1 && <Button type="primary" className="" onClick={() => postSortedData(dataSource)}>Save Persons Ordering</Button> }
             <Link href={"/management/add"}>
               <Button type="primary" className={"flex items-center gap-x-2"}>
                 <PlusOutlined/>
