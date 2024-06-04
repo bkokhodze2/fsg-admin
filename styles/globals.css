@@ -11,25 +11,32 @@
 }
 
 
-/*:root {*/
-/*  --foreground-rgb: 0, 0, 0;*/
-/*  --background-start-rgb: 214, 219, 220;*/
-/*  --background-end-rgb: 255, 255, 255;*/
-/*}*/
+input:-webkit-autofill{
+    /*-webkit-text-fill-color: yellow !important;*/
+}
 
-/*@media (prefers-color-scheme: dark) {*/
-/*  :root {*/
-/*    --foreground-rgb: 255, 255, 255;*/
-/*    --background-start-rgb: 0, 0, 0;*/
-/*    --background-end-rgb: 0, 0, 0;*/
-/*  }*/
-/*}*/
+/* Change the white to any color */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+}
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+    -webkit-background-clip: text;
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: inset 0 0 20px 20px #23232329;
+}
 
 * {
     font-family: avenirMedium, serif;
 }
-.button, [role="button"]{
+
+.button, [role="button"] {
     cursor: auto;
 }
 
@@ -55,6 +62,7 @@
     justify-content: space-between;
     min-height: 100vh;
 }
+
 .textDots2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -65,12 +73,15 @@
 .admin-layout .ant-menu-item-divider {
     background-color: white;
 }
-.ql-editor{
+
+.ql-editor {
     min-height: 150px;
 }
-.ql-toolbar.ql-snow{}
 
- .ant-upload-list-picture-card{
+.ql-toolbar.ql-snow {
+}
+
+.ant-upload-list-picture-card {
     margin: 20px 0px;
 }
 
@@ -78,3 +89,4 @@ input:-webkit-autofill,
 input:-webkit-autofill:focus {
     transition: background-color 0s 600000s, color 0s 600000s !important;
 }
+
