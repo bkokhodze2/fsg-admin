@@ -1,10 +1,12 @@
 'use client'
+import React, {useEffect, useState, useContext, useMemo} from "react";
 import {axiosWithAuth} from "@/configs/axios";
 import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
+  HolderOutlined,
 } from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
 import {Button, notification, Popconfirm, Space, Table, Image, Tooltip, Form, } from 'antd';
@@ -12,7 +14,19 @@ import type {TableProps} from 'antd';
 import dayjs from "dayjs";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
-import React, {useEffect, useState} from "react";
+
+import type { DragEndEvent } from '@dnd-kit/core';
+import { DndContext } from '@dnd-kit/core';
+import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import type { ColumnsType } from 'antd/es/table';
 
 var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
@@ -49,28 +63,6 @@ interface DataType {
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 const PAGE_SIZE = 10;
 
-const fetchPerson = async (filter: IFilter) => {
-  try {
-    const {data} = await axiosWithAuth.get(`${BASEAPI}/management-person-editor/get-management-persons`, 
-    // {
-    //   ...filter,
-    //   languageId: 1,
-    //   pageSize: parseInt(String(filter.pageSize)) || PAGE_SIZE,
-    //   pageNumber: filter?.pageNumber ? (filter?.pageNumber - 1) : 0,
-    // }
-);
-    return data;
-  } catch (error: any) {
-    notification.open({
-      type: 'error',
-      message: `person`,
-      description:
-          'Something went wrong while fetching persons',
-    });
-
-  }
-}
-
 interface IProps {
   searchParams: IFilter
 }
@@ -84,8 +76,74 @@ interface IFilter {
   surname?: undefined | string,
 }
 
+interface RowContextProps {
+  setActivatorNodeRef?: (element: HTMLElement | null) => void;
+  listeners?: SyntheticListenerMap;
+}
+
+const RowContext = React.createContext<RowContextProps>({});
+
+const DragHandle: React.FC = () => {
+  const { setActivatorNodeRef, listeners } = useContext(RowContext);
+  return (
+    <Button
+      type="text"
+      size="small"
+      icon={<HolderOutlined />}
+      style={{ cursor: 'move' }}
+      ref={setActivatorNodeRef}
+      {...listeners}
+    />
+  );
+};
+
+const initialData: DataType[] = [];
+
+interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
+  'data-row-key': string;
+}
+
+const Row: React.FC<RowProps> = (props) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: props['data-row-key'] });
+
+  const style: React.CSSProperties = {
+    ...props.style,
+    transform: CSS.Transform.toString(transform && {...transform, scaleY: 1.05}),
+    transition,
+    position: isDragging ? "relative" : "static",
+    zIndex: isDragging ? 9999 : "auto",
+    // transition,
+    // ...(isDragging ? { position: 'relative', zIndex: 9999 } : {}),
+  };
+
+  const contextValue = useMemo<RowContextProps>(
+    () => ({ setActivatorNodeRef, listeners }),
+    [setActivatorNodeRef, listeners],
+  );
+
+  return (
+    <RowContext.Provider value={contextValue}>
+      <tr {...props} ref={setNodeRef} style={style} {...attributes} />
+    </RowContext.Provider>
+  );
+};
+
+
 export default function ManagementPerson({searchParams}: IProps) {
   const [isOpenFilter, setIsOpenFilter] = useState<boolean>(false);
+
+  const [dataSource, setDataSource] = React.useState<DataType[]>(initialData);
+
+  console.log('dataSource', dataSource)
+
   const [filter, setFilter] = useState<IFilter>({
     pageNumber: searchParams.pageNumber || undefined,
     pageSize: searchParams.pageSize || undefined,
@@ -96,6 +154,29 @@ export default function ManagementPerson({searchParams}: IProps) {
   });
   const [form] = Form.useForm();
   const Router = useRouter();
+
+  const fetchPerson = async (filter: IFilter) => {
+    try {
+      const {data} = await axiosWithAuth.get(`${BASEAPI}/management-person-editor/get-management-persons`, 
+      // {
+      //   ...filter,
+      //   languageId: 1,
+      //   pageSize: parseInt(String(filter.pageSize)) || PAGE_SIZE,
+      //   pageNumber: filter?.pageNumber ? (filter?.pageNumber - 1) : 0,
+      // }
+  );
+      setDataSource(data)
+      return data;
+    } catch (error: any) {
+      notification.open({
+        type: 'error',
+        message: `person`,
+        description:
+            'Something went wrong while fetching persons',
+      });
+  
+    }
+  }
 
   const {data, isLoading, isError, refetch} = useQuery({
     queryKey: ["management", filter],
@@ -116,6 +197,7 @@ export default function ManagementPerson({searchParams}: IProps) {
 
 
   const columns: TableProps<DataType>['columns'] = [
+    { key: 'sort', align: 'center', width: 80, render: () => <DragHandle /> },
     {
       title: 'Name / Surname',
       dataIndex: 'name',
@@ -283,12 +365,44 @@ export default function ManagementPerson({searchParams}: IProps) {
     }
   };
 
+  const postSortedData = async (sortedData: DataType[]) => {
+    const sortElements = sortedData.map((item, index) => {
+    // console.log('item', item)
+     return {
+      sortElementId: item.id,
+      sortOrder: index,
+    }
+    }
+  );
+
+    try {
+      await axiosWithAuth.post('/management-person-editor/sort-management-persons', {sortElements});
+    } catch (error) {
+      console.error('Error posting sorted data:', error);
+    }
+  };
+
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    // console.log("active & over", active, over)
+
+    if (active.id !== over?.id) {
+      setDataSource((prevState) => {
+        const activeIndex = prevState.findIndex((item) => item.id === active?.id);
+        const overIndex = prevState.findIndex((item) => item.id === over?.id);
+        const newData = arrayMove(prevState, activeIndex, overIndex);
+        // console.log('New DataSource', newData)
+        return newData
+      });
+    }
+  };
+
   return (
       <>
         <div className={"w-full p-2 flex justify-between items-center"}>
           <h2 className={"text-[25px]"}>Management Persons</h2>
 
           <div className={"flex items-center flex-nowrap gap-x-4"}>
+            {dataSource?.length > 1 && <Button type="primary" className="" onClick={() => postSortedData(dataSource)}>Save Cards Ordering</Button> }
             <Link href={"/management/add"}>
               <Button type="primary" className={"flex items-center gap-x-2"}>
                 <PlusOutlined/>
@@ -297,28 +411,33 @@ export default function ManagementPerson({searchParams}: IProps) {
             </Link>
           </div>
         </div>
-        <Table
-            onChange={onChange}
-            sticky={{offsetHeader: 4}}
-            scroll={{
-              x: 200,
-              y: "70vh"
-            }}
-            loading={isLoading}
-            columns={columns}
-            pagination={{
-              total: data?.allRecordsSize,
-              current: filter.pageNumber,
-              pageSize: filter.pageSize || PAGE_SIZE,
-              showQuickJumper: false,
-              showSizeChanger: true,
-              position: ["bottomCenter"],
-              // itemRender: itemRender,
-            }}
-            dataSource={data}
-            rowKey={"personId"}
-        >
-        </Table>
+
+        <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
+          <SortableContext items={dataSource.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+            <Table
+              sticky={{offsetHeader: 4}}
+              onChange={onChange}
+              scroll={{
+                x: 200,
+                y: "70vh"
+              }}
+              pagination={{
+                total: data?.allRecordsSize,
+                current: filter.pageNumber,
+                pageSize: filter.pageSize || PAGE_SIZE,
+                showQuickJumper: false,
+                showSizeChanger: true,
+                position: ["bottomCenter"],
+                // itemRender: itemRender,
+              }}
+              loading={isLoading}
+              rowKey="id"
+              components={{ body: { row: Row } }}
+              columns={columns}
+              dataSource={dataSource}
+            />
+          </SortableContext>
+        </DndContext>
       </>
   );
 }
