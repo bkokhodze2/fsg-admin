@@ -69,7 +69,7 @@ export default function AdminLayout({children,}: Readonly<{ children: React.Reac
   } = theme.useToken();
 
   return (
-      <Layout className={"overflow-y-scroll admin-layout"}>
+      <Layout className={"admin-layout"}>
         <Sider trigger={null}
                collapsible
                collapsed={collapsed}
@@ -90,7 +90,7 @@ export default function AdminLayout({children,}: Readonly<{ children: React.Reac
 
           <Menu theme="dark" mode="inline" items={items2}/>
         </Sider>
-        <Layout className={"overflow-y-scroll min-h-[100vh]"}
+        <Layout className={"min-h-[100vh]"}
                 style={{
                   transition: '0.2s',
                   marginLeft: collapsed ? "80px" : "200px"
