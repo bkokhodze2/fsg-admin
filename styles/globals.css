@@ -82,7 +82,11 @@ input:-webkit-autofill:active{
 }
 
 .ant-upload-list-picture-card {
+<<<<<<< HEAD
     margin: 20px 0px;
+=======
+    margin-top: 20px;
+>>>>>>> fe7be8acf083b8c20bb1fa9feee9f164555950d1
 }
 
 input:-webkit-autofill,
