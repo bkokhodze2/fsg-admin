@@ -1,7 +1,6 @@
 'use client'
 import AddEditInfoCard from "@/app/(admin)/info-card";
-import React, {useState} from "react";
-import {useRouter} from "next/navigation";
+import React from "react";
 
 interface IPageProps {
   params: {

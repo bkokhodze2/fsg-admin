@@ -1,6 +1,6 @@
 'use client'
 import {axiosWithAuth} from "@/configs/axios";
-import {ArrowLeftOutlined, InboxOutlined} from "@ant-design/icons";
+import {ArrowLeftOutlined, InboxOutlined,} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
@@ -11,7 +11,10 @@ import {
   Form,
   Input,
   Upload,
-  Card, Divider, notification, Radio,
+  Select, Space, Card, Divider, notification, Radio,
+  Checkbox,
+  DatePicker,
+  InputNumber
 } from 'antd';
 import {SizeType} from "antd/lib/config-provider/SizeContext";
 import type ReactQuill from 'react-quill';
@@ -62,11 +65,11 @@ const fetchLanguages = async () => {
   }
 }
 
-const fetchPersonDetailsById = async (id: number) => {
+const fetchServiceCenterDetailsById = async (id: number) => {
   try {
-    const {data} = await axiosWithAuth.get(`/management-person-editor/get-management-person-detail`, {
+    const {data} = await axiosWithAuth.get(`/service-center-editor/get-service-center-details`, {
       params: {
-        personId: id
+        serviceCenterId: id
       }
     });
 
@@ -76,9 +79,9 @@ const fetchPersonDetailsById = async (id: number) => {
     console.log("errr", error)
     notification.open({
       type: 'error',
-      message: `person`,
+      message: `service center`,
       description:
-          'Something went wrong while fetching person details',
+          'Something went wrong while fetching service center details',
     });
   }
 }
@@ -87,7 +90,7 @@ interface IProps {
   id?: number
 }
 
-export default function AddEditManagementPerson({id}: IProps) {
+export default function AddEditServiceCenter({id}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
   const Params = useParams();
@@ -99,11 +102,9 @@ export default function AddEditManagementPerson({id}: IProps) {
   const [previewImage, setPreviewImage] = useState('');
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
 
-//   const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
-
-  const {data: dataPersonDetails, refetch} = useQuery({
-    queryKey: ['personDetails', id],
-    queryFn: () => fetchPersonDetailsById(id as number),
+  const {data: dataServiceCenterDetails, refetch} = useQuery({
+    queryKey: ['serviceCenterDetails', id],
+    queryFn: () => fetchServiceCenterDetailsById(id as number),
     enabled: !!id,
     retry: 1,
     initialData: undefined,
@@ -116,6 +117,7 @@ export default function AddEditManagementPerson({id}: IProps) {
     console.log("values", values)
     console.log("allValues", allValues)
   }
+  
   const onFinish = async (values: any) => {
     console.log("vv", values)
 
@@ -123,31 +125,26 @@ export default function AddEditManagementPerson({id}: IProps) {
     const modifiedValues = {
       ...values,
       id: isEditPage ? id : undefined,
-      sortOrder: dataPersonDetails?.sortOrder || null,
-      details: values.details.map((detail: any) => ({
-        ...detail,
-        useStartDateTimeMsec: dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-        useStartDateTime: detail.useStartDateTimeMsec ? dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
-        useEndDateTimeMsec: dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-        useEndDateTime: detail.useEndDateTimeMsec ? dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
-      }))
+      useStartDateTimeMsec: dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
+      useStartDateTime: values.useStartDateTimeMsec ? dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
+      useEndDateTimeMsec: dayjs(values.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
+      useEndDateTime: values.useEndDateTimeMsec ? dayjs(values.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
     };
     console.log("modifiedValues", modifiedValues)
 
 
     try {
-      const res = await axiosWithAuth.post('/management-person-editor/add-or-modify-management-person', modifiedValues)
+      const res = await axiosWithAuth.post('/service-center-editor/add-or-modify-service-center', modifiedValues)
       if (res.status == 200) {
         notification.open({
           type: 'success',
-          message: `Person was added`,
+          message: `Service Center was added`,
         });
       isEditPage ? await refetch() : null;
-        Router.push("/management")
+        Router.push("/service-center")
       }
     } catch (e: any) {
       console.log("e",)
-      console.error('Errorttttttttt:', e.message);
       notification.open({
         type: 'error',
         message: `${e.response.data.message || "error"}`,
@@ -168,7 +165,7 @@ export default function AddEditManagementPerson({id}: IProps) {
     formData.append("imageFile", file);
 
     try {
-      const res = await axiosWithAuth.post(`/management-person-editor/upload-management-person-image`, formData, config)
+      const res = await axiosWithAuth.post(`/service-center-editor/upload-service-center-image`, formData, config)
       if (res.status == 200) {
         onSuccess(res.data)
       }
@@ -183,12 +180,13 @@ export default function AddEditManagementPerson({id}: IProps) {
     setPreviewImage(file?.response?.url || file?.url);
     setPreviewOpen(true);
   };
+
   const getDefaultValue = () => {
     if (isEditPage) {
-      console.log("dataPersonDetails", dataPersonDetails)
+      console.log("dataServiceCenterDetails", dataServiceCenterDetails)
       const newData = {
-        ...dataPersonDetails,
-        details: dataPersonDetails?.details?.map((detail: any) => ({
+        ...dataServiceCenterDetails,
+        details: dataServiceCenterDetails?.details.map((detail: any) => ({
           ...detail,
           useStartDateTimeMsec: detail.useStartDateTimeMsec ? dayjs.unix(detail.useStartDateTimeMsec / 1000) : null,
           useEndDateTimeMsec: detail.useEndDateTimeMsec ? dayjs.unix(detail.useEndDateTimeMsec / 1000) : null,
@@ -202,10 +200,6 @@ export default function AddEditManagementPerson({id}: IProps) {
       const activeLanguages = dataLanguages?.filter(e => e.active === true)
 
       return {
-        "status": true,
-        "linkedinUrl": null,
-        "slug": null,
-        "sortOrder": dataPersonDetails?.sortOrder || null,
         "imageData": {
           "size": null,
           "originalFileName": null,
@@ -216,16 +210,21 @@ export default function AddEditManagementPerson({id}: IProps) {
         "details":
             activeLanguages?.map(e => {
               return {
-                "name": null,
-                "surname": null,
                 "description": null,
+                "title": null,
                 "languageId": e.id,
-                "personId": null,
-                "detailId": null,
-                "position": null,
+                "location": null,
               }
             })
         ,
+        "status": true,
+        "id": null,
+        "latitude": null,
+        "longitude": null,
+        "useStartDateTime": null,
+        "useEndDateTime": null,
+        "useStartDateTimeMsec": null,
+        "useEndDateTimeMsec": null,
       }
 
 
@@ -233,17 +232,18 @@ export default function AddEditManagementPerson({id}: IProps) {
   }
 
   const dataImg = form.getFieldValue('imageData');
-  let fileList = dataImg?.url ? [dataImg] : (dataPersonDetails ? [dataPersonDetails?.imageData] : []);
+  let fileList = dataImg?.url ? [dataImg] : (dataServiceCenterDetails ? [dataServiceCenterDetails?.imageData] : []);
 
   return (
       <div className={"p-2 pb-[60px]"}>
         <div className={"w-full flex justify-between items-center mb-4"}>
           <Button className={"flex items-center"} type="default" onClick={() => Router.back()}>
             <ArrowLeftOutlined/>back</Button>
-          <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Person" : "Add Person"}</h2>
+
+          <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Service Center" : "Add Service Center"}</h2>
         </div>
         <Divider className={"my-3"}/>
-        {((isEditPage && dataPersonDetails) || (!isEditPage && dataLanguages)) && <Form
+        {((isEditPage && dataServiceCenterDetails) || (!isEditPage && dataLanguages)) && <Form
             form={form}
             layout="vertical"
             onValuesChange={onchange}
@@ -260,18 +260,53 @@ export default function AddEditManagementPerson({id}: IProps) {
           </Form.Item>
 
           <Form.Item
-            name={'linkedinUrl'}
-            label={'linkedinUrl'}
+            name={'latitude'}
+            label={'latitude'}
           >
-          <Input placeholder="Linkedin Url"/>
+            <InputNumber placeholder="latitude - Enter a number" className="w-full" />
           </Form.Item>
 
           <Form.Item
-            name={'slug'}
-            label={'slug'}
+            name={'longitude'}
+            label={'longitude'}
           >
-          <Input placeholder="slug"/>
+            <InputNumber placeholder="longitude - Enter a number" className="w-full" />
           </Form.Item>
+
+          <div className={"flex gap-x-2 flex-nowrap"}>
+            <Form.Item
+                // initialValue={dayjs('YYYY-MM-DD HH:mm:ss')}
+                // valuePropName={"aba"}
+                // getValueFromEvent={(e: any) => {
+                //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
+                //   return date.valueOf();
+                // }}
+                // getValueProps={(e: string) => ({
+                //   value: e ? dayjs(e) : "",
+                // })}
+                className={"mb-0"}
+                name={'useStartDateTimeMsec'}
+                label="useStartDate"
+            >
+                <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+            </Form.Item>
+
+            <Form.Item
+                // getValueFromEvent={(e: any) => {
+                //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
+                //   return date.valueOf();
+                // }}
+                // getValueProps={(e: string) => ({
+                //   value: e ? dayjs(e) : "",
+                // })}
+                className={"mb-0"}
+                name={'useEndDateTimeMsec'}
+                label="useEndDate"
+            >
+                <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+            </Form.Item>
+          </div>
+
 
           <Form.Item label={'image'}
             name={"imageData"}
@@ -295,7 +330,12 @@ export default function AddEditManagementPerson({id}: IProps) {
           >
 
             <Upload.Dragger
+              // fileList={getFileList()}
               defaultFileList={fileList}
+              //     uid: '-1',
+              // name: 'image.png',
+              // status: 'done',
+              // url: data?.url,
               listType={"picture-card"}
               showUploadList={true}
               maxCount={1}
@@ -338,42 +378,48 @@ export default function AddEditManagementPerson({id}: IProps) {
                         <h3 className={"text-[25px]"}>{findLang}</h3>
                       </Divider>
                       <Form.Item
-                          name={[field.name, 'name']}
-                          label={'name'}
+                          name={[field.name, 'title']}
+                          label={'title'}
                       >
-                        <Input placeholder="name"/>
+                        <Input placeholder="title"/>
                       </Form.Item>
                       
                       <Form.Item
-                          name={[field.name, 'surname']}
-                          label={'surname'}
-                      >
-                        <Input placeholder="surname"/>
-                      </Form.Item>
-
-                      <Form.Item
-                          name={[field.name, 'position']}
-                          label={'position'}
-                      >
-                        <Input placeholder="position"/>
-                      </Form.Item>
-
-                      <Form.Item
                           name={[field.name, 'description']}
-                          label={`Description`}
-                          valuePropName="value"
-                          getValueFromEvent={(value) => value}>
-                        <ReactQuillComponent
-                            modules={modules}
-                            className={`textEditor border markGeo`}
-                        />
+                          label={'description'}
+                      >
+                        <Input placeholder="description"/>
                       </Form.Item>
+
+                      <Form.Item
+                          name={[field.name, 'location']}
+                          label={'location'}
+                      >
+                        <Input placeholder="location"/>
+                      </Form.Item>
+
+                      <Space className={"w-full mt-2 flex items-center justify-between"}>
+                        {/* <Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"
+                                   valuePropName={"value"}>
+                          <Radio.Group buttonStyle="solid">
+                            <Radio.Button value={true}>active</Radio.Button>
+                            <Radio.Button className={""} value={false}>disable</Radio.Button>
+                          </Radio.Group>
+                        </Form.Item> */}
+
+                        {/* <Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"
+                                  valuePropName={"checked"}>
+                         <Checkbox/>
+                        </Form.Item> */}
+
+                      </Space>
                     </Card>
                   })}
               </div>
             }}
 
           </Form.List>
+
 
           <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>Submit</Button>
         </Form>
