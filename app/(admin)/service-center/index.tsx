@@ -14,7 +14,8 @@ import {
   Select, Space, Card, Divider, notification, Radio,
   Checkbox,
   DatePicker,
-  InputNumber
+  InputNumber,
+  TimePicker
 } from 'antd';
 import {SizeType} from "antd/lib/config-provider/SizeContext";
 import type ReactQuill from 'react-quill';
@@ -48,6 +49,37 @@ const modules = {
     ],
   },
 };
+
+const weekDaysArr = [
+    {
+        label: "Monday",
+        value: 0,
+    },
+    {
+        label: "Tuesday",
+        value: 1,
+    },
+    {
+        label: "Wednesday",
+        value: 2,
+    },
+    {
+        label: "Thursday",
+        value: 3,
+    },
+    {
+        label: "Friday",
+        value: 4,
+    },
+    {
+        label: "Saturday",
+        value: 5,
+    },
+    {
+        label: "Sunday",
+        value: 6,
+    },
+]
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 const fetchLanguages = async () => {
@@ -216,6 +248,17 @@ export default function AddEditServiceCenter({id}: IProps) {
                 "location": null,
               }
             })
+        ,
+        "workingHours":
+            [
+                {
+                    "fromWeekDayId": 0,
+                    "toWeekDayId": 0,
+                    "closed": false,
+                    "fromHour": null,
+                    "toHour": null,
+                }
+            ]
         ,
         "status": true,
         "id": null,
@@ -397,22 +440,89 @@ export default function AddEditServiceCenter({id}: IProps) {
                       >
                         <Input placeholder="location"/>
                       </Form.Item>
+                    </Card>
+                  })}
+              </div>
+            }}
 
-                      <Space className={"w-full mt-2 flex items-center justify-between"}>
-                        {/* <Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"
-                                   valuePropName={"value"}>
-                          <Radio.Group buttonStyle="solid">
-                            <Radio.Button value={true}>active</Radio.Button>
-                            <Radio.Button className={""} value={false}>disable</Radio.Button>
-                          </Radio.Group>
-                        </Form.Item> */}
+          </Form.List>
 
-                        {/* <Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"
-                                  valuePropName={"checked"}>
-                         <Checkbox/>
-                        </Form.Item> */}
+          {/* Working hours Form List */}
 
-                      </Space>
+          <Form.List
+              name="workingHours">
+            {(fields, v) => {
+              return <div className={"flex flex-col gap-y-5"}>
+                {
+                  fields.map((field, index, c) => {
+                    return <Card
+                        key={fields[0].name + '' + index}
+                        className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2] mt-6"}>
+                        
+                        <Divider orientation="left" className={"!my-0"}>
+                            <h3 className={"text-[25px]"}>Working Hours</h3>
+                        </Divider>
+
+
+                    <div className={"flex gap-x-4 w-full"}>
+                        <Form.Item
+                            label={'From Day'}
+                            name={[field.name, 'fromWeekDayId']}
+                            fieldKey={[field.key, 'fromWeekDayId']}
+                            className="w-1/4"
+                        >
+                            <Select placeholder="From WeekDay Id">
+                                {weekDaysArr.map(day => (
+                                    <Select.Option key={day.value} value={day.value}>
+                                        {day.label}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item
+                            label={'To Day'}
+                            name={[field.name, 'toWeekDayId']}
+                            fieldKey={[field.key, 'toWeekDayId']}
+                            className="w-1/4"
+                        >
+                            <Select placeholder="To WeekDay Id">
+                                {weekDaysArr.map(day => (
+                                    <Select.Option key={day.value} value={day.value}>
+                                        {day.label}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item
+                            label={'From Hour'}
+                            name={[field.name, 'fromHour']}
+                            fieldKey={[field.key, 'fromHour']}
+                            className="w-1/4"
+                        >
+                            <TimePicker defaultValue={dayjs('00:00:00', 'HH:mm:ss')} className="w-full"/>
+                        </Form.Item>
+
+                        <Form.Item
+                            label={'To Hour'}
+                            name={[field.name, 'toHour']}
+                            fieldKey={[field.key, 'toHour']}
+                            className="w-1/4"
+                        >
+                            <TimePicker defaultValue={dayjs('00:00:00', 'HH:mm:ss')} className="w-full"/>
+                        </Form.Item>
+                    </div>
+
+
+                        <Form.Item 
+                            className={"mb-0 font-bold"}
+                            name={[field.name, 'closed']}
+                            label="closed"
+                            valuePropName={"checked"}
+                        >
+                            <Checkbox/>
+                        </Form.Item>
                     </Card>
                   })}
               </div>

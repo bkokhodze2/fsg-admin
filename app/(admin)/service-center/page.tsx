@@ -7,7 +7,7 @@ import {
   QuestionCircleOutlined,
 } from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
-import {Button, notification, Popconfirm, Space, Table, Tooltip, Form} from 'antd';
+import {Button, notification, Popconfirm, Space, Table, Tooltip, Form, Image} from 'antd';
 import type {TableProps} from 'antd';
 import dayjs from "dayjs";
 import Link from "next/link";
@@ -22,21 +22,23 @@ interface DataType {
   id: number,
   key: string | number,
   title: string,
-  subTitle: string,
+  description: string,
   content: string,
   imageUrl: string,
   useStartDateTime: number,
   useEndDateTime: number,
   status: boolean,
-
+  latitude: number,
+  longitude: number,
+  imageData:{
+    url: string;
+  },
   details?:
   {
-    "serviceCenterDetailid": number,
-    "serviceCenterId": number,
     "title": string,
-    "subTitle": string,
+    "description": string,
+    "location": string,
     "languageId": number,
-    "status": null,
   }[]
 }
 
@@ -118,9 +120,43 @@ export default function ServiceCenter({searchParams}: IProps) {
       key: 'description',
       render: (text, obj) => {
         console.log("obj", obj)
-        return <p>{obj?.details?.[0]?.subTitle}</p>
+        return <p>{obj?.details?.[0]?.description}</p>
       }
     },
+    {
+        title: 'Location',
+        dataIndex: 'location',
+        align: "center",
+        key: 'location',
+        render: (text, obj) => {
+            console.log("obj", obj)
+            return <p>{obj?.details?.[0]?.location}</p>
+        }
+    },
+    {
+        title: 'Latitude / Longitude',
+        dataIndex: 'latitude',
+        align: "center",
+        key: 'latitude',
+        render: (text, obj) => {
+            console.log("obj", obj)
+            return <p>{obj?.latitude} / {obj.longitude}</p>
+        }
+    },
+    {
+        title: 'Image',
+        dataIndex: 'imageUrl',
+        key: 'imageUrl',
+        align: "center",
+  
+        render: (text, obj) => (
+            <Image
+                width={100}
+                src={obj?.imageData?.url}
+                alt={"service image"}
+            />
+        )
+      },
 
     // {
     //   title: 'start-end date',
@@ -145,7 +181,6 @@ export default function ServiceCenter({searchParams}: IProps) {
     //   dataIndex: 'useEndDateTime',
     //   key: 'useEndDateTime',
     //   align: "center",
-    //
     //   render: (text, record) => (
     //       <Space size="middle">
     //         <p className={"whitespace-nowrap"}>
