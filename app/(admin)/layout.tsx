@@ -55,6 +55,7 @@ const items: MenuItem[] = [
   getItem((<Link href={"/info-card"}>Info Card</Link>), '7', <FileOutlined/>),
   getItem((<Link href={"/management"}>Management Persons</Link>), '8', <UserOutlined/>),
   getItem((<Link href={"/service-center"}>Service Center</Link>), '9', <FileOutlined/>),
+  getItem((<Link href={"/department"}>Department</Link>), '10', <FileOutlined/>),
 
 ];
 
