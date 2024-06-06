@@ -158,7 +158,7 @@ export default function AddEditServiceCenter({id}: IProps) {
     // Modify the form data here before submitting
     const modifiedValues = {
       ...values,
-      id: isEditPage ? id : undefined,
+      id: isEditPage ? Number(id) : undefined,
       useStartDateTimeMsec: dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
       useStartDateTime: values.useStartDateTimeMsec ? dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
       useEndDateTimeMsec: dayjs(values.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
