@@ -1,6 +1,6 @@
 'use client'
 import {axiosWithAuth} from "@/configs/axios";
-import {ArrowLeftOutlined, InboxOutlined,} from "@ant-design/icons";
+import {ArrowLeftOutlined, InboxOutlined, DeleteOutlined, QuestionCircleOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
@@ -15,7 +15,9 @@ import {
   Checkbox,
   DatePicker,
   InputNumber,
-  TimePicker
+  TimePicker,
+  Popconfirm,
+  Tooltip
 } from 'antd';
 import {SizeType} from "antd/lib/config-provider/SizeContext";
 import type ReactQuill from 'react-quill';
@@ -451,27 +453,48 @@ export default function AddEditServiceCenter({id}: IProps) {
 
           <Form.List
               name="workingHours">
-            {(fields, v) => {
+            {(fields, { add, remove }, v) => {
               return <div className={"flex flex-col gap-y-5"}>
                 {
                   fields.map((field, index, c) => {
+                    console.log('field0', field)
                     return <Card
-                        key={fields[0].name + '' + index}
-                        className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2] mt-6"}>
-                        
-                        <Divider orientation="left" className={"!my-0"}>
-                            <h3 className={"text-[25px]"}>Working Hours</h3>
-                        </Divider>
-
+                          key={fields[0].name + '' + index}
+                          className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2] mt-6"}
+                          title={
+                            <h3 className={"text-[25px] font-normal"}>Working Hours</h3>
+                          }
+                          extra={
+                            fields.length > 1 && <Popconfirm
+                            title="Delete the service center"
+                            description="Are you sure to delete this service center?"
+                            okText={"Yes"}
+                            onConfirm={() => remove(field.name)}
+                            icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+                            >
+                            <Tooltip title="Delete" placement={'bottom'}>
+                              <Button
+                                danger
+                                shape="circle"
+                                className={"flex items-center justify-center"}
+                                icon={<DeleteOutlined />}
+                              />
+                              </Tooltip>
+                            </Popconfirm>
+                          }
+                        >
 
                     <div className={"flex gap-x-4 w-full"}>
+                      <Card className="w-1/2">
+                      <Divider orientation="left" className={"!my-0"}>
+                        <h3 className={"text-[25px]"}>Days</h3>
+                      </Divider>
                         <Form.Item
-                            label={'From Day'}
+                            label={'From'}
                             name={[field.name, 'fromWeekDayId']}
                             fieldKey={[field.key, 'fromWeekDayId']}
-                            className="w-1/4"
                         >
-                            <Select placeholder="From WeekDay Id">
+                            <Select placeholder="From Day">
                                 {weekDaysArr.map(day => (
                                     <Select.Option key={day.value} value={day.value}>
                                         {day.label}
@@ -481,12 +504,11 @@ export default function AddEditServiceCenter({id}: IProps) {
                         </Form.Item>
 
                         <Form.Item
-                            label={'To Day'}
+                            label={'To'}
                             name={[field.name, 'toWeekDayId']}
                             fieldKey={[field.key, 'toWeekDayId']}
-                            className="w-1/4"
                         >
-                            <Select placeholder="To WeekDay Id">
+                            <Select placeholder="To Day">
                                 {weekDaysArr.map(day => (
                                     <Select.Option key={day.value} value={day.value}>
                                         {day.label}
@@ -494,43 +516,54 @@ export default function AddEditServiceCenter({id}: IProps) {
                                 ))}
                             </Select>
                         </Form.Item>
+                      </Card>
 
+                      <Card className="w-1/2">
+                      <Divider orientation="left" className={"!my-0"}>
+                        <h3 className={"text-[25px]"}>Hours</h3>
+                      </Divider>
                         <Form.Item
-                            label={'From Hour'}
+                            label={'From'}
                             name={[field.name, 'fromHour']}
                             fieldKey={[field.key, 'fromHour']}
-                            className="w-1/4"
                         >
                             <TimePicker defaultValue={dayjs('00:00:00', 'HH:mm:ss')} className="w-full"/>
                         </Form.Item>
 
                         <Form.Item
-                            label={'To Hour'}
+                            label={'To'}
                             name={[field.name, 'toHour']}
                             fieldKey={[field.key, 'toHour']}
-                            className="w-1/4"
                         >
                             <TimePicker defaultValue={dayjs('00:00:00', 'HH:mm:ss')} className="w-full"/>
                         </Form.Item>
+                      </Card>
                     </div>
-
-
+                    
                         <Form.Item 
-                            className={"mb-0 font-bold"}
+                            className={"mb-0 font-bold mt-4"}
                             name={[field.name, 'closed']}
-                            label="closed"
+                            label="Closed"
                             valuePropName={"checked"}
                         >
                             <Checkbox/>
                         </Form.Item>
                     </Card>
                   })}
+
+     
+
+                <Form.Item className="text-right">
+                  <Button
+                    type={"primary"}
+                    onClick={() => add()}
+                  >
+                    + Add Working Hours Form
+                  </Button>
+                </Form.Item>
               </div>
             }}
-
           </Form.List>
-
-
           <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>Submit</Button>
         </Form>
         }
