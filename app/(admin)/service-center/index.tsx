@@ -53,34 +53,34 @@ const modules = {
 };
 
 const weekDaysArr = [
-    {
-        label: "Monday",
-        value: 0,
-    },
-    {
-        label: "Tuesday",
-        value: 1,
-    },
-    {
-        label: "Wednesday",
-        value: 2,
-    },
-    {
-        label: "Thursday",
-        value: 3,
-    },
-    {
-        label: "Friday",
-        value: 4,
-    },
-    {
-        label: "Saturday",
-        value: 5,
-    },
-    {
-        label: "Sunday",
-        value: 6,
-    },
+  {
+    label: "Monday",
+    value: 0,
+  },
+  {
+    label: "Tuesday",
+    value: 1,
+  },
+  {
+    label: "Wednesday",
+    value: 2,
+  },
+  {
+    label: "Thursday",
+    value: 3,
+  },
+  {
+    label: "Friday",
+    value: 4,
+  },
+  {
+    label: "Saturday",
+    value: 5,
+  },
+  {
+    label: "Sunday",
+    value: 6,
+  },
 ]
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
@@ -151,7 +151,7 @@ export default function AddEditServiceCenter({id}: IProps) {
     console.log("values", values)
     console.log("allValues", allValues)
   }
-  
+
   const onFinish = async (values: any) => {
     console.log("vv", values)
 
@@ -174,7 +174,7 @@ export default function AddEditServiceCenter({id}: IProps) {
           type: 'success',
           message: `Service Center was added`,
         });
-      isEditPage ? await refetch() : null;
+        isEditPage ? await refetch() : null;
         Router.push("/service-center")
       }
     } catch (e: any) {
@@ -220,11 +220,18 @@ export default function AddEditServiceCenter({id}: IProps) {
       console.log("dataServiceCenterDetails", dataServiceCenterDetails)
       const newData = {
         ...dataServiceCenterDetails,
+        useStartDateTimeMsec: dataServiceCenterDetails.useStartDateTimeMsec ? dayjs.unix(dataServiceCenterDetails.useStartDateTimeMsec / 1000) : null,
+        useEndDateTimeMsec: dataServiceCenterDetails.useEndDateTimeMsec ? dayjs.unix(dataServiceCenterDetails.useEndDateTimeMsec / 1000) : null,
         details: dataServiceCenterDetails?.details.map((detail: any) => ({
           ...detail,
-          useStartDateTimeMsec: detail.useStartDateTimeMsec ? dayjs.unix(detail.useStartDateTimeMsec / 1000) : null,
-          useEndDateTimeMsec: detail.useEndDateTimeMsec ? dayjs.unix(detail.useEndDateTimeMsec / 1000) : null,
+        })),
+
+        workingHours: dataServiceCenterDetails?.workingHours.map((workingHours: any) => ({
+          ...workingHours,
+          fromHour: dayjs(workingHours.fromHour, 'HH:mm:ss'),
+          toHour: dayjs(workingHours.toHour, 'HH:mm:ss')
         }))
+
       };
 
       console.log("data", newData)
@@ -253,13 +260,13 @@ export default function AddEditServiceCenter({id}: IProps) {
         ,
         "workingHours":
             [
-                {
-                    "fromWeekDayId": 0,
-                    "toWeekDayId": 0,
-                    "closed": false,
-                    "fromHour": null,
-                    "toHour": null,
-                }
+              {
+                "fromWeekDayId": 0,
+                "toWeekDayId": 0,
+                "closed": false,
+                "fromHour": null,
+                "toHour": null,
+              }
             ]
         ,
         "status": true,
@@ -305,17 +312,17 @@ export default function AddEditServiceCenter({id}: IProps) {
           </Form.Item>
 
           <Form.Item
-            name={'latitude'}
-            label={'latitude'}
+              name={'latitude'}
+              label={'latitude'}
           >
-            <InputNumber placeholder="latitude - Enter a number" className="w-full" />
+            <InputNumber placeholder="latitude - Enter a number" className="w-full"/>
           </Form.Item>
 
           <Form.Item
-            name={'longitude'}
-            label={'longitude'}
+              name={'longitude'}
+              label={'longitude'}
           >
-            <InputNumber placeholder="longitude - Enter a number" className="w-full" />
+            <InputNumber placeholder="longitude - Enter a number" className="w-full"/>
           </Form.Item>
 
           <div className={"flex gap-x-2 flex-nowrap"}>
@@ -333,7 +340,7 @@ export default function AddEditServiceCenter({id}: IProps) {
                 name={'useStartDateTimeMsec'}
                 label="useStartDate"
             >
-                <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+              <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
             </Form.Item>
 
             <Form.Item
@@ -348,45 +355,45 @@ export default function AddEditServiceCenter({id}: IProps) {
                 name={'useEndDateTimeMsec'}
                 label="useEndDate"
             >
-                <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+              <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
             </Form.Item>
           </div>
 
 
           <Form.Item label={'image'}
-            name={"imageData"}
-            valuePropName="value"
-            getValueFromEvent={(e: any) => {
-              console.log("eee", e)
-              if (e.file.status === 'done') {
-                return e.file.response
+                     name={"imageData"}
+                     valuePropName="value"
+                     getValueFromEvent={(e: any) => {
+                       console.log("eee", e)
+                       if (e.file.status === 'done') {
+                         return e.file.response
 
-              } else {
-                return {
-                  "size": null,
-                  "originalFileName": null,
-                  "imageName": null,
-                  "contentType": null,
-                  "url": null
-                }
-              }
-            }}
-            noStyle
+                       } else {
+                         return {
+                           "size": null,
+                           "originalFileName": null,
+                           "imageName": null,
+                           "contentType": null,
+                           "url": null
+                         }
+                       }
+                     }}
+                     noStyle
           >
 
             <Upload.Dragger
-              // fileList={getFileList()}
-              defaultFileList={fileList}
-              //     uid: '-1',
-              // name: 'image.png',
-              // status: 'done',
-              // url: data?.url,
-              listType={"picture-card"}
-              showUploadList={true}
-              maxCount={1}
-              multiple={false}
-              customRequest={(e) => uploadImage(e)}
-              onPreview={(e) => handlePreview(e)}
+                // fileList={getFileList()}
+                defaultFileList={fileList}
+                //     uid: '-1',
+                // name: 'image.png',
+                // status: 'done',
+                // url: data?.url,
+                listType={"picture-card"}
+                showUploadList={true}
+                maxCount={1}
+                multiple={false}
+                customRequest={(e) => uploadImage(e)}
+                onPreview={(e) => handlePreview(e)}
             >
               <p className="ant-upload-drag-icon">
                 <InboxOutlined/>
@@ -428,7 +435,7 @@ export default function AddEditServiceCenter({id}: IProps) {
                       >
                         <Input placeholder="title"/>
                       </Form.Item>
-                      
+
                       <Form.Item
                           name={[field.name, 'description']}
                           label={'description'}
@@ -453,110 +460,109 @@ export default function AddEditServiceCenter({id}: IProps) {
 
           <Form.List
               name="workingHours">
-            {(fields, { add, remove }, v) => {
+            {(fields, {add, remove}, v) => {
               return <div className={"flex flex-col gap-y-5"}>
                 {
                   fields.map((field, index, c) => {
                     console.log('field0', field)
                     return <Card
-                          key={fields[0].name + '' + index}
-                          className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2] mt-6"}
-                          title={
-                            <h3 className={"text-[25px] font-normal"}>Working Hours</h3>
-                          }
-                          extra={
+                        key={fields[0].name + '' + index}
+                        className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2] mt-6"}
+                        title={
+                          <h3 className={"text-[25px] font-normal"}>Working Hours</h3>
+                        }
+                        extra={
                             fields.length > 1 && <Popconfirm
-                            title="Delete the service center"
-                            description="Are you sure to delete this working hours form?"
-                            okText={"Yes"}
-                            onConfirm={() => remove(field.name)}
-                            icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+                                title="Delete the service center"
+                                description="Are you sure to delete this working hours form?"
+                                okText={"Yes"}
+                                onConfirm={() => remove(field.name)}
+                                icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
                             >
-                            <Tooltip title="Delete" placement={'bottom'}>
-                              <Button
-                                danger
-                                shape="circle"
-                                className={"flex items-center justify-center"}
-                                icon={<DeleteOutlined />}
-                              />
+                              <Tooltip title="Delete" placement={'bottom'}>
+                                <Button
+                                    danger
+                                    shape="circle"
+                                    className={"flex items-center justify-center"}
+                                    icon={<DeleteOutlined/>}
+                                />
                               </Tooltip>
                             </Popconfirm>
-                          }
-                        >
+                        }
+                    >
 
-                    <div className={"flex gap-x-4 w-full"}>
-                      <Card className="w-1/2">
-                      <Divider orientation="left" className={"!my-0"}>
-                        <h3 className={"text-[25px]"}>Days</h3>
-                      </Divider>
-                        <Form.Item
-                            label={'From'}
-                            name={[field.name, 'fromWeekDayId']}
-                            fieldKey={[field.key, 'fromWeekDayId']}
-                        >
+                      <div className={"flex gap-x-4 w-full"}>
+                        <Card className="w-1/2">
+                          <Divider orientation="left" className={"!my-0"}>
+                            <h3 className={"text-[25px]"}>Days</h3>
+                          </Divider>
+                          <Form.Item
+                              label={'From'}
+                              name={[field.name, 'fromWeekDayId']}
+                              fieldKey={[field.key, 'fromWeekDayId']}
+                          >
                             <Select placeholder="From Day">
-                                {weekDaysArr.map(day => (
-                                    <Select.Option key={day.value} value={day.value}>
-                                        {day.label}
-                                    </Select.Option>
-                                ))}
+                              {weekDaysArr.map(day => (
+                                  <Select.Option key={day.value} value={day.value}>
+                                    {day.label}
+                                  </Select.Option>
+                              ))}
                             </Select>
-                        </Form.Item>
+                          </Form.Item>
 
-                        <Form.Item
-                            label={'To'}
-                            name={[field.name, 'toWeekDayId']}
-                            fieldKey={[field.key, 'toWeekDayId']}
-                        >
+                          <Form.Item
+                              label={'To'}
+                              name={[field.name, 'toWeekDayId']}
+                              fieldKey={[field.key, 'toWeekDayId']}
+                          >
                             <Select placeholder="To Day">
-                                {weekDaysArr.map(day => (
-                                    <Select.Option key={day.value} value={day.value}>
-                                        {day.label}
-                                    </Select.Option>
-                                ))}
+                              {weekDaysArr.map(day => (
+                                  <Select.Option key={day.value} value={day.value}>
+                                    {day.label}
+                                  </Select.Option>
+                              ))}
                             </Select>
-                        </Form.Item>
-                      </Card>
+                          </Form.Item>
+                        </Card>
 
-                      <Card className="w-1/2">
-                      <Divider orientation="left" className={"!my-0"}>
-                        <h3 className={"text-[25px]"}>Hours</h3>
-                      </Divider>
-                        <Form.Item
-                            label={'From'}
-                            name={[field.name, 'fromHour']}
-                            fieldKey={[field.key, 'fromHour']}
-                        >
+                        <Card className="w-1/2">
+                          <Divider orientation="left" className={"!my-0"}>
+                            <h3 className={"text-[25px]"}>Hours</h3>
+                          </Divider>
+                          <Form.Item
+                              label={'From'}
+                              name={[field.name, 'fromHour']}
+                              fieldKey={[field.key, 'fromHour']}
+                          >
                             <TimePicker defaultValue={dayjs('00:00:00', 'HH:mm:ss')} className="w-full"/>
-                        </Form.Item>
+                          </Form.Item>
 
-                        <Form.Item
-                            label={'To'}
-                            name={[field.name, 'toHour']}
-                            fieldKey={[field.key, 'toHour']}
-                        >
+                          <Form.Item
+                              label={'To'}
+                              name={[field.name, 'toHour']}
+                              fieldKey={[field.key, 'toHour']}
+                          >
                             <TimePicker defaultValue={dayjs('00:00:00', 'HH:mm:ss')} className="w-full"/>
-                        </Form.Item>
-                      </Card>
-                    </div>
-                    
-                        <Form.Item 
-                            className={"mb-0 font-bold mt-4"}
-                            name={[field.name, 'closed']}
-                            label="Closed"
-                            valuePropName={"checked"}
-                        >
-                            <Checkbox/>
-                        </Form.Item>
+                          </Form.Item>
+                        </Card>
+                      </div>
+
+                      <Form.Item
+                          className={"mb-0 font-bold mt-4"}
+                          name={[field.name, 'closed']}
+                          label="Closed"
+                          valuePropName={"checked"}
+                      >
+                        <Checkbox/>
+                      </Form.Item>
                     </Card>
                   })}
 
-     
 
                 <Form.Item className="text-right">
                   <Button
-                    type={"primary"}
-                    onClick={() => add()}
+                      type={"primary"}
+                      onClick={() => add()}
                   >
                     + Add Working Hours Form
                   </Button>
