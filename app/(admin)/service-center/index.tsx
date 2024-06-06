@@ -467,7 +467,7 @@ export default function AddEditServiceCenter({id}: IProps) {
                           extra={
                             fields.length > 1 && <Popconfirm
                             title="Delete the service center"
-                            description="Are you sure to delete this service center?"
+                            description="Are you sure to delete this working hours form?"
                             okText={"Yes"}
                             onConfirm={() => remove(field.name)}
                             icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
