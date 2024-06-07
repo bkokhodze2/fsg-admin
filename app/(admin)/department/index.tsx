@@ -2,8 +2,6 @@
 import {axiosWithAuth} from "@/configs/axios";
 import {ArrowLeftOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
-import dayjs from "dayjs";
-import dynamic from "next/dynamic";
 import {useRouter, useParams} from "next/navigation";
 import React, {useState} from "react";
 import {
@@ -14,37 +12,6 @@ import {
   Checkbox
 } from 'antd';
 import {SizeType} from "antd/lib/config-provider/SizeContext";
-import type ReactQuill from 'react-quill';
-
-var customParseFormat = require('dayjs/plugin/customParseFormat')
-dayjs.extend(customParseFormat)
-
-const ReactQuillComponent = dynamic(
-    async () => {
-      const {default: RQ} = await import('react-quill');
-      // eslint-disable-next-line react/display-name
-      return ({...props}) => <RQ {...props} />;
-    },
-    {
-      ssr: false,
-    }
-) as typeof ReactQuill;
-import "react-quill/dist/quill.snow.css";
-
-const modules = {
-  toolbar: {
-    container: [
-      ["bold", "italic", "underline", "strike"], // Custom toolbar buttons
-      [{header: [1, 2, 3, 4, 5, 6, false]}],
-      [{list: "ordered"}, {list: "bullet"}],
-      [{indent: "-1"}, {indent: "+1"}],
-      [{align: []}],
-      [{color: []}, {background: []}], // Dropdown with color options
-      ["link", "image", "formula"],
-      ["clean"], // Remove formatting button
-    ],
-  },
-};
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 const fetchLanguages = async () => {
@@ -90,13 +57,8 @@ interface IProps {
 export default function AddEditDepartment({id}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
-  const Params = useParams();
-
-  console.log("Params", Params)
 
   const isEditPage = !!id;
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
 
   const {data: dataDepartmentDetails, refetch} = useQuery({
@@ -135,7 +97,7 @@ export default function AddEditDepartment({id}: IProps) {
           type: 'success',
           message: `Department was added`,
         });
-      isEditPage ? await refetch() : null;
+        isEditPage ? await refetch() : null;
         Router.push("/department")
       }
     } catch (e: any) {
@@ -146,8 +108,6 @@ export default function AddEditDepartment({id}: IProps) {
       });
     }
 
-    // Log the FormData object or submit it to the server
-    // You can also submit the formData to the server here
   };
 
   const getDefaultValue = () => {
@@ -159,8 +119,6 @@ export default function AddEditDepartment({id}: IProps) {
           ...detail,
         }))
       };
-
-      console.log("data", newData)
 
       return newData;
     } else {
@@ -212,39 +170,36 @@ export default function AddEditDepartment({id}: IProps) {
             </Radio.Group>
           </Form.Item>
 
-        <Form.Item
-            className={"mb-0"}
-            name={"useInContactUs"}
-            // label="Use In Contact Us"
-            valuePropName={"checked"}
-        >
+          <Form.Item
+              className={"mb-0"}
+              name={"useInContactUs"}
+              valuePropName={"checked"}
+          >
             <Checkbox>Use In Contact Us</Checkbox>
-        </Form.Item>
-
-        <Form.Item
-        className={"mb-0"}
-        name={"useInGetInTouch"}
-        // label="use In Get In Touch"
-        valuePropName={"checked"}
-        >
-            <Checkbox>Use In Get In Touch</Checkbox>
-        </Form.Item>
-
-        <Form.Item
-            className={"mb-0"}
-            name={"useInVacancy"}
-            // label="Use In Vacancy"
-            valuePropName={"checked"}
-        >
-            <Checkbox>Use In Vacancy</Checkbox>
-        </Form.Item>
+          </Form.Item>
 
           <Form.Item
-            name={'departmentMail'}
-            label={'Department Mail'}
-            rules={[{type:"email"}]}
+              className={"mb-0"}
+              name={"useInGetInTouch"}
+              valuePropName={"checked"}
           >
-            <Input placeholder="department mail" />
+            <Checkbox>Use In Get In Touch</Checkbox>
+          </Form.Item>
+
+          <Form.Item
+              className={"mb-0"}
+              name={"useInVacancy"}
+              valuePropName={"checked"}
+          >
+            <Checkbox>Use In Vacancy</Checkbox>
+          </Form.Item>
+
+          <Form.Item
+              name={'departmentMail'}
+              label={'Department Mail'}
+              rules={[{type: "email", message: "email is not valid"}]}
+          >
+            <Input placeholder="department mail"/>
           </Form.Item>
 
           <Form.List
@@ -267,7 +222,7 @@ export default function AddEditDepartment({id}: IProps) {
                       >
                         <Input placeholder="department name"/>
                       </Form.Item>
-                      
+
                       <Form.Item
                           name={[field.name, 'description']}
                           label={'description'}
