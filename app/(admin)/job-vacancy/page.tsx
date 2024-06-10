@@ -39,6 +39,21 @@ interface DataType {
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 const PAGE_SIZE = 10;
 
+const fetchDepartment = async (filter: IFilter) => {
+  try {
+    const {data} = await axiosWithAuth.get(`${BASEAPI}/department-editor/get-departments`);
+    return data;
+  } catch (error: any) {
+    notification.open({
+      type: 'error',
+      message: `department`,
+      description:
+          'Something went wrong while fetching department',
+    });
+
+  }
+}
+
 const fetchJobVacancy = async (filter: IFilter) => {
   try {
     const {data} = await axiosWithAuth.get(`${BASEAPI}/job-vacancy-editor/get-job-vacancies`);
@@ -84,6 +99,13 @@ export default function JobVacancy({searchParams}: IProps) {
     queryKey: ["jobVacancy", filter],
     queryFn: () => fetchJobVacancy(filter)
   });
+
+  const {data: departmentsData} = useQuery({
+    queryKey: ["department", filter],
+    queryFn: () => fetchDepartment(filter)
+  });
+
+  console.log('ibraimovic', departmentsData)
 
   useEffect(() => {
     const clearFilter: any = Object.fromEntries(
@@ -137,6 +159,19 @@ export default function JobVacancy({searchParams}: IProps) {
         return <p>{obj?.details?.[0]?.location}</p>
       }
     },
+
+    {
+      title: 'department',
+      dataIndex: 'department',
+      align: "center",
+      key: 'department',
+      render: (text, obj) => {
+        console.log("obj", obj)
+        const departmentName = departmentsData?.filter((item:any) => item?.details[0].departmentId === obj.departmentId && item)?.[0].details[0].departmentName
+        return <p>{departmentName}</p>
+      }
+    },
+
     {
       title: 'Action',
       key: 'action',
