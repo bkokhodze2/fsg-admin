@@ -1,16 +1,18 @@
 'use client'
-import React from "react";
 import {axiosWithAuth} from "@/configs/axios";
 import {ArrowLeftOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
 import {useRouter, useParams} from "next/navigation";
+import React from "react";
 import {
   Button,
   Form,
   Input,
   Card, Divider, notification, Radio,
+  DatePicker,
+  Select,
 } from 'antd';
 import {SizeType} from "antd/lib/config-provider/SizeContext";
 import type ReactQuill from 'react-quill';
@@ -61,11 +63,20 @@ const fetchLanguages = async () => {
   }
 }
 
-const fetchFaqDetailsById = async (id: number) => {
+interface IFilter {
+  pageNumber?: number,
+  pageSize?: number,
+  slug?: undefined | string,
+  content?: undefined | string,
+  departmentName?: undefined | string,
+  description?: undefined | string,
+}
+
+const fetchJobVacancyDetailsById = async (id: number) => {
   try {
-    const {data} = await axiosWithAuth.get(`/faq-editor/get-faq-details`, {
+    const {data} = await axiosWithAuth.get(`/job-vacancy-editor/get-job-vacancy-details`, {
       params: {
-        faqId: id
+        jobVacancyId: id
       }
     });
 
@@ -75,9 +86,23 @@ const fetchFaqDetailsById = async (id: number) => {
     console.log("errr", error)
     notification.open({
       type: 'error',
-      message: `faq`,
+      message: `job vacancy`,
       description:
-          'Something went wrong while fetching faq details',
+          'Something went wrong while fetching job vacancy details',
+    });
+  }
+}
+
+const fetchDepartment = async () => {
+  try {
+    const {data} = await axiosWithAuth.get(`${BASEAPI}/department-editor/get-departments`);
+    return data;
+  } catch (error: any) {
+    notification.open({
+      type: 'error',
+      message: `department`,
+      description:
+          'Something went wrong while fetching department',
     });
   }
 }
@@ -86,7 +111,7 @@ interface IProps {
   id?: number
 }
 
-export default function AddEditFaq({id}: IProps) {
+export default function AddEditJobVacancy({id}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
   const Params = useParams();
@@ -96,15 +121,22 @@ export default function AddEditFaq({id}: IProps) {
   const isEditPage = !!id;
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
 
-  const {data: dataFaqDetails, refetch} = useQuery({
-    queryKey: ['faqDetails', id],
-    queryFn: () => fetchFaqDetailsById(id as number),
+  const {data: dataJobVacancyDetails, refetch} = useQuery({
+    queryKey: ['jobVacancyDetails', id],
+    queryFn: () => fetchJobVacancyDetailsById(id as number),
     enabled: !!id,
     retry: 1,
     initialData: undefined,
     // retryDelay: 3000,
     staleTime: 0,
   });
+
+  const {data: dataDepartments, isLoading, isError} = useQuery({
+    queryKey: ["department"],
+    queryFn: () => fetchDepartment()
+  });
+  
+  // console.log('dataDepartments', dataDepartments)
 
 
   const onchange = (values: any, allValues: any) => {
@@ -119,21 +151,22 @@ export default function AddEditFaq({id}: IProps) {
       ...values,
       id: isEditPage ? id : undefined,
       details: values.details.map((detail: any) => ({
-        ...detail,
+          ...detail,
+          date: dayjs(detail?.date, 'DD-MM-YYYY HH:mm:ss').valueOf(),
       }))
     };
     console.log("modifiedValues", modifiedValues)
 
 
     try {
-      const res = await axiosWithAuth.post('/faq-editor/add-or-modify-faq', modifiedValues)
+      const res = await axiosWithAuth.post('/job-vacancy-editor/add-or-modify-job-vacancy', modifiedValues)
       if (res.status == 200) {
         notification.open({
           type: 'success',
-          message: `Faq was added`,
+          message: `Job Vacancy was added`,
         });
       isEditPage ? await refetch() : null;
-        Router.push("/faq")
+        Router.push("/job-vacancy")
       }
     } catch (e: any) {
       console.log("e",)
@@ -149,11 +182,12 @@ export default function AddEditFaq({id}: IProps) {
 
   const getDefaultValue = () => {
     if (isEditPage) {
-      console.log("dataFaqDetails", dataFaqDetails)
+      console.log("dataJobVacancyDetails", dataJobVacancyDetails)
       const newData = {
-        ...dataFaqDetails,
-        details: dataFaqDetails?.details.map((detail: any) => ({
-          ...detail,
+        ...dataJobVacancyDetails,
+        details: dataJobVacancyDetails?.details.map((detail: any) => ({
+            ...detail,
+            date: detail?.date ? dayjs.unix(detail.date / 1000) : null,
         }))
       };
 
@@ -166,14 +200,20 @@ export default function AddEditFaq({id}: IProps) {
       return {
         "id": null,
         "status": true,
+        "departmentId": dataDepartments?.[0]?.departmentId,
         "details":
             activeLanguages?.map(e => {
               return {
-                "question": null,
-                "answer": null,
+                "id": null,
+                "jobVacancyId": null,
                 "languageId": e.id,
-                "detailId": null,
-                "faqId": null,
+                "jobTitle": null,
+                "location": null,
+                "shortDescription": null,
+                "fullDescription": null,
+                "client": null,
+                "role": null,
+                "date": null
               }
             }),
       }
@@ -186,16 +226,33 @@ export default function AddEditFaq({id}: IProps) {
           <Button className={"flex items-center"} type="default" onClick={() => Router.back()}>
             <ArrowLeftOutlined/>back</Button>
 
-          <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Faq" : "Add Faq"}</h2>
+          <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Job Vacancy" : "Add Job Vacancy"}</h2>
         </div>
         <Divider className={"my-3"}/>
-        {((isEditPage && dataFaqDetails) || (!isEditPage && dataLanguages)) && <Form
+        {((isEditPage && dataJobVacancyDetails) || (!isEditPage && dataLanguages)) && <Form
             form={form}
             layout="vertical"
             onValuesChange={onchange}
             onFinish={onFinish}
             size={'default' as SizeType}
             initialValues={getDefaultValue()}>
+
+
+        <Form.Item name={"departmentId"} label="Department" className={"mt-2"}>
+            <Select
+              defaultValue="Select Department"
+              // showSearch
+              // optionFilterProp="children"
+              // filterOption={(input, option) => (option?.label ?? '')?.includes(input)}
+              // filterSort={(optionA, optionB) =>
+              //   (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())
+              // }
+            >
+              {dataDepartments?.filter((e:any) => e?.useInVacancy)?.map((e:any) => {
+                return <Select.Option value={e.id} key={e.id}>{e?.details?.[0]?.departmentName}</Select.Option>
+              })}
+            </Select>
+          </Form.Item>
 
           <Form.Item className={"mb-0"} name={'status'} label="status"
                      valuePropName={"value"}>
@@ -220,17 +277,64 @@ export default function AddEditFaq({id}: IProps) {
                         <h3 className={"text-[25px]"}>{findLang}</h3>
                       </Divider>
                       <Form.Item
-                          name={[field.name, 'question']}
-                          label={'question'}
+                          name={[field.name, 'jobTitle']}
+                          label={'job title'}
                       >
-                        <Input placeholder="question"/>
+                        <Input placeholder="job title"/>
                       </Form.Item>
                       
                       <Form.Item
-                          name={[field.name, 'answer']}
-                          label={'answer'}
+                          name={[field.name, 'location']}
+                          label={'location'}
                       >
-                        <Input placeholder="answer"/>
+                        <Input placeholder="location"/>
+                      </Form.Item>
+
+                                            
+                      <Form.Item
+                          name={[field.name, 'shortDescription']}
+                          label={'short description'}
+                      >
+                        <Input placeholder="short description"/>
+                      </Form.Item>
+
+                      <Form.Item
+                          name={[field.name, 'fullDescription']}
+                          label={'full description'}
+                      >
+                        <Input placeholder="full description"/>
+                      </Form.Item>
+
+                      <Form.Item
+                          name={[field.name, 'client']}
+                          label={'client'}
+                      >
+                        <Input placeholder="client"/>
+                      </Form.Item>
+
+                      <Form.Item
+                          name={[field.name, 'role']}
+                          label={'role'}
+                      >
+                        <Input placeholder="role"/>
+                      </Form.Item>
+
+                      <Form.Item
+                        // initialValue={dayjs('YYYY-MM-DD HH:mm:ss')}
+                        // valuePropName={"aba"}
+                        // getValueFromEvent={(e: any) => {
+                        //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
+                        //   return date.valueOf();
+                        // }}
+                        // getValueProps={(e: string) => ({
+                        //   value: e ? dayjs(e) : "",
+                        // })}
+                        className={"mb-0"}
+                        name={[field.name, 'date']}
+                        fieldKey={[field.key, 'date']}
+                        label="date"
+                      >
+                      <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
                       </Form.Item>
                     </Card>
                   })}

@@ -53,10 +53,11 @@ const items: MenuItem[] = [
   getItem((<Link href={"/news"}>News</Link>), '5', <FileOutlined/>),
   getItem((<Link href={"/timeline"}>Timeline</Link>), '6', <DesktopOutlined/>),
   getItem((<Link href={"/info-card"}>Info Card</Link>), '7', <FileOutlined/>),
-  getItem((<Link href={"/management"}>Management Persons</Link>), '8', <UserOutlined/>),
+  getItem((<Link href={"/management"}>Management</Link>), '8', <UserOutlined/>),
   getItem((<Link href={"/service-center"}>Service Center</Link>), '9', <FileOutlined/>),
   getItem((<Link href={"/department"}>Department</Link>), '10', <FileOutlined/>),
   getItem((<Link href={"/faq"}>Faq</Link>), '11', <FileOutlined/>),
+  getItem((<Link href={"/job-vacancy"}>Job Vacancy</Link>), '12', <FileOutlined/>),
 ];
 
 const items2: MenuItem[] = [

@@ -228,8 +228,8 @@ export default function AddEditServiceCenter({id}: IProps) {
 
         workingHours: dataServiceCenterDetails?.workingHours.map((workingHours: any) => ({
           ...workingHours,
-          fromHour: dayjs(workingHours.fromHour, 'HH:mm:ss'),
-          toHour: dayjs(workingHours.toHour, 'HH:mm:ss')
+          fromHour: dayjs(workingHours.fromHour, 'HH:mm'),
+          toHour: dayjs(workingHours.toHour, 'HH:mm')
         }))
 
       };
@@ -534,7 +534,7 @@ export default function AddEditServiceCenter({id}: IProps) {
                               name={[field.name, 'fromHour']}
                               fieldKey={[field.key, 'fromHour']}
                           >
-                            <TimePicker defaultValue={dayjs('00:00:00', 'HH:mm:ss')} className="w-full"/>
+                            <TimePicker format="HH:mm" defaultValue={dayjs('00:00', 'HH:mm')} className="w-full"/>
                           </Form.Item>
 
                           <Form.Item
@@ -542,7 +542,7 @@ export default function AddEditServiceCenter({id}: IProps) {
                               name={[field.name, 'toHour']}
                               fieldKey={[field.key, 'toHour']}
                           >
-                            <TimePicker defaultValue={dayjs('00:00:00', 'HH:mm:ss')} className="w-full"/>
+                            <TimePicker format="HH:mm" defaultValue={dayjs('00:00', 'HH:mm')} className="w-full"/>
                           </Form.Item>
                         </Card>
                       </div>
