@@ -1,7 +1,6 @@
 'use client'
-import {axiosClassic} from "@/configs/axios";
 import {authService} from "@/services/auth.service";
-import {LockFilled, LockOutlined, UserOutlined} from "@ant-design/icons";
+import {LockOutlined, UserOutlined} from "@ant-design/icons";
 import React from 'react';
 import type {FormProps} from 'antd';
 import {Button, Card, Checkbox, Divider, Form, Input, notification, Watermark} from 'antd';

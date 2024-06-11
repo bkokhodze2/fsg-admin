@@ -1,7 +1,6 @@
 'use client'
 import AddEditTimeline from "@/app/(admin)/timeline";
-import React, {useState} from "react";
-import {useRouter} from "next/navigation";
+import React from "react";
 
 interface IPageProps {
   params: {
@@ -15,6 +14,6 @@ interface IPageProps {
 export default function TimelineEdit({params, searchParams}: IPageProps) {
 
   return (
-      <AddEditTimeline id={params.id as number}/>
+      <AddEditTimeline id={Number(params.id) as number}/>
   );
 }

@@ -1,11 +1,11 @@
 'use client'
 import {authService} from "@/services/auth.service";
 import {Layout, Menu, MenuProps, theme} from 'antd';
+import Image from "next/image";
+import logoWithText from "../../public/images/logo.svg"
+import logo from "../../public/images/favIcon.png"
 
-import {
-  DesktopOutlined, FileOutlined, FolderOpenOutlined,
-  TeamOutlined,
-} from '@ant-design/icons';
+import { DesktopOutlined, FileOutlined, FolderOpenOutlined, UserOutlined } from '@ant-design/icons';
 import Link from "next/link";
 import {useState} from "react";
 
@@ -52,8 +52,12 @@ const items: MenuItem[] = [
 
   getItem((<Link href={"/news"}>News</Link>), '5', <FileOutlined/>),
   getItem((<Link href={"/timeline"}>Timeline</Link>), '6', <DesktopOutlined/>),
-
-
+  getItem((<Link href={"/info-card"}>Info Card</Link>), '7', <FileOutlined/>),
+  getItem((<Link href={"/management"}>Management</Link>), '8', <UserOutlined/>),
+  getItem((<Link href={"/service-center"}>Service Center</Link>), '9', <FileOutlined/>),
+  getItem((<Link href={"/department"}>Department</Link>), '10', <FileOutlined/>),
+  getItem((<Link href={"/faq"}>Faq</Link>), '11', <FileOutlined/>),
+  getItem((<Link href={"/job-vacancy"}>Job Vacancy</Link>), '12', <FileOutlined/>),
 ];
 
 const items2: MenuItem[] = [
@@ -69,7 +73,7 @@ export default function AdminLayout({children,}: Readonly<{ children: React.Reac
   } = theme.useToken();
 
   return (
-      <Layout className={"overflow-y-scroll admin-layout"}>
+      <Layout className={"admin-layout"}>
         <Sider trigger={null}
                collapsible
                collapsed={collapsed}
@@ -77,15 +81,20 @@ export default function AdminLayout({children,}: Readonly<{ children: React.Reac
           <div>
             <div
                 onClick={() => setCollapsed(!collapsed)}
-                className="demo-logo-vertical min-h-[80px] bg-[gray] mx-[3px] roundex-xl flex items-center justify-center">
-              <h1 className={"text-[#FFFFFF]"}>logo</h1>
+                className="demo-logo-vertical min-h-[80px] roundex-xl flex items-center justify-center border-b-[1px]">
+              {
+                collapsed ? 
+                  <Image src={logo} width={50} height={50} alt='logo' className="cursor-pointer"/>
+                :
+                  <Image src={logoWithText} width={100} height={100} alt='logo' className="cursor-pointer" />
+              }
             </div>
             <Menu theme="dark" mode="vertical" defaultSelectedKeys={['']} items={items}/>
           </div>
 
           <Menu theme="dark" mode="inline" items={items2}/>
         </Sider>
-        <Layout className={"overflow-y-scroll min-h-[100vh]"}
+        <Layout className={"min-h-[100vh]"}
                 style={{
                   transition: '0.2s',
                   marginLeft: collapsed ? "80px" : "200px"

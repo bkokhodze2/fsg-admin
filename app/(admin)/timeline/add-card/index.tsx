@@ -1,19 +1,19 @@
 'use client'
 import {axiosWithAuth} from "@/configs/axios";
-import {ArrowLeftOutlined, EditOutlined, InboxOutlined, LeftCircleOutlined, RollbackOutlined} from "@ant-design/icons";
+import {ArrowLeftOutlined, InboxOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
-import dayjs, {unix} from "dayjs";
+import dayjs from "dayjs";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import {useRouter} from "next/navigation";
 import React, {useState} from "react";
 import {
   Button, Image,
-  DatePicker,
   Form,
   Input,
   Upload,
-  Select, Space, Card, Divider, notification, Radio, Tooltip,
+  Card,
+  Divider,
+  notification,
 } from 'antd';
 import {SizeType} from "antd/lib/config-provider/SizeContext";
 import type ReactQuill from 'react-quill';
@@ -81,7 +81,7 @@ const fetchTimelineDetailsById = async (id: number) => {
   try {
     const {data} = await axiosWithAuth.get(`/timeline-editor/get-timeline-item-detail`, {
       params: {
-        timelineDetailId: id
+        timelineItemId: id
       }
     });
 
@@ -109,11 +109,13 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
 
   const isEditPage = !!id;
 
-  // const isAddPage = parentId
+  console.log('params id,::', id)
+  console.log('params parentId,:', parentId)
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
+  console.log('dataLanguages', dataLanguages)
 
   const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
   
@@ -122,7 +124,6 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
     queryFn: () => fetchTimelineDetailsById(id as number),
     enabled: !!id
   });
-  // console.log("parentId", parentId)
 
   const onchange = (values: any) => {
     console.log("values", values)
@@ -131,25 +132,29 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
     console.log("vv", values)
 
     // Modify the form data here before submitting
+
+    console.log("values", values?.timelineDetails)
     const modifiedValues = {
       ...values,
-      timelineId: isEditPage ? id : parentId,
-      timelineDetails: values.timelineDetails.map((detail: any) => ({
+      // timelineId: isEditPage ? id : parentId,
+      timelineId: id ? dataTimelineDetails.timelineId : parentId, 
+      timelineItemId:  id ? Number(id) : null,
+      timelineDetails: values?.timelineDetails.map((detail: any) => ({
         ...detail,
+        languageId: 1,
       }))
     };
     console.log("modifiedValues", modifiedValues)
-    console.log('alex', parentId)
-
+    console.log("dataTimelineDetails", dataTimelineDetails)
 
     try {
-      const res = await axiosWithAuth.post('timeline-editor/add-or-modify-timeline-detail', modifiedValues)
+      const res = await axiosWithAuth.post('/timeline-editor/add-or-modify-timeline-item', modifiedValues)
       if (res.status == 200) {
         notification.open({
           type: 'success',
           message: `timeline card was added`,
         });
-        Router.push(`/timeline/edit/${id || parentId}`)
+        Router.push(`/timeline/edit/${parentId|| dataTimelineDetails.timelineId || id}`)
       }
     } catch (e: any) {
       console.log("e",)
@@ -207,7 +212,7 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
       const activeLanguages = dataLanguages?.filter(e => e.active === true)
       return {
         "id": 0,
-        "categoryIdList": [dataCategories?.[0]?.id],
+        // "categoryIdList": [dataCategories?.[0]?.id],
         "timelineId": id,
         "timelineDetails":
             activeLanguages?.map(e => {
@@ -252,13 +257,13 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
                 size={'default' as SizeType}
                 initialValues={getDefaultValue()}>
 
-            <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
+            {/* <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
                 <Select mode={"multiple"}>
                 {dataCategories?.map((e) => {
                     return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
                 })}
                 </Select>
-            </Form.Item>
+            </Form.Item> */}
             
             <Form.List
                 name="timelineDetails"
