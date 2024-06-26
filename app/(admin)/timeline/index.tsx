@@ -18,6 +18,7 @@ import {
   Card,
   Divider,
   notification,
+  Popconfirm,
 } from 'antd';
 
 import {HolderOutlined} from '@ant-design/icons';
@@ -340,8 +341,18 @@ export default function AddEditTimeline({id}: IProps) {
       <div className={"p-2 pb-[60px] flex gap-x-20 w-full"}>
         <div className="w-1/2">
           <div className={"w-full flex justify-between items-center mb-4"}>
-            <Button className={"flex items-center"} type="default" onClick={() => Router.back()}>
-              <ArrowLeftOutlined/>back</Button>
+            <Popconfirm
+              title="return back"
+              description="Are you sure you want to go back? The current changes will be lost"
+              okText={"Yes"}
+              onConfirm={() => Router.back()}
+              // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+            >
+              <Button className={"flex items-center"} type="default">
+                <ArrowLeftOutlined/>
+                Back
+              </Button>
+            </Popconfirm>
 
             <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Timeline" : "Add Timeline"}</h2>
           </div>

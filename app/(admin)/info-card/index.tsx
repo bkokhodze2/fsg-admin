@@ -11,7 +11,8 @@ import {
   Form,
   Input,
   Upload,
-  Select, Space, Card, Divider, notification, Radio
+  Select, Space, Card, Divider, notification, Radio,
+  Popconfirm
 } from 'antd';
 import {SizeType} from "antd/lib/config-provider/SizeContext";
 import type ReactQuill from 'react-quill';
@@ -250,8 +251,19 @@ export default function AddEditInfoCard({id}: IProps) {
   return (
       <div className={"p-2 pb-[60px]"}>
         <div className={"w-full flex justify-between items-center mb-4"}>
-          <Button className={"flex items-center"} type="default" onClick={() => Router.back()}>
-            <ArrowLeftOutlined/>back</Button>
+
+            <Popconfirm
+              title="return back"
+              description="Are you sure you want to go back? The current changes will be lost"
+              okText={"Yes"}
+              onConfirm={() => Router.back()}
+              // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+            >
+              <Button className={"flex items-center"} type="default">
+                <ArrowLeftOutlined/>
+                Back
+              </Button>
+            </Popconfirm>
 
           {/*<Tooltip title="Edit" placement={'bottom'}>*/}
           {/*  <Link href={``}>*/}
