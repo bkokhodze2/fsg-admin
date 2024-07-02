@@ -146,6 +146,24 @@ export default function AddEditServiceCenter({id}: IProps) {
     staleTime: 0,
   });
 
+  const fetchCategories = async () => {
+    try {
+      const {data} = await axiosWithAuth.get(`${BASEAPI}/service-center-editor/get-info-card-categories`);
+      return data;
+    } catch (error: any) {
+      console.log("errr", error)
+      notification.open({
+        type: 'error',
+        message: `categories`,
+        description:
+            'Something went wrong while fetching categories',
+      });
+    }
+  }
+
+  const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
+
+
 
   const onchange = (values: any, allValues: any) => {
     console.log("values", values)
@@ -241,6 +259,9 @@ export default function AddEditServiceCenter({id}: IProps) {
       const activeLanguages = dataLanguages?.filter(e => e.active === true)
 
       return {
+        "categoryIdList": [dataCategories?.[0].id],
+        "phoneNumber": null,
+        "link": null,
         "imageData": {
           "size": null,
           "originalFileName": null,
@@ -278,8 +299,6 @@ export default function AddEditServiceCenter({id}: IProps) {
         "useStartDateTimeMsec": null,
         "useEndDateTimeMsec": null,
       }
-
-
     }
   }
 
@@ -313,6 +332,14 @@ export default function AddEditServiceCenter({id}: IProps) {
             size={'default' as SizeType}
             initialValues={getDefaultValue()}>
 
+            <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
+                <Select mode={"multiple"}>
+                {dataCategories?.map((e) => {
+                    return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
+                })}
+                </Select>
+            </Form.Item>
+
           <Form.Item className={"mb-0"} name={'status'} label="status"
                      valuePropName={"value"}>
             <Radio.Group buttonStyle="solid">
@@ -334,6 +361,22 @@ export default function AddEditServiceCenter({id}: IProps) {
           >
             <InputNumber placeholder="longitude - Enter a number" className="w-full"/>
           </Form.Item>
+
+
+          <Form.Item
+              name={'phoneNumber'}
+              label={'Phone Number'}
+          >
+            <InputNumber placeholder="Phone - Enter a phone number" className="w-full"/>
+          </Form.Item>
+
+          <Form.Item
+              name={'link'}
+              label={'Link'}
+          >
+            <InputNumber placeholder="Link" className="w-full"/>
+          </Form.Item>
+
 
           <div className={"flex gap-x-2 flex-nowrap"}>
             <Form.Item

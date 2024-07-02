@@ -33,6 +33,21 @@ const ReactQuillComponent = dynamic(
 ) as typeof ReactQuill;
 import "react-quill/dist/quill.snow.css";
 
+const modules = {
+  toolbar: {
+    container: [
+      ["bold", "italic", "underline", "strike"], // Custom toolbar buttons
+      [{header: [1, 2, 3, 4, 5, 6, false]}],
+      [{list: "ordered"}, {list: "bullet"}],
+      [{indent: "-1"}, {indent: "+1"}],
+      [{align: []}],
+      [{color: []}, {background: []}], // Dropdown with color options
+      ["link", "image", "video", "formula"],
+      ["clean"], // Remove formatting button
+    ],
+  },
+};
+
 // const modules = {
 //   toolbar: {
 //     container: [
@@ -212,9 +227,11 @@ export default function AddEditJobVacancy({id}: IProps) {
                 "location": null,
                 "shortDescription": null,
                 "fullDescription": null,
-                "client": null,
-                "role": null,
-                "date": null
+                "description1": null,
+                "description2": null,
+                // "client": null,
+                // "role": null,
+                // "date": null
               }
             }),
       }
@@ -316,7 +333,7 @@ export default function AddEditJobVacancy({id}: IProps) {
                         <Input placeholder="full description"/>
                       </Form.Item>
 
-                      <Form.Item
+                      {/* <Form.Item
                           name={[field.name, 'client']}
                           label={'client'}
                       >
@@ -328,8 +345,8 @@ export default function AddEditJobVacancy({id}: IProps) {
                           label={'role'}
                       >
                         <Input placeholder="role"/>
-                      </Form.Item>
-
+                      </Form.Item> */}
+{/* 
                       <Form.Item
                         // initialValue={dayjs('YYYY-MM-DD HH:mm:ss')}
                         // valuePropName={"aba"}
@@ -346,9 +363,32 @@ export default function AddEditJobVacancy({id}: IProps) {
                         label="date"
                       >
                       <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+                      </Form.Item> */}
+
+                      <Form.Item
+                          name={[field.name, 'description1']}
+                          label={`Vacancy Description 1`}
+                          valuePropName="value"
+                          getValueFromEvent={(value) => value}>
+                        <ReactQuillComponent
+                            modules={modules}
+                            className={`textEditor border markGeo`}
+                        />
+                      </Form.Item>
+
+                      <Form.Item
+                          name={[field.name, 'description2']}
+                          label={`Vacancy Description 2`}
+                          valuePropName="value"
+                          getValueFromEvent={(value) => value}>
+                        <ReactQuillComponent
+                            modules={modules}
+                            className={`textEditor border markGeo`}
+                        />
                       </Form.Item>
                     </Card>
                   })}
+
               </div>
             }}
           </Form.List>
