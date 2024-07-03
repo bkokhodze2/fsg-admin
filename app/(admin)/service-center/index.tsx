@@ -148,7 +148,7 @@ export default function AddEditServiceCenter({id}: IProps) {
 
   const fetchCategories = async () => {
     try {
-      const {data} = await axiosWithAuth.get(`${BASEAPI}/service-center-editor/get-info-card-categories`);
+      const {data} = await axiosWithAuth.get(`${BASEAPI}/service-center-editor/get-service-center-categories`);
       return data;
     } catch (error: any) {
       console.log("errr", error)
@@ -161,7 +161,23 @@ export default function AddEditServiceCenter({id}: IProps) {
     }
   }
 
+  const fetchSettlements = async () => {
+    try {
+      const {data} = await axiosWithAuth.get(`${BASEAPI}/service-center-editor/get-service-center-settlements`);
+      return data;
+    } catch (error: any) {
+      console.log("errr", error)
+      notification.open({
+        type: 'error',
+        message: `settlements`,
+        description:
+            'Something went wrong while fetching settlements',
+      });
+    }
+  }
+
   const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
+  const {data: dataSettlements} = useQuery<ISettlements[]>({queryKey: ["settlements"], queryFn: fetchSettlements});
 
 
 
@@ -260,6 +276,17 @@ export default function AddEditServiceCenter({id}: IProps) {
 
       return {
         "categoryIdList": [dataCategories?.[0].id],
+        "settlementId": dataSettlements?.[4].nameGeo,
+        "settlementDataForResult": {
+          "id": null,
+          "typeId": null,
+          "nameGeo": null,
+          "nameEng": null,
+          "community": null,
+          "communityGeo": null,
+          "regionId": null,
+          "municipalityId": null
+        },
         "phoneNumber": null,
         "link": null,
         "imageData": {
@@ -324,7 +351,7 @@ export default function AddEditServiceCenter({id}: IProps) {
           <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Service Center" : "Add Service Center"}</h2>
         </div>
         <Divider className={"my-3"}/>
-        {((isEditPage && dataServiceCenterDetails) || (!isEditPage && dataLanguages)) && <Form
+        {((isEditPage && dataServiceCenterDetails ) || (!isEditPage && dataLanguages && dataSettlements)) && <Form
             form={form}
             layout="vertical"
             onValuesChange={onchange}
@@ -336,6 +363,14 @@ export default function AddEditServiceCenter({id}: IProps) {
                 <Select mode={"multiple"}>
                 {dataCategories?.map((e) => {
                     return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
+                })}
+                </Select>
+            </Form.Item>
+
+            <Form.Item name={"settlementId"} label="settlement" className={"mt-2"}>
+                <Select>
+                {dataSettlements?.map((e) => {
+                    return <Select.Option value={e.id} key={e.id}>{e.nameGeo}</Select.Option>
                 })}
                 </Select>
             </Form.Item>
