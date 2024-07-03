@@ -227,8 +227,8 @@ export default function AddEditJobVacancy({id}: IProps) {
                 "location": null,
                 "shortDescription": null,
                 "fullDescription": null,
-                "description1": null,
-                "description2": null,
+                "descriptionText1": null,
+                "descriptionText2": null,
                 // "client": null,
                 // "role": null,
                 // "date": null
@@ -366,8 +366,8 @@ export default function AddEditJobVacancy({id}: IProps) {
                       </Form.Item> */}
 
                       <Form.Item
-                          name={[field.name, 'description1']}
-                          label={`Vacancy Description 1`}
+                          name={[field.name, 'descriptionText1']}
+                          label={`Description Text 1`}
                           valuePropName="value"
                           getValueFromEvent={(value) => value}>
                         <ReactQuillComponent
@@ -377,8 +377,8 @@ export default function AddEditJobVacancy({id}: IProps) {
                       </Form.Item>
 
                       <Form.Item
-                          name={[field.name, 'description2']}
-                          label={`Vacancy Description 2`}
+                          name={[field.name, 'descriptionText2']}
+                          label={`Description Text 2`}
                           valuePropName="value"
                           getValueFromEvent={(value) => value}>
                         <ReactQuillComponent
