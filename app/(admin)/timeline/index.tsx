@@ -160,6 +160,7 @@ export default function AddEditTimeline({id}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
   const [dataSource, setDataSource] = useState<DataType[]>([]);
+  const [disabledSaveCardsOrderingBtn, setDisabledSaveCardsOrderingBtn] = useState(true)
 
   console.log('adatasocrce', dataSource)
 
@@ -307,6 +308,7 @@ export default function AddEditTimeline({id}: IProps) {
   }
 
   const postSortedData = async (sortedData: DataType[]) => {
+    setDisabledSaveCardsOrderingBtn(true)
     const sortElements = sortedData.map((item, index) => {
     // console.log('item', item)
      return {
@@ -334,6 +336,7 @@ export default function AddEditTimeline({id}: IProps) {
         // postSortedData(newData);
         return newData;
       });
+      setDisabledSaveCardsOrderingBtn(false)
     }
   };
 
@@ -485,11 +488,11 @@ export default function AddEditTimeline({id}: IProps) {
           <div className="mt-10 ml-14 flex gap-x-4">
             <Link href={`/timeline/add-card/${dataTimelineDetails?.id}`}>
               <Button disabled={!id} type="primary" className={"flex items-center gap-x-2"}>
-                <p>Add Timeline Card</p>
+                Add Timeline Card
               </Button>
             </Link>
             
-           {dataSource?.length > 1 && <Button type="primary" className="" onClick={() => postSortedData(dataSource)}>Save Cards Ordering</Button> }
+           {dataSource?.length > 1 && <Button type="primary" className="" disabled={disabledSaveCardsOrderingBtn} onClick={() => postSortedData(dataSource)}>Save Cards Ordering</Button> }
           </div>
         </div>
       </div>
