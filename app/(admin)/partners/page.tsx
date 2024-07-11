@@ -16,6 +16,7 @@ import {
   Card,
   Divider,
   notification,
+  Radio,
 } from 'antd';
 
 import {HolderOutlined} from '@ant-design/icons';
@@ -254,7 +255,6 @@ export default function PartnersPage({id}: IProps) {
 
       return {
         "id": 0,
-        "status": true,
         "partnerItems": [
           {
             "id": null,
@@ -281,8 +281,8 @@ export default function PartnersPage({id}: IProps) {
                 "id": null,
                 "partnerId": null,
               }
-            }),
-        
+          }),
+        "status": true,
       }
     }
   }
@@ -332,6 +332,14 @@ export default function PartnersPage({id}: IProps) {
               onFinish={onFinish}
               size={'default' as SizeType}
               initialValues={getDefaultValue()}>
+
+
+            <Form.Item className={"mb-0"} name={'status'} label="status" valuePropName={"value"}>
+              <Radio.Group buttonStyle="solid">
+                <Radio.Button value={true}>active</Radio.Button>
+                <Radio.Button className={""} value={false}>disable</Radio.Button>
+              </Radio.Group>
+            </Form.Item>
 
             <Form.List
                 name="details"
