@@ -58,6 +58,7 @@ const items: MenuItem[] = [
   getItem((<Link href={"/department"}>Department</Link>), '10', <FileOutlined/>),
   getItem((<Link href={"/faq"}>Faq</Link>), '11', <FileOutlined/>),
   getItem((<Link href={"/job-vacancy"}>Job Vacancy</Link>), '12', <FileOutlined/>),
+  getItem((<Link href={`/partners/edit/${1}`}>Partners</Link>), '13', <FileOutlined/>),
 ];
 
 const items2: MenuItem[] = [
