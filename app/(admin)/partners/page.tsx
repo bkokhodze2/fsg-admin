@@ -1,8 +1,7 @@
 'use client'
-import TimelineCard from "@/components/items/TimelineCard";
+import PartnerCard from "@/components/items/PartnerCard";
 import React, {useState, useContext, useMemo, useId} from "react";
 import {axiosWithAuth} from "@/configs/axios";
-import {ArrowLeftOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
 import dayjs from "dayjs";
 
@@ -14,11 +13,10 @@ import {
   Form,
   Input,
   Table,
-  Select,
   Card,
   Divider,
   notification,
-  Popconfirm,
+  Radio,
 } from 'antd';
 
 import {HolderOutlined} from '@ant-design/icons';
@@ -53,20 +51,6 @@ const fetchLanguages = async () => {
     });
   }
 }
-const fetchCategories = async () => {
-  try {
-    const {data} = await axiosWithAuth.get(`${BASEAPI}/timeline-editor/get-timeline-categories`);
-    return data;
-  } catch (error: any) {
-    console.log("errr", error)
-    notification.open({
-      type: 'error',
-      message: `categories`,
-      description:
-          'Something went wrong while fetching categories',
-    });
-  }
-}
 
 interface IProps {
   id?: number
@@ -77,22 +61,22 @@ interface DataType {
   title: string;
   subTitle: string;
   id: number;
-  timelineItemId: number;
-  timelineDetailId: number;
-  timelineId?: number;
+  partnerItemId: number;
+  partnerDetailId: number;
+  partnerId?: number;
   imageData: {
     originalFileName: string;
     imageName: string;
     contentType: string;
     url: string;
   };
-  timelineDetails?: any;
+  partnerItems?: any;
 }
 
-interface TimelineDetails {
-  timelineItemId?: number;
-  timelineId: number;
-  timelineDetails: [DataType];
+interface PartnerDetails {
+  partnerItemId?: number;
+  partnerId: number;
+  partnerDetails: [DataType];
 }
 
 interface RowContextProps {
@@ -156,65 +140,60 @@ const Row: React.FC<RowProps> = (props) => {
 };
 
 
-export default function AddEditTimeline({id}: IProps) {
+export default function PartnersPage({id}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
   const [dataSource, setDataSource] = useState<DataType[]>([]);
   const [disabledSaveCardsOrderingBtn, setDisabledSaveCardsOrderingBtn] = useState(true)
 
-  console.log('adatasocrce', dataSource)
 
-  const fetchTimelineDetailsById = async (id: number) => {
-    console.log('id', id)
+  const fetchPartnerDetailsById = async (id: number) => {
     try {
-      const {data} = await axiosWithAuth.get(`/timeline-editor/get-timeline-detail`, {
+      const {data} = await axiosWithAuth.get(`/partner-editor/get-partner-detail`, {
         params: {
-          timelineId: id
+          partnerId: id
         }
       });
-      console.log('timelineData', data)
-      setDataSource(data?.timelineItems)
+      console.log('partnerData', data)
+      setDataSource(data?.partnerItems)
       return data;
 
     } catch (error: any) {
       console.log("errr", error)
       notification.open({
         type: 'error',
-        message: `timeline`,
+        message: `partner`,
         description:
-            'Something went wrong while fetching timeline details',
+            'Something went wrong while fetching partner details',
       });
     }
   }
+
   const id2 = useId()
 
 
   const isEditPage = !!id;
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
 
-  const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
-
-  const {data: dataTimelineDetails, refetch} = useQuery({
+  const {data: dataPartnerDetails, refetch} = useQuery({
     queryKey: ['details', id],
-    queryFn: () => fetchTimelineDetailsById(id as number),
+    queryFn: () => fetchPartnerDetailsById(id as number),
     enabled: !!id
   });
 
   const columns: ColumnsType<DataType> = [
     {key: 'sort', align: 'center', width: 80, render: () => <DragHandle/>},
     {
-      title: 'Timeline Items',
-      dataIndex: 'timelineItemId',
-
+      title: 'Partner Items',
+      dataIndex: 'id',
       render: (_, record, a) => {
         console.log("reccccc", record, a)
-        console.log('taimlainis data::::', record?.timelineDetails?.[0])
         return (
-          <TimelineCard 
-            timelineId={record.timelineId}
+          <PartnerCard
+            partnerId={record.partnerId}
             refetchCardsNewData={refetch}
             index={a + 1}
-            data={record?.timelineDetails?.[0]}
+            data={record}
             />
         )
       }, // Index can be passed if needed
@@ -239,14 +218,13 @@ export default function AddEditTimeline({id}: IProps) {
 
 
     try {
-      const res = await axiosWithAuth.post('timeline-editor/add-or-modify-timeline', modifiedValues)
-      // console.log('responsiiiiiiii', res)
+      const res = await axiosWithAuth.post('partner-editor/add-or-modify-partner', modifiedValues)
       if (res.status == 200) {
         notification.open({
           type: 'success',
-          message: `timeline was added`,
+          message: `parter was added`,
         });
-        Router.push(`/timeline/edit/${res?.data?.id}`)
+        Router.push(`/partners/edit/${res?.data?.id}`)
       }
     } catch (e: any) {
       console.log("e",)
@@ -263,8 +241,8 @@ export default function AddEditTimeline({id}: IProps) {
   const getDefaultValue = () => {
     if (isEditPage) {
       const newData = {
-        ...dataTimelineDetails,
-        details: dataTimelineDetails?.details.map((detail: any) => ({
+        ...dataPartnerDetails,
+        details: dataPartnerDetails?.details.map((detail: any) => ({
           ...detail,
         }))
       };
@@ -277,32 +255,34 @@ export default function AddEditTimeline({id}: IProps) {
 
       return {
         "id": 0,
-        "categoryIdList": [dataCategories?.[0]?.id],
+        "partnerItems": [
+          {
+            "id": null,
+            "partnerId": null,
+            "sortOrder": null,
+            "imageData": {
+              "size": null,
+              "originalFileName": null,
+              "imageName": null,
+              "contentType": null,
+              "url": null
+            },
+            "description": "string",
+            "partnerUrl": "string"
+          }
+        ],
         "details":
             activeLanguages?.map(e => {
               console.log('event', e)
               return {
                 "title": null,
                 "subTitle": null,
-                // "alt": null,
-                "navText": null,
-                "navLink": null,
-                "buttonText": null,
-                "buttonLink": null,
                 "languageId": e.id,
-                "imageData": {
-                  "size": null,
-                  "originalFileName": null,
-                  "imageName": null,
-                  "contentType": null,
-                  "url": null
-                },
+                "id": null,
+                "partnerId": null,
               }
-            })
-        ,
+          }),
         "status": true,
-        "title": null,
-        "subTitle": null,
       }
     }
   }
@@ -310,28 +290,25 @@ export default function AddEditTimeline({id}: IProps) {
   const postSortedData = async (sortedData: DataType[]) => {
     setDisabledSaveCardsOrderingBtn(true)
     const sortElements = sortedData.map((item, index) => {
-    // console.log('item', item)
      return {
-      timelineItemId: item.timelineItemId,
+      partnerItemId: item.id,
       sortOrder: index,
     }
     }
   );
 
     try {
-      await axiosWithAuth.post('/timeline-editor/sort-timeline-items', {sortElements});
+      await axiosWithAuth.post('/partner-editor/sort-partner-items', {sortElements});
     } catch (error) {
       console.error('Error posting sorted data:', error);
     }
   };
-
-
   const onDragEnd = async ({active, over}: any) => {
     console.log("aaaa----bbb", active, over)
     if (active.id !== over?.id) {
       setDataSource((prev) => {
-        const activeIndex = prev.findIndex((item) => item.timelineItemId === active.id);
-        const overIndex = prev.findIndex((item) => item.timelineItemId === over?.id);
+        const activeIndex = prev.findIndex((item) => {item.id === active.id});
+        const overIndex = prev.findIndex((item) => item.id === over?.id);
         const newData = arrayMove(prev, activeIndex, overIndex);
         // postSortedData(newData);
         return newData;
@@ -344,23 +321,11 @@ export default function AddEditTimeline({id}: IProps) {
       <div className={"p-2 pb-[60px] flex gap-x-20 w-full"}>
         <div className="w-1/2">
           <div className={"w-full flex justify-between items-center mb-4"}>
-            <Popconfirm
-              title="return back"
-              description="Are you sure you want to go back? The current changes will be lost"
-              okText={"Yes"}
-              onConfirm={() => Router.back()}
-              // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
-            >
-              <Button className={"flex items-center"} type="default">
-                <ArrowLeftOutlined/>
-                Back
-              </Button>
-            </Popconfirm>
 
-            <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Timeline" : "Add Timeline"}</h2>
+            <h2 className={"text-center text-[30px] w-full"}> Section Title & Subtitle</h2>
           </div>
           <Divider className={"my-3"}/>
-          {((isEditPage && dataTimelineDetails) || (!isEditPage && dataLanguages)) && <Form
+          {((isEditPage && dataPartnerDetails) || (!isEditPage && dataLanguages)) && <Form
               form={form}
               layout="vertical"
               onValuesChange={onchange}
@@ -368,12 +333,12 @@ export default function AddEditTimeline({id}: IProps) {
               size={'default' as SizeType}
               initialValues={getDefaultValue()}>
 
-            <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
-              <Select mode={"multiple"}>
-                {dataCategories?.map((e) => {
-                  return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
-                })}
-              </Select>
+
+            <Form.Item className={"mb-0"} name={'status'} label="status" valuePropName={"value"}>
+              <Radio.Group buttonStyle="solid">
+                <Radio.Button value={true}>active</Radio.Button>
+                <Radio.Button className={""} value={false}>disable</Radio.Button>
+              </Radio.Group>
             </Form.Item>
 
             <Form.List
@@ -406,42 +371,6 @@ export default function AddEditTimeline({id}: IProps) {
                             >
                               <Input placeholder="subTitle"/>
                             </Form.Item>
-
-                            <div className={"flex gap-x-4 w-full"}>
-                              <Form.Item
-                                  name={[field.name, 'navText']}
-                                  label={'navText'}
-                                  className="w-1/2"
-                              >
-                                <Input placeholder="navText"/>
-                              </Form.Item>
-
-                              <Form.Item
-                                  name={[field.name, 'navLink']}
-                                  label={'navLink'}
-                                  className="w-1/2"
-                              >
-                                <Input placeholder="navlink"/>
-                              </Form.Item>
-                            </div>
-
-                            <div className={"flex gap-x-4 w-full"}>
-                              <Form.Item
-                                  name={[field.name, 'buttonText']}
-                                  label={'button text'}
-                                  className="w-1/2"
-                              >
-                                <Input placeholder="button text"/>
-                              </Form.Item>
-
-                              <Form.Item
-                                  name={[field.name, 'buttonLink']}
-                                  label={'button link'}
-                                  className="w-1/2"
-                              >
-                                <Input placeholder="button link"/>
-                              </Form.Item>
-                            </div>
                           </Card>
                       )
                     })}
@@ -456,17 +385,15 @@ export default function AddEditTimeline({id}: IProps) {
         </div>
 
         <div className="w-1/2">
-          <h2 className={"text-center text-[30px] w-full mb-4"}>Timeline Cards</h2>
+          <h2 className={"text-center text-[30px] w-full mb-4"}>Partners Logos</h2>
           <Divider className={"my-3"}/>
           <div
               // className={"overflow-y-auto h-3/5 mt-5"}
               className={"mt-9"}
           >
-            {/* {console.log('dataSource', dataSource)} */}
-
             {dataSource && <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
               <SortableContext 
-                items={dataSource?.map((i: any) => i.timelineItemId)}
+                items={dataSource?.map((i: any) => i.id)}
                 strategy={verticalListSortingStrategy}
               >
                 <Table
@@ -477,7 +404,7 @@ export default function AddEditTimeline({id}: IProps) {
                     }}
                     showHeader={false}
                     pagination={false}
-                    rowKey="timelineItemId"
+                    rowKey="id"
                     columns={columns}
                     dataSource={dataSource}
                 />
@@ -486,9 +413,9 @@ export default function AddEditTimeline({id}: IProps) {
             }
           </div>
           <div className="mt-10 ml-14 flex gap-x-4">
-            <Link href={`/timeline/add-card/${dataTimelineDetails?.id}`}>
-              <Button disabled={!id} type="primary" className={"flex items-center gap-x-2"}>
-                Add Timeline Card
+            <Link href={`/partners/add-partner`}>
+              <Button disabled={false} type="primary" className={"flex items-center gap-x-2"}>
+                Add Partner
               </Button>
             </Link>
             

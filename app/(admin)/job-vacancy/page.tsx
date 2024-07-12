@@ -31,7 +31,7 @@ interface DataType {
     "shortDescription": string,
     "fullDescription": string,
     "client": string,
-    "role": string,
+    // "role": string,
     "date": number,
   }[]
 }
@@ -139,16 +139,16 @@ export default function JobVacancy({searchParams}: IProps) {
         return <p>{obj?.details?.[0]?.client}</p>
       }
     },
-    {
-      title: 'role',
-      dataIndex: 'role',
-      align: "center",
-      key: 'role',
-      render: (text, obj) => {
-        console.log("obj", obj)
-        return <p>{obj?.details?.[0]?.role}</p>
-      }
-    },
+    // {
+    //   title: 'role',
+    //   dataIndex: 'role',
+    //   align: "center",
+    //   key: 'role',
+    //   render: (text, obj) => {
+    //     console.log("obj", obj)
+    //     return <p>{obj?.details?.[0]?.role}</p>
+    //   }
+    // },
     {
       title: 'location',
       dataIndex: 'location',
