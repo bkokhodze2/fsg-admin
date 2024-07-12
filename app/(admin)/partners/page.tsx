@@ -140,11 +140,13 @@ const Row: React.FC<RowProps> = (props) => {
 };
 
 
-export default function PartnersPage({id}: IProps) {
+const id = 1;
+
+export default function PartnersPage() {
   const [form] = Form.useForm();
   const Router = useRouter();
   const [dataSource, setDataSource] = useState<DataType[]>([]);
-  const [disabledSaveCardsOrderingBtn, setDisabledSaveCardsOrderingBtn] = useState(true)
+  const [disabledSaveCardsOrderingBtn, setDisabledSaveCardsOrderingBtn] = useState<boolean>(true)
 
 
   const fetchPartnerDetailsById = async (id: number) => {
@@ -189,11 +191,11 @@ export default function PartnersPage({id}: IProps) {
       render: (_, record, a) => {
         console.log("reccccc", record, a)
         return (
-          <PartnerCard
-            partnerId={record.partnerId}
-            refetchCardsNewData={refetch}
-            index={a + 1}
-            data={record}
+            <PartnerCard
+                partnerId={record.partnerId}
+                refetchCardsNewData={refetch}
+                index={a + 1}
+                data={record}
             />
         )
       }, // Index can be passed if needed
@@ -281,7 +283,7 @@ export default function PartnersPage({id}: IProps) {
                 "id": null,
                 "partnerId": null,
               }
-          }),
+            }),
         "status": true,
       }
     }
@@ -290,12 +292,12 @@ export default function PartnersPage({id}: IProps) {
   const postSortedData = async (sortedData: DataType[]) => {
     setDisabledSaveCardsOrderingBtn(true)
     const sortElements = sortedData.map((item, index) => {
-     return {
-      partnerItemId: item.id,
-      sortOrder: index,
-    }
-    }
-  );
+          return {
+            partnerItemId: item.id,
+            sortOrder: index,
+          }
+        }
+    );
 
     try {
       await axiosWithAuth.post('/partner-editor/sort-partner-items', {sortElements});
@@ -307,11 +309,11 @@ export default function PartnersPage({id}: IProps) {
     console.log("aaaa----bbb", active, over)
     if (active.id !== over?.id) {
       setDataSource((prev) => {
-        const activeIndex = prev.findIndex((item) => {item.id === active.id});
+        const activeIndex = prev.findIndex((item) => {
+          item.id === active.id
+        });
         const overIndex = prev.findIndex((item) => item.id === over?.id);
-        const newData = arrayMove(prev, activeIndex, overIndex);
-        // postSortedData(newData);
-        return newData;
+        return arrayMove(prev, activeIndex, overIndex);
       });
       setDisabledSaveCardsOrderingBtn(false)
     }
@@ -392,9 +394,9 @@ export default function PartnersPage({id}: IProps) {
               className={"mt-9"}
           >
             {dataSource && <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
-              <SortableContext 
-                items={dataSource?.map((i: any) => i.id)}
-                strategy={verticalListSortingStrategy}
+              <SortableContext
+                  items={dataSource?.map((i: any) => i.id)}
+                  strategy={verticalListSortingStrategy}
               >
                 <Table
                     components={{
@@ -418,8 +420,9 @@ export default function PartnersPage({id}: IProps) {
                 Add Partner
               </Button>
             </Link>
-            
-           {dataSource?.length > 1 && <Button type="primary" className="" disabled={disabledSaveCardsOrderingBtn} onClick={() => postSortedData(dataSource)}>Save Cards Ordering</Button> }
+
+            {dataSource?.length > 1 && <Button type="primary" className="" disabled={disabledSaveCardsOrderingBtn}
+                                               onClick={() => postSortedData(dataSource)}>Save Cards Ordering</Button>}
           </div>
         </div>
       </div>
