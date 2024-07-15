@@ -24,16 +24,16 @@ import type ReactQuill from 'react-quill';
 var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
 
-const ReactQuillComponent = dynamic(
-    async () => {
-      const {default: RQ} = await import('react-quill');
-      return ({...props}) => <RQ {...props} />;
-    },
-    {
-      ssr: false,
-    }
-) as typeof ReactQuill;
-import "react-quill/dist/quill.snow.css";
+// const ReactQuillComponent = dynamic(
+//     async () => {
+//       const {default: RQ} = await import('react-quill');
+//       return ({...props}) => <RQ {...props} />;
+//     },
+//     {
+//       ssr: false,
+//     }
+// ) as typeof ReactQuill;
+// import "react-quill/dist/quill.snow.css";
 
 // const modules = {
 //   toolbar: {
@@ -107,7 +107,7 @@ interface IProps {
   parentId?: number
 }
 
-export default function AddEditInfoAdv({id}: IProps) {
+function AddEditInfoAdv({id}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
 
@@ -374,3 +374,7 @@ export default function AddEditInfoAdv({id}: IProps) {
       </div>
   );
 }
+
+AddEditInfoAdv.displayName = 'AddEditInfoAdv';
+
+export default AddEditInfoAdv;
