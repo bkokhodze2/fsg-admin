@@ -276,7 +276,7 @@ export default function AddEditServiceCenter({id}: IProps) {
 
       return {
         "categoryIdList": [dataCategories?.[0].id],
-        "settlementId": dataSettlements?.[4].nameGeo,
+        "settlementId": dataSettlements?.[4].id,
         "settlementDataForResult": {
           "id": null,
           "typeId": null,
