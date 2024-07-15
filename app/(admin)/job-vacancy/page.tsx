@@ -167,7 +167,7 @@ export default function JobVacancy({searchParams}: IProps) {
       key: 'department',
       render: (text, obj) => {
         console.log("obj", obj)
-        const departmentName = departmentsData?.filter((item:any) => item?.details[0].departmentId === obj.departmentId && item)?.[0].details[0].departmentName
+        const departmentName = departmentsData?.filter((item:any) => item?.details?.[0]?.departmentId === obj?.departmentId && item)?.[0]?.details?.[0]?.departmentName
         return <p>{departmentName}</p>
       }
     },

@@ -142,7 +142,6 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
       timelineItemId:  id ? Number(id) : null,
       timelineDetails: values?.timelineDetails.map((detail: any) => ({
         ...detail,
-        languageId: 1,
       }))
     };
     console.log("modifiedValues", modifiedValues)
