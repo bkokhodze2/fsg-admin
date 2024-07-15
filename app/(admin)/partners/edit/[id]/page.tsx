@@ -5,6 +5,6 @@ import PartnersPage from "../../page";
 export default function PartnerEdit() {
 
   return (
-      <PartnersPage id={1} />
+      <PartnersPage />
   );
 }
