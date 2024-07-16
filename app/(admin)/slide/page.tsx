@@ -17,7 +17,24 @@ import React, {useEffect, useState} from "react";
 var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
 
+
+const fetchCategories = async () => {
+  try {
+    const {data} = await axiosWithAuth.get(`${BASEAPI}/slide-editor/get-slide-categories`);
+    return data;
+  } catch (error: any) {
+    console.log("errr", error)
+    notification.open({
+      type: 'error',
+      message: `categories`,
+      description:
+          'Something went wrong while fetching categories',
+    });
+  }
+}
+
 interface DataType {
+  categoryIdList: number[],
   slideId: number;
   id?: number;
   title: string;
@@ -63,6 +80,7 @@ interface IFilter {
   description?: undefined | string,
   title?: undefined | string,
   buttonText?: undefined | string,
+  categoryIdList?: undefined | number[],
 }
 
 export default function Slide({searchParams}: IProps) {
@@ -83,6 +101,7 @@ export default function Slide({searchParams}: IProps) {
 
   console.log("სლაიდის data:", data)
 
+  const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
 
   useEffect(() => {
     const clearFilter: any = Object.fromEntries(
@@ -126,6 +145,15 @@ export default function Slide({searchParams}: IProps) {
                 dangerouslySetInnerHTML={{__html: text}}/>
           </Tooltip>
       )
+    },
+    {
+      title: 'Category (pages)',
+      dataIndex: 'categoryIdList',
+      key: 'categoryIdList',
+      align: "center",
+      render: (categories) => {
+        return getCategoryNameById(categories) && <p>{getCategoryNameById(categories)?.toString()}</p>
+      },
     },
     {
       title: 'Button Text',
@@ -204,6 +232,12 @@ export default function Slide({searchParams}: IProps) {
     }
   };
 
+  const getCategoryNameById = (arr: number[]): string[] => arr?.map((e): string => {
+    return dataCategories?.find((item) => {
+      return item?.id === e
+    })?.category || ""
+  })
+
   const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, extra) => {
     console.log('params', pagination);
 
@@ -223,14 +257,18 @@ export default function Slide({searchParams}: IProps) {
     }
   };
 
-  const SlidesData = data?.map((item:any) => ({
+  const SlidesData = data?.map((item:any) => {
+    return {
     key: item.id,
     id: item.id,
     title: item.slideDetails[0].title,
     description: item.slideDetails[0].description,
     webImageUrl: item.slideDetails[0].webImageData.url,
     buttonText: item.slideDetails[0].buttonText,
-  }))
+    categoryIdList: item.categoryIdList
+    }
+  }  
+)
 
   return (
       <>
