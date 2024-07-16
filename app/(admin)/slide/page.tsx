@@ -168,11 +168,12 @@ export default function Slide({searchParams}: IProps) {
       key: 'webImageUrl',
       align: "center",
       render: (text) => (
-          <Image
+         text ? <Image
               width={100}
               src={text}
               alt={"slide image"}
           />
+          : "No Image"
       )
     },
     {

@@ -140,11 +140,12 @@ export default function News({searchParams}: IProps) {
       align: "center",
 
       render: (text) => (
-          <Image
+          text ? <Image
               width={100}
               src={text}
               alt={"news image"}
-          />
+            />
+          : "No Image"
       )
     },
     {

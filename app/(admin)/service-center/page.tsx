@@ -150,11 +150,12 @@ export default function ServiceCenter({searchParams}: IProps) {
         align: "center",
   
         render: (text, obj) => (
-            <Image
+            obj?.imageData?.url ? <Image
                 width={100}
-                src={obj?.imageData?.url}
+                src={obj.imageData.url}
                 alt={"service image"}
             />
+            : "No Image"
         )
       },
 
