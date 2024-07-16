@@ -259,11 +259,12 @@ export default function ManagementPerson({searchParams}: IProps) {
         align: "center",
   
         render: (text, obj) => (
-            <Image
+            obj?.imageData?.url ? <Image
                 width={100}
-                src={obj?.imageData?.url}
+                src={obj.imageData.url}
                 alt={"person image"}
             />
+            : "No Image"
         )
       },
 
