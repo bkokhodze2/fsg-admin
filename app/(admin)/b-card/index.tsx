@@ -11,7 +11,7 @@ import {
   Form,
   Input,
   Upload,
-  Select, Space, Card, Divider, notification, Radio,
+  Select, Card, Divider, notification, Radio,
   Popconfirm,
   Checkbox
 } from 'antd';
@@ -163,9 +163,6 @@ export default function AddEditBCard({id}: IProps) {
         message: `${e.response.data.message || "error"}`,
       });
     }
-
-    // Log the FormData object or submit it to the server
-    // You can also submit the formData to the server here
   };
 
   const uploadImage = async (options: any) => {
@@ -402,18 +399,23 @@ export default function AddEditBCard({id}: IProps) {
                       </Form.Item>
 
                       <Form.Item
-                          name={[field.name, 'description']}
-                          label={'description'}
-                      >
-                        <Input placeholder="description"/>
-                      </Form.Item>
-
-                      <Form.Item
                           name={[field.name, 'buttonText']}
                           label={'button Text'}
                       >
                         <Input placeholder="button Text"/>
                       </Form.Item>
+
+                      <Form.Item
+                          name={[field.name, 'description']}
+                          label={`description`}
+                          valuePropName="value"
+                          getValueFromEvent={(value) => value}>
+                        <ReactQuillComponent
+                            modules={modules}
+                            className={`textEditor border markGeo`}
+                        />
+                      </Form.Item>
+
                     </Card>
                   })}
               </div>
@@ -421,8 +423,8 @@ export default function AddEditBCard({id}: IProps) {
 
           </Form.List>
 
-
           <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>Submit</Button>
+          
         </Form>
         }
       </div>
