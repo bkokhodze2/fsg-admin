@@ -241,15 +241,16 @@ export default function SiteInfoPage() {
               "ourTeamSubTitle": null,
               "faqTitle": null,
               "faqSubTitle": null,
-              "serviceCentersTitle": null,
-              "serviceCentersSubTitle": null,
+              "serviceCenterTitle": null,
+              "serviceCenterSubTitle": null,
               "csrTitle": null,
               "csrSubTitle": null,
               "priceArchiveTitle": null,
               "priceArchiveSubTitle": null,
-              "corporateServicesTitle": null,
-              "corporateServicesSubTitle": null,
-              "corporateServicesSubTitle2": null,
+              "corpCervicesTitle": null,
+              "corpServicesSubTitle": null,
+              "corpServicesSubTitle2": null,
+              "hiTitle": null,
               "hiSubTitle": null,
               "peopleTitle": null,
               "peopleSubTitle": null
@@ -443,10 +444,17 @@ export default function SiteInfoPage() {
                             </Form.Item>
 
                             <Form.Item
-                                name={[field.name, 'serviceCentersTitle']}
-                                label={'Service Centers Title'}
+                                name={[field.name, 'serviceCenterTitle']}
+                                label={'Service Center Title'}
                             >
-                              <Input placeholder="Service Centers Title"/>
+                              <Input placeholder="Service Center Title"/>
+                            </Form.Item>
+
+                            <Form.Item
+                                name={[field.name, 'serviceCenterSubTitle']}
+                                label={'Service Center SubTitle'}
+                            >
+                              <Input placeholder="Service Center SubTitle"/>
                             </Form.Item>
 
                             <Form.Item
@@ -464,38 +472,45 @@ export default function SiteInfoPage() {
                             </Form.Item>
 
                             <Form.Item
-                                name={[field.name, 'priceArchiveTitle']}
+                                name={[field.name, 'priceArchTitle']}
                                 label={'Price Archive Title'}
                             >
                               <Input placeholder="Price Archive Title"/>
                             </Form.Item>
 
                             <Form.Item
-                                name={[field.name, 'priceArchiveSubTitle']}
+                                name={[field.name, 'priceArchSubTitle']}
                                 label={'Price Archive SubTitle'}
                             >
                               <Input placeholder="Price Archive SubTitle"/>
                             </Form.Item>
 
                             <Form.Item
-                                name={[field.name, 'corporateServicesTitle']}
-                                label={'Corporate ServicesT itle'}
+                                name={[field.name, 'corpCervicesTitle']}
+                                label={'Corporate Services Title'}
                             >
                               <Input placeholder="Corporate Services Title"/>
                             </Form.Item>
 
                             <Form.Item
-                                name={[field.name, 'corporateServicesSubTitle']}
+                                name={[field.name, 'corpServicesSubTitle']}
                                 label={'Corporate Services SubTitle'}
                             >
                               <Input placeholder="Corporate Services SubTitle"/>
                             </Form.Item>
 
                             <Form.Item
-                                name={[field.name, 'corporateServicesSubTitle2']}
+                                name={[field.name, 'corpServicesSubTitle2']}
                                 label={'Corporate Services SubTitle2'}
                             >
                               <Input placeholder="Corporate Services SubTitle2"/>
+                            </Form.Item>
+
+                            <Form.Item
+                                name={[field.name, 'hiTitle']}
+                                label={'Hi Title'}
+                            >
+                              <Input placeholder="Hi Title"/>
                             </Form.Item>
 
                             <Form.Item
