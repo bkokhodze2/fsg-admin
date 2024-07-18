@@ -253,7 +253,11 @@ export default function SiteInfoPage() {
               "hiTitle": null,
               "hiSubTitle": null,
               "peopleTitle": null,
-              "peopleSubTitle": null
+              "peopleSubTitle": null,
+              "latestNewsTitle": null,
+              "latestNewsSubTitle": null,
+              "stationsTitle": null,
+              "stationsSubTitle": null,
               }
           }),
       }
@@ -532,6 +536,34 @@ export default function SiteInfoPage() {
                                 label={'People SubTitle'}
                             >
                               <Input placeholder="People SubTitle"/>
+                            </Form.Item>
+
+                            <Form.Item
+                              name={[field.name, 'latestNewsTitle']}
+                              label={'latest News Title'}
+                            >
+                              <Input placeholder="latest News Title"/>
+                            </Form.Item>
+
+                            <Form.Item
+                              name={[field.name, 'latestNewsSubTitle']}
+                              label={'latest News subTitle'}
+                            >
+                              <Input placeholder="latest News subTitle"/>
+                            </Form.Item>
+
+                            <Form.Item
+                              name={[field.name, 'stationsTitle']}
+                              label={'stations Title'}
+                            >
+                              <Input placeholder="stations Title"/>
+                            </Form.Item>
+
+                            <Form.Item
+                              name={[field.name, 'stationsSubTitle']}
+                              label={'stations SubTitle'}
+                            >
+                              <Input placeholder="stations SubTitle"/>
                             </Form.Item>
                           </Card>
                       )
