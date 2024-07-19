@@ -22,14 +22,14 @@ var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
 
 const ReactQuillComponent = dynamic(
-    async () => {
-      const {default: RQ} = await import('react-quill');
-      // eslint-disable-next-line react/display-name
-      return ({...props}) => <RQ {...props} />;
-    },
-    {
-      ssr: false,
-    }
+  async () => {
+    const {default: RQ} = await import('react-quill');
+    // eslint-disable-next-line react/display-name
+    return ({...props}) => <RQ {...props} />;
+  },
+  {
+    ssr: false,
+  }
 ) as typeof ReactQuill;
 import "react-quill/dist/quill.snow.css";
 
