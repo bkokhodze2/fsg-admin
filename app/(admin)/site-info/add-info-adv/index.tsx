@@ -35,20 +35,20 @@ const ReactQuillComponent = dynamic(
 ) as typeof ReactQuill;
 import "react-quill/dist/quill.snow.css";
 
-// const modules = {
-//   toolbar: {
-//     container: [
-//       ["bold", "italic", "underline", "strike"], // Custom toolbar buttons
-//       [{header: [1, 2, 3, 4, 5, 6, false]}],
-//       [{list: "ordered"}, {list: "bullet"}],
-//       [{indent: "-1"}, {indent: "+1"}],
-//       [{align: []}],
-//       [{color: []}, {background: []}], // Dropdown with color options
-//       ["link", "image", "video", "formula"],
-//       ["clean"], // Remove formatting button
-//     ],
-//   },
-// };
+const modules = {
+  toolbar: {
+    container: [
+      ["bold", "italic", "underline", "strike"], // Custom toolbar buttons
+      [{header: [1, 2, 3, 4, 5, 6, false]}],
+      [{list: "ordered"}, {list: "bullet"}],
+      [{indent: "-1"}, {indent: "+1"}],
+      [{align: []}],
+      [{color: []}, {background: []}], // Dropdown with color options
+      ["link", "image", "video", "formula"],
+      ["clean"], // Remove formatting button
+    ],
+  },
+};
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 const fetchLanguages = async () => {
@@ -348,11 +348,17 @@ export default function AddEditInfoAdv({id}: IProps) {
                               <h3 className={"text-[25px]"}>{findLang}</h3>
                             </Divider>
 
+
+
                             <Form.Item
-                                name={[field.name, 'description']}
-                                label={'Description'}
-                            >
-                              <Input placeholder="Description"/>
+                              name={[field.name, 'description']}
+                              label={`Description`}
+                              valuePropName="value"
+                              getValueFromEvent={(value) => value}>
+                                <ReactQuillComponent
+                                    modules={modules}
+                                    className={`textEditor border markGeo`}
+                                />
                             </Form.Item>
 
                             <Form.Item
