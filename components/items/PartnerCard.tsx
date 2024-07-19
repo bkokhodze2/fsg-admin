@@ -79,7 +79,7 @@ const CardItem: React.FC<ComponentProps> = ({ data, index, refetchCardsNewData }
   return (
       <div className="flex items-start space-x-4 mt-4">
         <div
-            className="flex items-center justify-center w-12 h-10 bg-slate-200 rounded-full">
+            className="flex items-center justify-center min-w-10 w-10 min-h-10 h-10 bg-slate-200 rounded-full">
           <h1
               className="text-xl">
             {index}
