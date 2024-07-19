@@ -27,12 +27,15 @@ dayjs.extend(customParseFormat)
 const ReactQuillComponent = dynamic(
     async () => {
       const {default: RQ} = await import('react-quill');
-      return ({...props}) => <RQ {...props} />;
+      const Component = ({...props}) => <RQ {...props} />;
+      Component.displayName = 'ReactQuillComponent';
+      return Component;
     },
     {
       ssr: false,
     }
 ) as typeof ReactQuill;
+
 import "react-quill/dist/quill.snow.css";
 
 const modules = {

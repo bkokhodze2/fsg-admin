@@ -70,6 +70,13 @@ input:-webkit-autofill:active{
     overflow: hidden;
 }
 
+.textDots8 {
+    display: -webkit-box;
+    -webkit-line-clamp: 8;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
 .admin-layout .ant-menu-item-divider {
     background-color: white;
 }
