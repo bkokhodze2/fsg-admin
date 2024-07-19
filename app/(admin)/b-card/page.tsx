@@ -63,6 +63,21 @@ const fetchBCard = async (filter: IFilter) => {
   }
 }
 
+const fetchCategories = async () => {
+  try {
+    const {data} = await axiosWithAuth.get(`${BASEAPI}/iv-component-editor/get-iv-component-categories`);
+    return data;
+  } catch (error: any) {
+    console.log("errr", error)
+    notification.open({
+      type: 'error',
+      message: `categories`,
+      description:
+          'Something went wrong while fetching categories',
+    });
+  }
+}
+
 interface IProps {
   searchParams: IFilter
 }
@@ -89,6 +104,8 @@ export default function BCard({searchParams}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
 
+  const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
+
   const {data, isLoading, isError, refetch} = useQuery({
     queryKey: ["BCard", filter],
     queryFn: () => fetchBCard(filter)
@@ -104,6 +121,12 @@ export default function BCard({searchParams}: IProps) {
     Router.push(`/b-card?${params}`)
   }, [filter])
 
+
+  const getCategoryNameById = (arr: number[]): string[] => arr.map((e): string => {
+    return dataCategories?.find((item:any) => {
+      return item?.id === e
+    })?.category || ""
+  })
 
   const columns: TableProps<DataType>['columns'] = [
     {
@@ -125,6 +148,16 @@ export default function BCard({searchParams}: IProps) {
         console.log("obj", obj)
         return <p>{obj?.details?.[0]?.subTitle}</p>
       }
+    },
+
+    {
+      title: 'Category (pages)',
+      dataIndex: 'categoryIdList',
+      key: 'categoryIdList',
+      align: "center",
+      render: (categories) => {
+        return getCategoryNameById(categories) && <p>{getCategoryNameById(categories)?.toString()}</p>
+      },
     },
 
     // {
