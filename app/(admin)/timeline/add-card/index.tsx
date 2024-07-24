@@ -214,6 +214,7 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
         "id": 0,
         // "categoryIdList": [dataCategories?.[0]?.id],
         "timelineId": id,
+        "itemDate": null,
         "timelineDetails":
             activeLanguages?.map(e => {
               return {
@@ -274,6 +275,13 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
                 })}
                 </Select>
             </Form.Item> */}
+
+            <Form.Item
+                name={'itemDate'}
+                label={'Item Date'}
+            >
+              <Input placeholder="Item Date"/>
+            </Form.Item>
             
             <Form.List
                 name="timelineDetails"

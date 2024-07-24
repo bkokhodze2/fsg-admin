@@ -180,6 +180,27 @@ export default function AddEditSlide({id}: IProps) {
 
   }
 
+
+  const uploadVideo = async (options: any) => {
+    const {onSuccess, onError, file, onProgress} = options;
+
+    const formData = new FormData();
+    const config = {
+      headers: {"content-type": "multipart/form-data"},
+    };
+    formData.append("videoFile", file);
+
+    try {
+      const res = await axiosWithAuth.post(`/slide-editor/upload-slide-video`, formData, config)
+      if (res.status == 200) {
+        onSuccess(res.data)
+      }
+    } catch (e: any) {
+      onError("failed")
+    }
+
+  }
+
   const handlePreview = async (file: any) => {
     console.log("file", file, file?.response?.url || file?.url)
     setPreviewImage(file?.response?.url || file?.url);
@@ -234,6 +255,13 @@ export default function AddEditSlide({id}: IProps) {
                   "contentType": null,
                   "url": null
                 },
+                "videoFile": {
+                  "size": null,
+                  "originalFileName": null,
+                  "fileName": null,
+                  "contentType": null,
+                  "url": null
+                }
               }
             })
         ,
@@ -485,6 +513,50 @@ export default function AddEditSlide({id}: IProps) {
                               src={previewImage}
                           />
                       )}
+
+                        <Form.Item 
+                            label={'Video File'}
+                            name={[field.name, 'videoFile']}
+                            valuePropName="value"
+                            getValueFromEvent={(e: any) => {
+                            console.log("eee", e)
+                            if (e.file.status === 'done') {
+                                return e.file.response
+
+                            } else {
+                                return {
+                                "size": null,
+                                "originalFileName": null,
+                                "fileName": null,
+                                "contentType": null,
+                                "url": null
+                                }
+                            }
+                            }}
+                            noStyle
+                        >
+
+                        <Upload.Dragger
+                            // fileList={getFileList()}
+                            defaultFileList={fileListMob}
+                            //     uid: '-1',
+                            // name: 'image.png',
+                            // status: 'done',
+                            // url: data?.url,
+                            listType={"picture"}
+                            showUploadList={true}
+                            maxCount={1}
+                            multiple={false}
+                            customRequest={(e) => uploadVideo(e)}
+                            // onPreview={(e) => handlePreview(e)}
+                        >
+                          <p className="ant-upload-drag-icon">
+                            <InboxOutlined/>
+                          </p>
+
+                          <p className="ant-upload-text">Click or drag video file to this area to upload a video</p>
+                        </Upload.Dragger>
+                      </Form.Item>
 
                       {/* <Space className={"w-full mt-2 flex items-center justify-between"}> */}
                         {/* <Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"
