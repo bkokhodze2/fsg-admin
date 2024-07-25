@@ -138,6 +138,7 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
     const modifiedValues = {
       ...values,
       // timelineId: isEditPage ? id : parentId,
+      sortOrder: dataTimelineDetails?.sortOrder,
       timelineId: id ? dataTimelineDetails.timelineId : parentId, 
       timelineItemId:  id ? Number(id) : null,
       timelineDetails: values?.timelineDetails.map((detail: any) => ({

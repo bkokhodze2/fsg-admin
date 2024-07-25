@@ -2,13 +2,13 @@
 import {axiosWithAuth} from "@/configs/axios";
 import {ArrowLeftOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
-import {useRouter} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 import React from "react";
 import {
   Button,
   Form,
   Input,
-  Card, Divider, notification, Radio,
+  Card, Divider, notification,
   Popconfirm,
 } from 'antd';
 import {SizeType} from "antd/lib/config-provider/SizeContext";
@@ -56,7 +56,13 @@ interface IProps {
 
 export default function AddEditTenderDoc({id}: IProps) {
   const [form] = Form.useForm();
-  const Router = useRouter();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const tenderId = searchParams.get('tenderId');
+
+  console.log('editis ID::', id)
+  console.log('damatebis ID:::', tenderId)
 
   const isEditPage = !!id;
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
@@ -82,22 +88,22 @@ export default function AddEditTenderDoc({id}: IProps) {
     const modifiedValues = {
       ...values,
       id: isEditPage ? id : undefined,
+      tenderId: tenderId || id,
       documentDetails: values.documentDetails.map((detail: any) => ({
         ...detail,
       }))
     };
     console.log("modifiedValues", modifiedValues)
 
-
     try {
-      const res = await axiosWithAuth.post('/tender-editor/add-or-modify-tender-document', modifiedValues)
+      const res = await axiosWithAuth.post(`/tender-editor/add-or-modify-tender-document`, modifiedValues)
       if (res.status == 200) {
         notification.open({
           type: 'success',
           message: `Tender Document was added`,
         });
         isEditPage ? await refetch() : null;
-        Router.push("/tenders")
+        router.push("/tenders")
       }
     } catch (e: any) {
       console.log("e",)
@@ -151,7 +157,7 @@ export default function AddEditTenderDoc({id}: IProps) {
               title="return back"
               description="Are you sure you want to go back? The current changes will be lost"
               okText={"Yes"}
-              onConfirm={() => Router.back()}
+              onConfirm={() => router.back()}
               // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
             >
               <Button className={"flex items-center"} type="default">
