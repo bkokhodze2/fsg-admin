@@ -63,6 +63,21 @@ const fetchInfoCard = async (filter: IFilter) => {
   }
 }
 
+const fetchCategories = async () => {
+  try {
+    const {data} = await axiosWithAuth.get(`${BASEAPI}/info-card-editor/get-info-card-categories`);
+    return data;
+  } catch (error: any) {
+    console.log("errr", error)
+    notification.open({
+      type: 'error',
+      message: `categories`,
+      description:
+          'Something went wrong while fetching categories',
+    });
+  }
+}
+
 interface IProps {
   searchParams: IFilter
 }
@@ -94,6 +109,8 @@ export default function InfoCard({searchParams}: IProps) {
     queryFn: () => fetchInfoCard(filter)
   });
 
+  const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
+
   useEffect(() => {
     const clearFilter: any = Object.fromEntries(
         Object.entries(filter).filter(([_, value]) => value !== undefined && value !== "")
@@ -103,6 +120,12 @@ export default function InfoCard({searchParams}: IProps) {
 
     Router.push(`/info-card?${params}`)
   }, [filter])
+
+  const getCategoryNameById = (arr: number[]): string[] => arr.map((e): string => {
+    return dataCategories?.find((item:any) => {
+      return item?.id === e
+    })?.category || ""
+  })
 
 
   const columns: TableProps<DataType>['columns'] = [
@@ -126,39 +149,15 @@ export default function InfoCard({searchParams}: IProps) {
         return <p>{obj?.details?.[0]?.subTitle}</p>
       }
     },
-
-    // {
-    //   title: 'start-end date',
-    //   dataIndex: 'useStartDateTime',
-    //   key: 'useStartDateTime',
-    //   align: "left",
-
-    //   render: (text, record) => (
-    //       <Space size="middle" className={"flex flex-wrap"}>
-    //         <p className={"whitespace-nowrap"}>
-    //           {dayjs(record.useStartDateTime, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
-    //         </p>
-
-    //         <p className={"whitespace-nowrap"}>
-    //           {dayjs(record.useEndDateTime, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
-    //         </p>
-    //       </Space>
-    //   )
-    // },
-    // {
-    //   title: 'End',
-    //   dataIndex: 'useEndDateTime',
-    //   key: 'useEndDateTime',
-    //   align: "center",
-    //
-    //   render: (text, record) => (
-    //       <Space size="middle">
-    //         <p className={"whitespace-nowrap"}>
-    //           {dayjs(text, "DD-MM-YYYY HH:mm:ss").format("DD-MM-YYYY HH:mm:ss")}
-    //         </p>
-    //       </Space>
-    //   )
-    // },
+    {
+      title: 'Category (pages)',
+      dataIndex: 'categoryIdList',
+      key: 'categoryIdList',
+      align: "center",
+      render: (categories) => {
+        return getCategoryNameById(categories) && <p>{getCategoryNameById(categories)?.toString()}</p>
+      },
+    },
     {
       title: 'Action',
       key: 'action',
