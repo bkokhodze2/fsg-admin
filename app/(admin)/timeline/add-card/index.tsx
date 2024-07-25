@@ -104,7 +104,7 @@ interface IProps {
   parentId?: number
 }
 
-export default function AddEditTimelineCard({id,parentId}: IProps) {
+export default function AddEditTimelineCard({id, parentId}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
 
@@ -119,7 +119,7 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
   console.log('dataLanguages', dataLanguages)
 
   const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
-  
+
   const {data: dataTimelineDetails} = useQuery({
     queryKey: ['timelineDetails', id],
     queryFn: () => fetchTimelineDetailsById(id as number),
@@ -138,8 +138,9 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
     const modifiedValues = {
       ...values,
       // timelineId: isEditPage ? id : parentId,
-      timelineId: id ? dataTimelineDetails.timelineId : parentId, 
-      timelineItemId:  id ? Number(id) : null,
+      sortOrder: dataTimelineDetails?.sortOrder,
+      timelineId: id ? dataTimelineDetails.timelineId : parentId,
+      timelineItemId: id ? Number(id) : null,
       timelineDetails: values?.timelineDetails.map((detail: any) => ({
         ...detail,
       }))
@@ -154,7 +155,7 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
           type: 'success',
           message: `timeline card was added`,
         });
-        Router.push(`/timeline/edit/${parentId|| dataTimelineDetails.timelineId || id}`)
+        Router.push(`/timeline/edit/${parentId || dataTimelineDetails.timelineId || id}`)
       }
     } catch (e: any) {
       console.log("e",)
@@ -194,7 +195,7 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
     setPreviewOpen(true);
   };
 
-  console.log("vvvvvv",[dataCategories?.[0]?.id])
+  console.log("vvvvvv", [dataCategories?.[0]?.id])
 
   const getDefaultValue = () => {
     if (isEditPage) {
@@ -243,32 +244,32 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
 
   return (
       <div className={"p-2 pb-[60px]"}>
-            <div className={"w-full flex justify-between items-center mb-4"}>
-            <Popconfirm
+        <div className={"w-full flex justify-between items-center mb-4"}>
+          <Popconfirm
               title="return back"
               description="Are you sure you want to go back? The current changes will be lost"
               okText={"Yes"}
               onConfirm={() => Router.back()}
               // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
-            >
-              <Button className={"flex items-center"} type="default">
-                <ArrowLeftOutlined/>
-                Back
-              </Button>
-            </Popconfirm>
+          >
+            <Button className={"flex items-center"} type="default">
+              <ArrowLeftOutlined/>
+              Back
+            </Button>
+          </Popconfirm>
 
-            <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Timeline Card" : "Add Timeline Card"}</h2>
-            </div>
-            <Divider className={"my-3"}/>
-            {((isEditPage && dataTimelineDetails) || (!isEditPage && dataLanguages)) && <Form
-                form={form}
-                layout="vertical"
-                onValuesChange={onchange}
-                onFinish={onFinish}
-                size={'default' as SizeType}
-                initialValues={getDefaultValue()}>
+          <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Timeline Card" : "Add Timeline Card"}</h2>
+        </div>
+        <Divider className={"my-3"}/>
+        {((isEditPage && dataTimelineDetails) || (!isEditPage && dataLanguages)) && <Form
+            form={form}
+            layout="vertical"
+            onValuesChange={onchange}
+            onFinish={onFinish}
+            size={'default' as SizeType}
+            initialValues={getDefaultValue()}>
 
-            {/* <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
+          {/* <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
                 <Select mode={"multiple"}>
                 {dataCategories?.map((e) => {
                     return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
@@ -276,119 +277,119 @@ export default function AddEditTimelineCard({id,parentId}: IProps) {
                 </Select>
             </Form.Item> */}
 
-            <Form.Item
-                name={'itemDate'}
-                label={'Item Date'}
-            >
-              <Input placeholder="Item Date"/>
-            </Form.Item>
-            
-            <Form.List
-                name="timelineDetails"
-            >
-                {(fields, v) => {
-                return <div className={"flex flex-col gap-y-5"}>
-                    {
-                    fields.map((field, index, c) => {
-                        const languageId = form.getFieldValue(['timelineDetails', field.name, 'languageId'])
-                        const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
-                        const dataImg = form.getFieldValue(['timelineDetails', field.name, 'imageData']);
+          <Form.Item
+              name={'itemDate'}
+              label={'Item Date'}
+          >
+            <Input placeholder="Item Date"/>
+          </Form.Item>
 
-                        let fileList = dataImg?.url ? [dataImg] : [];
+          <Form.List
+              name="timelineDetails"
+          >
+            {(fields, v) => {
+              return <div className={"flex flex-col gap-y-5"}>
+                {
+                  fields.map((field, index, c) => {
+                    const languageId = form.getFieldValue(['timelineDetails', field.name, 'languageId'])
+                    const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
+                    const dataImg = form.getFieldValue(['timelineDetails', field.name, 'imageData']);
 
-                        return (
-                            <Card
-                                key={fields[0].name + '' + index}
-                                className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2]"}
+                    let fileList = dataImg?.url ? [dataImg] : [];
+
+                    return (
+                        <Card
+                            key={fields[0].name + '' + index}
+                            className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2]"}
+                        >
+                          <Divider orientation="left" className={"!my-0"}>
+                            <h3 className={"text-[25px]"}>{findLang}</h3>
+                          </Divider>
+                          <Form.Item
+                              name={[field.name, 'title']}
+                              label={'title'}
+                          >
+                            <Input placeholder="title"/>
+                          </Form.Item>
+                          <Form.Item
+                              name={[field.name, 'subTitle']}
+                              label={'subTitle'}
+                          >
+                            <Input placeholder="subTitle"/>
+                          </Form.Item>
+
+                          <Form.Item
+                              name={[field.name, 'alt']}
+                              label={'alt'}
+                          >
+                            <Input placeholder="alt"/>
+                          </Form.Item>
+
+                          <Form.Item
+                              label={'image'}
+                              name={[field.name, 'imageData']}
+                              valuePropName="value"
+                              getValueFromEvent={(e: any) => {
+                                console.log("eee", e)
+                                if (e.file.status === 'done') {
+                                  return e.file.response
+
+                                } else {
+                                  return {
+                                    "size": null,
+                                    "originalFileName": null,
+                                    "imageName": null,
+                                    "contentType": null,
+                                    "url": null
+                                  }
+                                }
+                              }}
+                              noStyle
+                          >
+
+                            <Upload.Dragger
+                                // fileList={getFileList()}
+                                defaultFileList={fileList}
+                                //     uid: '-1',
+                                // name: 'image.png',
+                                // status: 'done',
+                                // url: data?.url,
+                                listType={"picture-card"}
+                                showUploadList={true}
+                                maxCount={1}
+                                multiple={false}
+                                customRequest={(e) => uploadImage(e)}
+                                onPreview={(e) => handlePreview(e)}
                             >
-                                <Divider orientation="left" className={"!my-0"}>
-                                    <h3 className={"text-[25px]"}>{findLang}</h3>
-                                </Divider>
-                                <Form.Item
-                                    name={[field.name, 'title']}
-                                    label={'title'}
-                                >
-                                    <Input placeholder="title"/>
-                                </Form.Item>
-                                <Form.Item
-                                    name={[field.name, 'subTitle']}
-                                    label={'subTitle'}
-                                >
-                                    <Input placeholder="subTitle"/>
-                                </Form.Item>
+                              <p className="ant-upload-drag-icon">
+                                <InboxOutlined/>
+                              </p>
 
-                                    <Form.Item
-                                        name={[field.name, 'alt']}
-                                        label={'alt'}
-                                    >
-                                      <Input placeholder="alt"/>
-                                    </Form.Item>
+                              <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                            </Upload.Dragger>
+                          </Form.Item>
+                          {previewImage && (
+                              <Image
+                                  wrapperStyle={{display: 'none'}}
+                                  preview={{
+                                    visible: previewOpen,
+                                    onVisibleChange: (visible) => setPreviewOpen(visible),
+                                    afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                                  }}
+                                  src={previewImage}
+                              />
+                          )}
+                        </Card>
+                    )
+                  })}
+              </div>
+            }}
 
-                                    <Form.Item
-                                      label={'image'}
-                                      name={[field.name, 'imageData']}
-                                      valuePropName="value"
-                                      getValueFromEvent={(e: any) => {
-                                        console.log("eee", e)
-                                        if (e.file.status === 'done') {
-                                          return e.file.response
+          </Form.List>
 
-                                        } else {
-                                          return {
-                                            "size": null,
-                                            "originalFileName": null,
-                                            "imageName": null,
-                                            "contentType": null,
-                                            "url": null
-                                          }
-                                        }
-                                      }}
-                                      noStyle
-                                    >
-
-                                      <Upload.Dragger
-                                          // fileList={getFileList()}
-                                          defaultFileList={fileList}
-                                          //     uid: '-1',
-                                          // name: 'image.png',
-                                          // status: 'done',
-                                          // url: data?.url,
-                                          listType={"picture-card"}
-                                          showUploadList={true}
-                                          maxCount={1}
-                                          multiple={false}
-                                          customRequest={(e) => uploadImage(e)}
-                                          onPreview={(e) => handlePreview(e)}
-                                      >
-                                        <p className="ant-upload-drag-icon">
-                                          <InboxOutlined/>
-                                        </p>
-
-                                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                                      </Upload.Dragger>
-                                    </Form.Item>
-                                    {previewImage && (
-                                        <Image
-                                            wrapperStyle={{display: 'none'}}
-                                            preview={{
-                                              visible: previewOpen,
-                                              onVisibleChange: (visible) => setPreviewOpen(visible),
-                                              afterOpenChange: (visible) => !visible && setPreviewImage(''),
-                                            }}
-                                            src={previewImage}
-                                        />
-                                    )}
-                            </Card>
-                        )
-                    })}
-                </div>
-                }}
-
-            </Form.List>
-
-            <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>Submit</Button>
-            </Form>
-            }
+          <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>Submit</Button>
+        </Form>
+        }
       </div>
   );
 }
