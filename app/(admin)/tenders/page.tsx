@@ -18,63 +18,31 @@ var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
 
 interface DataType {
-  infoCardId?: number,
   id: number,
-  key: string | number,
-  title: string,
-  subTitle: string,
-  content: string,
-  imageUrl: string,
-  useStartDateTime: number,
-  useEndDateTime: number,
   status: boolean,
-
   details?:
   {
-    "infoCardDetailid": number,
-    "infoCardId": number,
+    "tenderId": number,
     "title": string,
     "subTitle": string,
     "languageId": number,
-    "status": null,
   }[]
 }
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
-const PAGE_SIZE = 10;
 
-const fetchInfoCard = async (filter: IFilter) => {
+const fetchTenders = async (filter: IFilter) => {
   try {
-    const {data} = await axiosWithAuth.post(`${BASEAPI}/info-card-editor/get-info-cards`, {
-      ...filter,
-      languageId: 1,
-      pageSize: parseInt(String(filter.pageSize)) || PAGE_SIZE,
-      pageNumber: filter?.pageNumber ? (filter?.pageNumber - 1) : 0,
-    });
+    const {data} = await axiosWithAuth.get(`${BASEAPI}/tender-editor/get-tenders`);
     return data;
   } catch (error: any) {
     notification.open({
       type: 'error',
-      message: `info card`,
+      message: `Tenders`,
       description:
-          'Something went wrong while fetching info card',
+          'Something went wrong while fetching Tenders',
     });
 
-  }
-}
-
-const fetchCategories = async () => {
-  try {
-    const {data} = await axiosWithAuth.get(`${BASEAPI}/info-card-editor/get-info-card-categories`);
-    return data;
-  } catch (error: any) {
-    console.log("errr", error)
-    notification.open({
-      type: 'error',
-      message: `categories`,
-      description:
-          'Something went wrong while fetching categories',
-    });
   }
 }
 
@@ -91,25 +59,21 @@ interface IFilter {
   subTitle?: undefined | string,
 }
 
-export default function InfoCard({searchParams}: IProps) {
-  const [isOpenFilter, setIsOpenFilter] = useState<boolean>(false);
+export default function TendersPage({searchParams}: IProps) {
+
   const [filter, setFilter] = useState<IFilter>({
-    pageNumber: searchParams.pageNumber || undefined,
-    pageSize: searchParams.pageSize || undefined,
     slug: searchParams.slug || undefined,
     content: searchParams.content || undefined,
     title: searchParams.title || undefined,
     subTitle: searchParams.subTitle || undefined
   });
-  const [form] = Form.useForm();
+  
   const Router = useRouter();
 
   const {data, isLoading, isError, refetch} = useQuery({
-    queryKey: ["infoCard", filter],
-    queryFn: () => fetchInfoCard(filter)
+    queryKey: ["tender", filter],
+    queryFn: () => fetchTenders(filter)
   });
-
-  const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
 
   useEffect(() => {
     const clearFilter: any = Object.fromEntries(
@@ -118,14 +82,8 @@ export default function InfoCard({searchParams}: IProps) {
 
     const params = new URLSearchParams(clearFilter).toString();
 
-    Router.push(`/info-card?${params}`)
+    Router.push(`/tenders?${params}`)
   }, [filter])
-
-  const getCategoryNameById = (arr: number[]): string[] => arr.map((e): string => {
-    return dataCategories?.find((item:any) => {
-      return item?.id === e
-    })?.category || ""
-  })
 
 
   const columns: TableProps<DataType>['columns'] = [
@@ -140,7 +98,7 @@ export default function InfoCard({searchParams}: IProps) {
       }
     },
     {
-      title: 'Subtitle',
+      title: 'SubTitle',
       dataIndex: 'subTitle',
       align: "center",
       key: 'subTitle',
@@ -150,15 +108,6 @@ export default function InfoCard({searchParams}: IProps) {
       }
     },
     {
-      title: 'Category (pages)',
-      dataIndex: 'categoryIdList',
-      key: 'categoryIdList',
-      align: "center",
-      render: (categories) => {
-        return getCategoryNameById(categories) && <p>{getCategoryNameById(categories)?.toString()}</p>
-      },
-    },
-    {
       title: 'Action',
       key: 'action',
       width: "130px",
@@ -166,16 +115,16 @@ export default function InfoCard({searchParams}: IProps) {
       render: (_, record) => (
           <Space size="middle">
             <Tooltip title="Edit" placement={'bottom'}>
-              <Link href={`/info-card/edit/${record?.id}`}>
+              <Link href={`/tenders/edit/${record?.id}`}>
                 <Button shape="circle" className={"flex items-center justify-center"} icon={<EditOutlined/>}/>
               </Link>
             </Tooltip>
 
             <Popconfirm
-                title="Delete the info card"
-                description="Are you sure to delete this info card?"
+                title="Delete the Tender"
+                description="Are you sure to delete this Tender?"
                 okText={"Yes"}
-                onConfirm={() => handleDeleteInfoCardById(record)}
+                onConfirm={() => handleDeleteTenderById(record)}
                 icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
             >
               <Tooltip title="Delete" placement={'bottom'}>
@@ -189,17 +138,17 @@ export default function InfoCard({searchParams}: IProps) {
     },
   ];
 
-  const handleDeleteInfoCardById = async (record: DataType): Promise<void> => {
+  const handleDeleteTenderById = async (record: DataType): Promise<void> => {
     const {id} = record;
     try {
-      const res = await axiosWithAuth.delete(`${BASEAPI}/info-card-editor/delete-info-card/${id}`);
+      const res = await axiosWithAuth.delete(`${BASEAPI}/tender-editor/delete-tender/${id}`);
       console.log(res);
 
       notification.open({
         type: 'success',
-        message: `info card Id - ${id}`,
+        message: `Tender Id - ${id}`,
         description:
-            'info card successfully deleted',
+            'Tender successfully deleted',
       });
 
       await refetch()
@@ -207,34 +156,14 @@ export default function InfoCard({searchParams}: IProps) {
     } catch (error: any) {
       notification.open({
         type: 'error',
-        message: `info card Id - ${id}`,
+        message: `Tender Id - ${id}`,
         description:
-            'Something went wrong while deleting info card',
+            'Something went wrong while deleting Tender',
       });
       console.error('Erroreeeeeee-----------:', error.message); // Log the error
     }
   };
   console.log("filter", filter)
-
-  const onSubmit = (values: IFilter) => {
-    setFilter((prevState: IFilter) => ({
-      ...prevState,
-      ...values,
-      pageNumber: 1,
-    }))
-
-    setIsOpenFilter(false)
-  }
-  const onReset = () => {
-    setFilter({pageNumber: filter.pageNumber, pageSize: filter.pageSize})
-
-    // Router.push(`/info-card?page=${page}`)
-    setIsOpenFilter(false)
-    setTimeout(() => {
-      form.resetFields();
-    }, 100)
-
-  }
 
   const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, extra) => {
     console.log('params', pagination);
@@ -258,13 +187,13 @@ export default function InfoCard({searchParams}: IProps) {
   return (
       <>
         <div className={"w-full p-2 flex justify-between items-center"}>
-          <h2 className={"text-[25px]"}>Info Card</h2>
+          <h2 className={"text-[25px]"}>Tenders</h2>
 
           <div className={"flex items-center flex-nowrap gap-x-4"}>
-            <Link href={"/info-card/add"}>
+            <Link href={"/tenders/add"}>
               <Button type="primary" className={"flex items-center gap-x-2"}>
                 <PlusOutlined/>
-                <p>Add Info Card</p>
+                <p>Add Tender</p>
               </Button>
             </Link>
           </div>
@@ -272,23 +201,14 @@ export default function InfoCard({searchParams}: IProps) {
         <Table
             onChange={onChange}
             sticky={{offsetHeader: 4}}
-            scroll={{
-              x: 200,
-              y: "70vh"
-            }}
+            // scroll={{
+            //   x: 200,
+            //   y: "70vh"
+            // }}
             loading={isLoading}
             columns={columns}
-            pagination={{
-              total: data?.allRecordsSize,
-              current: filter.pageNumber,
-              pageSize: filter.pageSize || PAGE_SIZE,
-              showQuickJumper: false,
-              showSizeChanger: true,
-              position: ["bottomCenter"],
-              // itemRender: itemRender,
-            }}
             dataSource={data}
-            rowKey={"infoCardId"}
+            rowKey={"tenderId"}
         >
         </Table>
       </>
