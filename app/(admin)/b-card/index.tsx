@@ -148,7 +148,7 @@ export default function AddEditBCard({id}: IProps) {
 
     try {
       const res = await axiosWithAuth.post('/iv-component-editor/add-or-modify-iv-component', modifiedValues)
-      if (res.status == 200) {
+      if (res?.status == 200) {
         notification.open({
           type: 'success',
           message: `B card was added`,
@@ -160,7 +160,7 @@ export default function AddEditBCard({id}: IProps) {
       console.log("e",)
       notification.open({
         type: 'error',
-        message: `${e.response.data.message || "error"}`,
+        message: `${e?.response?.data?.message || "error"}`,
       });
     }
   };
@@ -176,7 +176,7 @@ export default function AddEditBCard({id}: IProps) {
 
     try {
       const res = await axiosWithAuth.post(`/iv-component-editor/upload-iv-component-media-upload`, formData, config)
-      if (res.status == 200) {
+      if (res?.status == 200) {
         onSuccess(res.data)
       }
     } catch (e: any) {
@@ -191,14 +191,21 @@ export default function AddEditBCard({id}: IProps) {
     setPreviewOpen(true);
   };
   const getDefaultValue = () => {
-    if (isEditPage) {
+    if (isEditPage && dataBCardDetails) {
       console.log("dataBCardDetails", dataBCardDetails)
       const newData = {
         ...dataBCardDetails,
+        mediaDTO: {
+            "size": dataBCardDetails?.mediaDTO?.size || null,
+            "originalFileName": dataBCardDetails?.mediaDTO?.originalFileName || null,
+            "fileName": dataBCardDetails?.mediaDTO?.fileName || null,
+            "contentType": dataBCardDetails?.mediaDTO?.contentType || null,
+            "url": dataBCardDetails?.mediaDTO?.url || null 
+        },
         details: dataBCardDetails?.details.map((detail: any) => ({
           ...detail,
         }))
-      };
+        };
 
       console.log("data", newData)
 
@@ -238,7 +245,7 @@ export default function AddEditBCard({id}: IProps) {
   }
 
   const dataImg = form.getFieldValue('mediaDTO');
-  let fileList = dataImg?.url ? [dataImg] : (dataBCardDetails ? [dataBCardDetails?.imageData] : []);
+  let fileList = dataImg?.url ? [dataImg] : (dataBCardDetails ? [dataBCardDetails?.mediaDTO] : []);
 
   return (
       <div className={"p-2 pb-[60px]"}>
