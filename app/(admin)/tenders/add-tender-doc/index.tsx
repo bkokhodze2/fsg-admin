@@ -84,11 +84,10 @@ export default function AddEditTenderDoc({id}: IProps) {
   const onFinish = async (values: any) => {
     console.log("vv", values)
 
-    // Modify the form data here before submitting
     const modifiedValues = {
       ...values,
       id: isEditPage ? id : undefined,
-      tenderId: tenderId || id,
+      tenderId: Number(tenderId) || dataTenderDocumentDetails.tenderId,
       documentDetails: values.documentDetails.map((detail: any) => ({
         ...detail,
       }))
@@ -100,7 +99,7 @@ export default function AddEditTenderDoc({id}: IProps) {
       if (res.status == 200) {
         notification.open({
           type: 'success',
-          message: `Tender Document was added`,
+          message: `${isEditPage ? "Tender Was Edited" : "Tender Document was added"}`,
         });
         isEditPage ? await refetch() : null;
         router.push("/tenders")
