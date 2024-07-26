@@ -250,7 +250,7 @@ export default function TendersPage({ searchParams }: IProps) {
 
   const handleDeleteTenderDocById = async (tenderDocId: number): Promise<void> => {
     try {
-      const res = await axiosWithAuth.delete(`${BASEAPI}/api/tender-editor/delete-tender-document/${tenderDocId}`);
+      const res = await axiosWithAuth.delete(`${BASEAPI}/tender-editor/delete-tender-document/${tenderDocId}`);
       notification.open({
         type: 'success',
         message: `Tender Id - ${tenderDocId}`,

@@ -277,11 +277,11 @@ export default function AddEditSlide({id}: IProps) {
       <div className={"p-2 pb-[60px]"}>
         <div className={"w-full flex justify-between items-center mb-4"}>
           <Popconfirm
-            title="return back"
-            description="Are you sure you want to go back? The current changes will be lost"
-            okText={"Yes"}
-            onConfirm={() => Router.back()}
-            // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+              title="return back"
+              description="Are you sure you want to go back? The current changes will be lost"
+              okText={"Yes"}
+              onConfirm={() => Router.back()}
+              // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
           >
             <Button className={"flex items-center"} type="default">
               <ArrowLeftOutlined/>
@@ -343,9 +343,14 @@ export default function AddEditSlide({id}: IProps) {
                     const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
                     const dataImg = form.getFieldValue(['slideDetails', field.name, 'webImageData']);
                     const dataImgMob = form.getFieldValue(['slideDetails', field.name, 'mobileImageData']);
+                    const dataVideo = form.getFieldValue(['slideDetails', field.name, 'videoFile']);
 
                     let fileList = dataImg?.url ? [dataImg] : [];
                     let fileListMob = dataImgMob?.url ? [dataImgMob] : [];
+
+                    console.log("dataVideo", dataVideo)
+
+                    let fileListVideo = dataVideo?.url ? [{...dataVideo, name: dataVideo?.originalFileName}] : [];
 
                     return <Card
                         key={fields[0].name + '' + index}
@@ -379,7 +384,7 @@ export default function AddEditSlide({id}: IProps) {
                             label={'button text'}
                             className="w-1/2"
                         >
-                            <Input placeholder="button text" />
+                          <Input placeholder="button text"/>
                         </Form.Item>
 
                         <Form.Item
@@ -387,11 +392,11 @@ export default function AddEditSlide({id}: IProps) {
                             label={'button link'}
                             className="w-1/2"
                         >
-                            <Input placeholder="button link" />
+                          <Input placeholder="button link"/>
                         </Form.Item>
                       </div>
 
-            
+
                       {/* <Form.Item
                           name={[field.name, 'content']}
                           label={`Content`}
@@ -404,25 +409,25 @@ export default function AddEditSlide({id}: IProps) {
                       </Form.Item> */}
 
                       <Form.Item
-                        label={'image'}
-                        name={[field.name, 'webImageData']}
-                        valuePropName="value"
-                        getValueFromEvent={(e: any) => {
-                          console.log("eee", e)
-                          if (e.file.status === 'done') {
-                            return e.file.response
+                          label={'image'}
+                          name={[field.name, 'webImageData']}
+                          valuePropName="value"
+                          getValueFromEvent={(e: any) => {
+                            console.log("eee", e)
+                            if (e.file.status === 'done') {
+                              return e.file.response
 
-                          } else {
-                            return {
-                              "size": null,
-                              "originalFileName": null,
-                              "imageName": null,
-                              "contentType": null,
-                              "url": null
+                            } else {
+                              return {
+                                "size": null,
+                                "originalFileName": null,
+                                "imageName": null,
+                                "contentType": null,
+                                "url": null
+                              }
                             }
-                          }
-                        }}
-                        noStyle
+                          }}
+                          noStyle
                       >
 
                         <Upload.Dragger
@@ -459,27 +464,27 @@ export default function AddEditSlide({id}: IProps) {
                       )}
 
 
-                      <Form.Item 
-                            label={'image'}
-                            name={[field.name, 'mobileImageData']}
-                            valuePropName="value"
-                            getValueFromEvent={(e: any) => {
+                      <Form.Item
+                          label={'image'}
+                          name={[field.name, 'mobileImageData']}
+                          valuePropName="value"
+                          getValueFromEvent={(e: any) => {
                             console.log("eee", e)
                             if (e.file.status === 'done') {
-                                return e.file.response
+                              return e.file.response
 
                             } else {
-                                return {
+                              return {
                                 "size": null,
                                 "originalFileName": null,
                                 "imageName": null,
                                 "contentType": null,
                                 "url": null
-                                }
+                              }
                             }
-                            }}
-                            noStyle
-                        >
+                          }}
+                          noStyle
+                      >
 
                         <Upload.Dragger
                             // fileList={getFileList()}
@@ -514,31 +519,31 @@ export default function AddEditSlide({id}: IProps) {
                           />
                       )}
 
-                        <Form.Item 
-                            label={'Video File'}
-                            name={[field.name, 'videoFile']}
-                            valuePropName="value"
-                            getValueFromEvent={(e: any) => {
+                      <Form.Item
+                          label={'Video File'}
+                          name={[field.name, 'videoFile']}
+                          valuePropName="value"
+                          getValueFromEvent={(e: any) => {
                             console.log("eee", e)
                             if (e.file.status === 'done') {
-                                return e.file.response
+                              return e.file.response
 
                             } else {
-                                return {
+                              return {
                                 "size": null,
                                 "originalFileName": null,
                                 "fileName": null,
                                 "contentType": null,
                                 "url": null
-                                }
+                              }
                             }
-                            }}
-                            noStyle
-                        >
+                          }}
+                          noStyle
+                      >
 
                         <Upload.Dragger
                             // fileList={getFileList()}
-                            defaultFileList={fileListMob}
+                            defaultFileList={fileListVideo}
                             //     uid: '-1',
                             // name: 'image.png',
                             // status: 'done',
@@ -548,62 +553,17 @@ export default function AddEditSlide({id}: IProps) {
                             maxCount={1}
                             multiple={false}
                             customRequest={(e) => uploadVideo(e)}
-                            // onPreview={(e) => handlePreview(e)}
                         >
                           <p className="ant-upload-drag-icon">
                             <InboxOutlined/>
                           </p>
-
                           <p className="ant-upload-text">Click or drag video file to this area to upload a video</p>
+                          {/* <p className="absolute bottom-[-50px] left-[10%]">
+                            {fileListVideo?.[0]?.originalFileName}
+                          </p> */}
                         </Upload.Dragger>
+
                       </Form.Item>
-
-                      {/* <Space className={"w-full mt-2 flex items-center justify-between"}> */}
-                        {/* <Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"
-                                   valuePropName={"value"}>
-                          <Radio.Group buttonStyle="solid">
-                            <Radio.Button value={true}>active</Radio.Button>
-                            <Radio.Button className={""} value={false}>disable</Radio.Button>
-                          </Radio.Group>
-                        </Form.Item> */}
-
-                        {/* <div className={"flex gap-x-2 flex-nowrap"}>
-                          <Form.Item
-                              // initialValue={dayjs('YYYY-MM-DD HH:mm:ss')}
-                              // valuePropName={"aba"}
-                              // getValueFromEvent={(e: any) => {
-                              //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
-                              //   return date.valueOf();
-                              // }}
-                              // getValueProps={(e: string) => ({
-                              //   value: e ? dayjs(e) : "",
-                              // })}
-                              className={"mb-0"}
-                              name={[field.name, 'useStartDateTimeMsec']}
-                              label="useStartDate">
-                            <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
-                          </Form.Item>
-
-                          <Form.Item
-                              // getValueFromEvent={(e: any) => {
-                              //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
-                              //   return date.valueOf();
-                              // }}
-                              // getValueProps={(e: string) => ({
-                              //   value: e ? dayjs(e) : "",
-                              // })}
-                              className={"mb-0"}
-                              name={[field.name, 'useEndDateTimeMsec']
-                              } label="useEndDate">
-                            <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
-                          </Form.Item>
-                        </div> */}
-                        {/*<Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"*/}
-                        {/*           valuePropName={"checked"}>*/}
-                        {/*  <Checkbox/>*/}
-                        {/*</Form.Item>*/}
-
-                      {/* </Space> */}
                     </Card>
                   })}
               </div>
