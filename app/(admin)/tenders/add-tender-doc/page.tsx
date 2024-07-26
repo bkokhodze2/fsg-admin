@@ -1,9 +1,11 @@
 'use client'
 import AddEditTenderDoc from "./index";
-import React from "react";
+import React, {Suspense} from "react";
 
 export default function TenderDocAdd() {
   return (
-      <AddEditTenderDoc />
+      <Suspense fallback={"loading..."}>
+        <AddEditTenderDoc/>
+      </Suspense>
   );
 }
