@@ -43,6 +43,9 @@ interface DataType {
   status: boolean;
   alt: string;
   webImageData: ImageData;
+  webImageUrl: string;
+  videoFile: ImageData;
+  videoUrl: IFilter;
 }
 
 
@@ -81,6 +84,7 @@ interface IFilter {
   title?: undefined | string,
   buttonText?: undefined | string,
   categoryIdList?: undefined | number[],
+  videoUrl?: string,
 }
 
 export default function Slide({searchParams}: IProps) {
@@ -105,7 +109,7 @@ export default function Slide({searchParams}: IProps) {
 
   useEffect(() => {
     const clearFilter: any = Object.fromEntries(
-      Object.entries(filter).filter(([_, value]) => value !== undefined && value !== "")
+        Object.entries(filter).filter(([_, value]) => value !== undefined && value !== "")
     );
 
     const params = new URLSearchParams(clearFilter).toString();
@@ -167,13 +171,20 @@ export default function Slide({searchParams}: IProps) {
       dataIndex: 'webImageUrl',
       key: 'webImageUrl',
       align: "center",
-      render: (text) => (
-         text ? <Image
-              width={100}
+      render: (text, record: any) => (
+          record?.webImageUrl ? <Image
+              className={"h-[100px] w-full"}
               src={text}
               alt={"slide image"}
+          /> : <video
+              className={"h-[100px] w-full"}
+              autoPlay={true}
+              controls={true}
+              loop muted playsInline
+              width={100}
+              src={record.videoUrl}
+
           />
-          : "No Image"
       )
     },
     {
@@ -258,18 +269,19 @@ export default function Slide({searchParams}: IProps) {
     }
   };
 
-  const SlidesData = data?.map((item:any) => {
-    return {
-    key: item.id,
-    id: item.id,
-    title: item.slideDetails[0].title,
-    description: item.slideDetails[0].description,
-    webImageUrl: item.slideDetails[0].webImageData.url,
-    buttonText: item.slideDetails[0].buttonText,
-    categoryIdList: item.categoryIdList
-    }
-  }  
-)
+  const SlidesData = data?.map((item: any) => {
+        return {
+          key: item.id,
+          id: item.id,
+          title: item.slideDetails[0].title,
+          description: item.slideDetails[0].description,
+          webImageUrl: item.slideDetails[0].webImageData.url,
+          videoUrl: item.slideDetails[0].videoFile.url,
+          buttonText: item.slideDetails[0].buttonText,
+          categoryIdList: item.categoryIdList
+        }
+      }
+  )
 
   return (
       <>
