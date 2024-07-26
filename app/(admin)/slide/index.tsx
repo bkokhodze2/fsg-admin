@@ -343,9 +343,12 @@ export default function AddEditSlide({id}: IProps) {
                     const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
                     const dataImg = form.getFieldValue(['slideDetails', field.name, 'webImageData']);
                     const dataImgMob = form.getFieldValue(['slideDetails', field.name, 'mobileImageData']);
+                    const dataVideo = form.getFieldValue(['slideDetails', field.name, 'videoFile']);
 
                     let fileList = dataImg?.url ? [dataImg] : [];
                     let fileListMob = dataImgMob?.url ? [dataImgMob] : [];
+
+                    let fileListVideo = dataVideo?.url ? [dataVideo] : [];
 
                     return <Card
                         key={fields[0].name + '' + index}
@@ -538,7 +541,7 @@ export default function AddEditSlide({id}: IProps) {
 
                         <Upload.Dragger
                             // fileList={getFileList()}
-                            defaultFileList={fileListMob}
+                            defaultFileList={fileListVideo}
                             //     uid: '-1',
                             // name: 'image.png',
                             // status: 'done',
@@ -548,62 +551,17 @@ export default function AddEditSlide({id}: IProps) {
                             maxCount={1}
                             multiple={false}
                             customRequest={(e) => uploadVideo(e)}
-                            // onPreview={(e) => handlePreview(e)}
-                        >
+                            >
                           <p className="ant-upload-drag-icon">
                             <InboxOutlined/>
                           </p>
-
                           <p className="ant-upload-text">Click or drag video file to this area to upload a video</p>
+                          {/* <p className="absolute bottom-[-50px] left-[10%]">
+                            {fileListVideo?.[0]?.originalFileName}
+                          </p> */}
                         </Upload.Dragger>
+                        
                       </Form.Item>
-
-                      {/* <Space className={"w-full mt-2 flex items-center justify-between"}> */}
-                        {/* <Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"
-                                   valuePropName={"value"}>
-                          <Radio.Group buttonStyle="solid">
-                            <Radio.Button value={true}>active</Radio.Button>
-                            <Radio.Button className={""} value={false}>disable</Radio.Button>
-                          </Radio.Group>
-                        </Form.Item> */}
-
-                        {/* <div className={"flex gap-x-2 flex-nowrap"}>
-                          <Form.Item
-                              // initialValue={dayjs('YYYY-MM-DD HH:mm:ss')}
-                              // valuePropName={"aba"}
-                              // getValueFromEvent={(e: any) => {
-                              //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
-                              //   return date.valueOf();
-                              // }}
-                              // getValueProps={(e: string) => ({
-                              //   value: e ? dayjs(e) : "",
-                              // })}
-                              className={"mb-0"}
-                              name={[field.name, 'useStartDateTimeMsec']}
-                              label="useStartDate">
-                            <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
-                          </Form.Item>
-
-                          <Form.Item
-                              // getValueFromEvent={(e: any) => {
-                              //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
-                              //   return date.valueOf();
-                              // }}
-                              // getValueProps={(e: string) => ({
-                              //   value: e ? dayjs(e) : "",
-                              // })}
-                              className={"mb-0"}
-                              name={[field.name, 'useEndDateTimeMsec']
-                              } label="useEndDate">
-                            <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
-                          </Form.Item>
-                        </div> */}
-                        {/*<Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"*/}
-                        {/*           valuePropName={"checked"}>*/}
-                        {/*  <Checkbox/>*/}
-                        {/*</Form.Item>*/}
-
-                      {/* </Space> */}
                     </Card>
                   })}
               </div>
