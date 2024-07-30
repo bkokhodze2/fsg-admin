@@ -1,4 +1,5 @@
 'use client'
+import PriceArchiveModal from "@/components/items/PriceArchiveModal";
 import { axiosWithAuth } from "@/configs/axios";
 import {
   DeleteOutlined,
@@ -7,7 +8,7 @@ import {
   QuestionCircleOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, notification, Popconfirm, Space, Table, Tooltip, Badge, Dropdown } from 'antd';
+import { Button, notification, Popconfirm, Space, Table, Tooltip, } from 'antd';
 import type { TableColumnsType, TableProps } from 'antd';
 import dayjs from "dayjs";
 import Link from "next/link";
@@ -25,12 +26,12 @@ interface DataType {
     "title": string,
     "subTitle": string,
     "languageId": number,
-  }[]
-}
-
-interface ExpandedDataType {
-  key: React.Key;
-  documentTitle: string;
+    }[]
+    }
+    
+    interface ExpandedDataType {
+      key: React.Key;
+      documentTitle: string;
   formOfSupplying: string;
 }
 
@@ -67,6 +68,19 @@ const fetchTenderDocs = async (tenderId: number) => {
   }
 }
 
+const fetchPriceArchive = async (tenderId: number) => {
+  try {
+    const { data } = await axiosWithAuth.get(`${BASEAPI}/tender-editor/get-tender-price-archive?tenderId=${tenderId}`);
+    return data;
+  } catch (error: any) {
+    notification.open({
+      type: 'error',
+      message: `Tender Price Archives`,
+      description: 'Something went wrong while fetching Tender Price Archive',
+    });
+  }
+}
+
 interface IProps {
   searchParams: IFilter
 }
@@ -89,6 +103,9 @@ export default function TendersPage({ searchParams }: IProps) {
     subTitle: searchParams.subTitle || undefined
   });
 
+  const [isPriceArchiveModalOpen, setIsPriceArchiveModalOpen] = useState(false);
+  const [tenderPricesArchiveData, setTenderPricesArchiveData] = useState<any>(null)
+
   const [expandedRows, setExpandedRows] = useState<Record<number, ExpandedDataType[]>>({});
 
   const Router = useRouter();
@@ -107,6 +124,17 @@ export default function TendersPage({ searchParams }: IProps) {
 
     Router.push(`/tenders?${params}`)
   }, [filter]);
+
+  const showPriceArchiveModal = async (tenderId: number) => {
+    console.log('tenderId', tenderId)
+    const tenderDocsData = await fetchPriceArchive(tenderId);
+
+    console.log('tenderDocuments Data', tenderDocsData)
+    setTenderPricesArchiveData(tenderDocsData?.[tenderDocsData.length - 1])
+    setIsPriceArchiveModalOpen(true)
+  }
+
+  console.log('tenderPricesArchiveData', tenderPricesArchiveData)
 
   const handleExpand = async (expanded: boolean, record: DataType) => {
     if (expanded && !expandedRows[record.id]) {
@@ -206,23 +234,36 @@ export default function TendersPage({ searchParams }: IProps) {
       width: "130px",
       align: "center",
       render: (_, record) => (
-        <Space size="middle">
-          <Tooltip title="Edit" placement={'bottom'}>
-            <Link href={`/tenders/edit/${record?.id}`}>
-              <Button shape="circle" className={"flex items-center justify-center"} icon={<EditOutlined />} />
-            </Link>
-          </Tooltip>
-          <Popconfirm
-            title="Delete the Tender"
-            description="Are you sure to delete this Tender?"
-            okText={"Yes"}
-            onConfirm={() => handleDeleteTenderById(record)}
-            icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-          >
-            <Tooltip title="Delete" placement={'bottom'}>
-              <Button danger shape="circle" className={"flex items-center justify-center"} icon={<DeleteOutlined />} />
+        <Space size="middle" className="flex flex-col">
+          <div className="flex gap-x-[8px]">
+            <Tooltip title="Edit Tender" placement={'bottom'}>
+              <Link href={`/tenders/edit/${record?.id}`}>
+                <Button shape="circle" className={"flex items-center justify-center"} icon={<EditOutlined />} />
+              </Link>
             </Tooltip>
-          </Popconfirm>
+
+            <Popconfirm
+              title="Delete the Tender"
+              description="Are you sure to delete this Tender?"
+              okText={"Yes"}
+              onConfirm={() => handleDeleteTenderById(record)}
+              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+            >
+              <Tooltip title="Delete Tender" placement={'bottom'}>
+                <Button danger shape="circle" className={"flex items-center justify-center"} icon={<DeleteOutlined />} />
+              </Tooltip>
+            </Popconfirm>
+
+            <Tooltip title="Edit Price Archive">
+              <Button
+                type="primary"
+                shape="default"
+                className={"flex items-center justify-center"}
+                icon={<EditOutlined />}
+                onClick={() => showPriceArchiveModal(record?.id)}
+              />
+            </Tooltip>
+          </div>
         </Space>
       ),
     },
@@ -296,6 +337,17 @@ export default function TendersPage({ searchParams }: IProps) {
           </Link>
         </div>
       </div>
+
+      {
+        tenderPricesArchiveData &&
+          <PriceArchiveModal
+            tenderPricesArchiveData={tenderPricesArchiveData}
+            setTenderPricesArchiveData={setTenderPricesArchiveData}
+            isPriceArchiveModalOpen={isPriceArchiveModalOpen}
+            setIsPriceArchiveModalOpen={setIsPriceArchiveModalOpen}
+          />
+      }
+
       <Table
         onChange={onChange}
         sticky={{ offsetHeader: 4 }}
