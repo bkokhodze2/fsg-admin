@@ -4,7 +4,7 @@ import {ArrowLeftOutlined, InboxOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
-import {useRouter, useParams} from "next/navigation";
+import {useRouter, useParams, useSearchParams} from "next/navigation";
 import React, {useState} from "react";
 import {
   Button, Image,
@@ -54,6 +54,7 @@ const modules = {
 };
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
+
 const fetchLanguages = async () => {
   try {
     const {data} = await axiosWithAuth.get(`${BASEAPI}/news-editor/get-languages`);
@@ -68,6 +69,7 @@ const fetchLanguages = async () => {
     });
   }
 }
+
 const fetchCategories = async () => {
   try {
     const {data} = await axiosWithAuth.get(`${BASEAPI}/news-editor/get-news-categories`);
@@ -82,6 +84,7 @@ const fetchCategories = async () => {
     });
   }
 }
+
 const fetchNewsDetailsById = async (id: number) => {
   try {
     const {data} = await axiosWithAuth.get(`/news-editor/get-news-info-detail`, {
@@ -104,15 +107,17 @@ const fetchNewsDetailsById = async (id: number) => {
 }
 
 interface IProps {
-  id?: number
+  id?: number,
+  isCsr?: boolean,
 }
 
-export default function AddEditNews({id}: IProps) {
+export default function AddEditNews({id, isCsr}: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
   const Params = useParams();
+  const SParams = useSearchParams()
 
-  console.log("Params", Params)
+  const parentNewsId = parseInt(SParams?.getAll("parentNewsId")?.toString()) || null;
 
   const isEditPage = !!id;
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -149,7 +154,8 @@ export default function AddEditNews({id}: IProps) {
         useStartDateTime: detail.useStartDateTimeMsec ? dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
         useEndDateTimeMsec: dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
         useEndDateTime: detail.useEndDateTimeMsec ? dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
-      }))
+      })),
+      parentNewsId: parentNewsId,
     };
     console.log("modifiedValues", modifiedValues)
 
@@ -162,7 +168,7 @@ export default function AddEditNews({id}: IProps) {
           message: `news was added`,
         });
        await refetch();
-        Router.push("/news")
+        Router.push(isCsr ? "/csr" : "/news")
       }
     } catch (e: any) {
       console.log("e",)
@@ -196,6 +202,18 @@ export default function AddEditNews({id}: IProps) {
 
   }
 
+  const addEditText = () => {
+    if(id && isCsr) {
+      return "Edit CSR"
+    } else if (isCsr) {
+      return "Add CSR"
+    } else if(id) {
+      return "Edit News"
+    } else {
+      return "Add News"
+    }
+  }
+
   const handlePreview = async (file: any) => {
     console.log("file", file, file?.response?.url || file?.url)
     setPreviewImage(file?.response?.url || file?.url);
@@ -220,7 +238,7 @@ export default function AddEditNews({id}: IProps) {
       const activeLanguages = dataLanguages?.filter(e => e.active === true)
 
       return {
-        "categoryIdList": [1],
+        "categoryIdList": isCsr ? [2] : [1],
         "newsDetails":
             activeLanguages?.map(e => {
               return {
@@ -248,6 +266,7 @@ export default function AddEditNews({id}: IProps) {
         ,
         "status": true,
         "videoLink": null,
+        "parentNewsId": parentNewsId,
       }
 
 
@@ -278,7 +297,7 @@ export default function AddEditNews({id}: IProps) {
           {/*</Tooltip>*/}
 
 
-          <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit News" : "Add news"}</h2>
+          <h2 className={"text-center text-[30px] w-full"}>{addEditText()}</h2>
         </div>
         <Divider className={"my-3"}/>
         {((isEditPage && dataNewsDetails) || (!isEditPage && dataLanguages)) && <Form
@@ -298,10 +317,12 @@ export default function AddEditNews({id}: IProps) {
           {/*</Form.Item>*/}
 
           <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
-            <Select mode={"multiple"}>
-              {dataCategories?.map((e) => {
-                return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
-              })}
+            <Select mode={isCsr ? undefined : "multiple"}>
+              {isCsr ? 
+                  <Select.Option value={2} key={1}>{isCsr && "CSR"}</Select.Option>
+                : 
+                  dataCategories?.filter(e => e?.id !== 2)?.map((e) => <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>)
+              }
             </Select>
           </Form.Item>
 
