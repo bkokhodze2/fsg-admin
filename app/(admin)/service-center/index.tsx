@@ -134,6 +134,7 @@ export default function AddEditServiceCenter({id}: IProps) {
   const isEditPage = !!id;
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
+  const [currentCategoryId, setCurrentCategoryId] = useState<boolean>(false);
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
 
   const {data: dataServiceCenterDetails, refetch} = useQuery({
@@ -179,11 +180,10 @@ export default function AddEditServiceCenter({id}: IProps) {
   const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
   const {data: dataSettlements} = useQuery<ISettlements[]>({queryKey: ["settlements"], queryFn: fetchSettlements});
 
-
-
   const onchange = (values: any, allValues: any) => {
     console.log("values", values)
     console.log("allValues", allValues)
+    allValues.categoryIdList === 16 ? setCurrentCategoryId(true) : setCurrentCategoryId(false)
   }
 
   const onFinish = async (values: any) => {
@@ -193,6 +193,7 @@ export default function AddEditServiceCenter({id}: IProps) {
     const modifiedValues = {
       ...values,
       id: isEditPage ? Number(id) : undefined,
+      categoryIdList: typeof values.categoryIdList === 'number' ? [values.categoryIdList] : values.categoryIdList,
       useStartDateTimeMsec: dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
       useStartDateTime: values.useStartDateTimeMsec ? dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
       useEndDateTimeMsec: dayjs(values.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
@@ -360,13 +361,14 @@ export default function AddEditServiceCenter({id}: IProps) {
             initialValues={getDefaultValue()}>
 
             <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
-                <Select mode={"multiple"}>
-                {dataCategories?.map((e) => {
-                    return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
-                })}
-                </Select>
+              <Select>
+              {dataCategories?.map((e) => {
+                  return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
+              })}
+              </Select>
             </Form.Item>
 
+          {currentCategoryId &&
             <Form.Item name={"settlementId"} label="settlement" className={"mt-2"}>
                 <Select>
                 {dataSettlements?.map((e) => {
@@ -374,6 +376,7 @@ export default function AddEditServiceCenter({id}: IProps) {
                 })}
                 </Select>
             </Form.Item>
+          }
 
           <Form.Item className={"mb-0"} name={'status'} label="status"
                      valuePropName={"value"}>
@@ -409,7 +412,7 @@ export default function AddEditServiceCenter({id}: IProps) {
               name={'link'}
               label={'Link'}
           >
-            <InputNumber placeholder="Link" className="w-full"/>
+            <Input placeholder="Link" className="w-full"/>
           </Form.Item>
 
 
