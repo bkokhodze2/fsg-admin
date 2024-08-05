@@ -1,6 +1,6 @@
 'use client'
 import AddEditNews from "@/app/(admin)/news";
-import React from "react";
+import React, { Suspense } from "react";
 
 interface IPageProps {
   params: {
@@ -15,6 +15,8 @@ export default function NewsEdit({params, searchParams}: IPageProps) {
 
 
   return (
+    <Suspense fallback={"loading..."}>
       <AddEditNews id={params.id as number}/>
+    </Suspense>
   );
 }
