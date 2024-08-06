@@ -120,7 +120,7 @@ const PriceArchiveModal = ({isPriceArchiveModalOpen, setIsPriceArchiveModalOpen,
                     name={'servicePrice1'}
                     label={'Price'}
                 >
-                    <InputNumber disabled={!tenderPricesArchiveData?.servicePriceStatus1} placeholder="Enter a number" className="w-full"/>
+                    <InputNumber disabled={!tenderPricesArchiveData?.servicePriceStatus1} required={tenderPricesArchiveData?.servicePriceStatus1} placeholder="Enter a number" className="w-full"/>
                 </Form.Item>
             </Card>
         </Card>
@@ -138,7 +138,7 @@ const PriceArchiveModal = ({isPriceArchiveModalOpen, setIsPriceArchiveModalOpen,
                     name={'servicePrice2'}
                     label={'Price'}
                 >
-                    <InputNumber placeholder="Enter a number" disabled={!tenderPricesArchiveData?.servicePriceStatus2} className="w-full"/>
+                    <InputNumber placeholder="Enter a number" required={tenderPricesArchiveData?.servicePriceStatus2} disabled={!tenderPricesArchiveData?.servicePriceStatus2} className="w-full"/>
                 </Form.Item>
             </Card>
         </Card>
@@ -156,7 +156,7 @@ const PriceArchiveModal = ({isPriceArchiveModalOpen, setIsPriceArchiveModalOpen,
                     name={'servicePrice3'}
                     label={'Price'}
                 >
-                    <InputNumber placeholder="Enter a number" disabled={!tenderPricesArchiveData.servicePriceStatus3} className="w-full"/>
+                    <InputNumber placeholder="Enter a number" required={tenderPricesArchiveData?.servicePriceStatus3} disabled={!tenderPricesArchiveData.servicePriceStatus3} className="w-full"/>
                 </Form.Item>
             </Card>
         </Card>
@@ -174,7 +174,7 @@ const PriceArchiveModal = ({isPriceArchiveModalOpen, setIsPriceArchiveModalOpen,
                     name={'servicePrice4'}
                     label={'Price'}
                 >
-                    <InputNumber placeholder="Enter a number" disabled={!tenderPricesArchiveData.servicePriceStatus4} className="w-full"/>
+                    <InputNumber placeholder="Enter a number" required={tenderPricesArchiveData?.servicePriceStatus4} disabled={!tenderPricesArchiveData.servicePriceStatus4} className="w-full"/>
                 </Form.Item>
             </Card>
         </Card>
