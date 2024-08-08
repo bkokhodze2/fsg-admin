@@ -134,7 +134,6 @@ export default function AddEditServiceCenter({id}: IProps) {
   const isEditPage = !!id;
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
-  const [currentCategoryId, setCurrentCategoryId] = useState<boolean>(false);
   const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
 
   const {data: dataServiceCenterDetails, refetch} = useQuery({
@@ -183,7 +182,6 @@ export default function AddEditServiceCenter({id}: IProps) {
   const onchange = (values: any, allValues: any) => {
     console.log("values", values)
     console.log("allValues", allValues)
-    allValues.categoryIdList === 16 ? setCurrentCategoryId(true) : setCurrentCategoryId(false)
   }
 
   const onFinish = async (values: any) => {
@@ -277,7 +275,7 @@ export default function AddEditServiceCenter({id}: IProps) {
 
       return {
         "categoryIdList": [dataCategories?.[0].id],
-        "settlementId": dataSettlements?.[4].id,
+        "settlementId": dataSettlements?.[5].id,
         "settlementDataForResult": {
           "id": null,
           "typeId": null,
@@ -368,7 +366,7 @@ export default function AddEditServiceCenter({id}: IProps) {
               </Select>
             </Form.Item>
 
-          {currentCategoryId &&
+          {
             <Form.Item name={"settlementId"} label="settlement" className={"mt-2"}>
                 <Select>
                 {dataSettlements?.map((e) => {
