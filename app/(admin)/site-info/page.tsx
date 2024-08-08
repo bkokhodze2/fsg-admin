@@ -216,6 +216,8 @@ export default function SiteInfoPage() {
         "status": true,
         "mail": null,
         "phone": null,
+        "tenderPhoneEmail": null,
+        "tenderPhoneNumber": null,
         "facebookLink": null,
         "instagramLink": null,
         "linkedinLink": null,
@@ -258,6 +260,11 @@ export default function SiteInfoPage() {
                 "latestNewsSubTitle": null,
                 "stationsTitle": null,
                 "stationsSubTitle": null,
+                "tenderTitle": null,
+                "tenderSubTitle": null,
+                "tenderContactTitle": null,
+                "tenderContactSubTitle": null,
+                "noEnergyCardTitle": null,
               }
             }),
       }
@@ -495,6 +502,42 @@ export default function SiteInfoPage() {
                               >
                                 <Input placeholder="stations SubTitle"/>
                               </Form.Item>
+                              
+                              <Form.Item
+                                  name={[field.name, 'tenderTitle']}
+                                  label={'Tender Title'}
+                              >
+                                <Input placeholder="Tender Title"/>
+                              </Form.Item>
+                    
+                              <Form.Item
+                                  name={[field.name, 'tenderSubTitle']}
+                                  label={'Tender SubTitle'}
+                              >
+                                <Input placeholder="Tender SubTitle"/>
+                              </Form.Item>
+
+                              <Form.Item
+                                  name={[field.name, 'tenderContactTitle']}
+                                  label={'Tender Contact Title'}
+                              >
+                                <Input placeholder="Tender Contact Title"/>
+                              </Form.Item>
+
+                              <Form.Item
+                                  name={[field.name, 'tenderContactSubTitle']}
+                                  label={'Tender Contact SubTitle'}
+                              >
+                                <Input placeholder="Tender Contact SubTitle"/>
+                              </Form.Item>
+
+                              <Form.Item
+                                  name={[field.name, 'noEnergyCardTitle']}
+                                  label={'No Energy Card Title'}
+                              >
+                                <Input placeholder="No Energy Card Title"/>
+                              </Form.Item>
+
                             </Card>
                         )
                       })}
@@ -522,6 +565,20 @@ export default function SiteInfoPage() {
                       label={'Phone'}
                   >
                     <Input placeholder="Phone"/>
+                  </Form.Item>
+
+                  <Form.Item
+                      name={'tenderPhoneEmail'}
+                      label={'Tender Phone Email'}
+                  >
+                    <Input placeholder="Tender Phone Email" />
+                  </Form.Item>
+
+                  <Form.Item
+                      name={'tenderPhoneNumber'}
+                      label={'Tender Phone Number'}
+                  >
+                    <Input placeholder="Tender Phone Number"/>
                   </Form.Item>
 
                   <Form.Item
