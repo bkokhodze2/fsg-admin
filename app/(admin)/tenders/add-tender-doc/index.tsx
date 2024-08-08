@@ -1,15 +1,17 @@
 'use client'
 import {axiosWithAuth} from "@/configs/axios";
-import {ArrowLeftOutlined} from "@ant-design/icons";
+import {ArrowLeftOutlined, InboxOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
 import {useRouter, useSearchParams} from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 import {
   Button,
   Form,
   Input,
   Card, Divider, notification,
   Popconfirm,
+  Upload,
+  Image
 } from 'antd';
 import {SizeType} from "antd/lib/config-provider/SizeContext";
 
@@ -55,6 +57,10 @@ interface IProps {
 }
 
 export default function AddEditTenderDoc({id}: IProps) {
+
+  const [previewImage, setPreviewImage] = useState('');
+  const [previewOpen, setPreviewOpen] = useState(false);
+
   const [form] = Form.useForm();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -82,12 +88,17 @@ export default function AddEditTenderDoc({id}: IProps) {
     console.log("allValues", allValues)
   }
   const onFinish = async (values: any) => {
-    console.log("vv", values)
+    console.log("onFinish VALUES", values)
 
     const modifiedValues = {
-      ...values,
+      // ...values,
       id: isEditPage ? id : undefined,
       tenderId: Number(tenderId) || dataTenderDocumentDetails.tenderId,
+      documentContentType: values?.document?.contentType,
+      documentName: values?.document?.fileName,
+      documentOriginalName: values?.document?.originalFileName,
+      documentUrl: values?.document?.url,
+      documentSize: values?.document?.size,
       documentDetails: values.documentDetails.map((detail: any) => ({
         ...detail,
       }))
@@ -114,11 +125,44 @@ export default function AddEditTenderDoc({id}: IProps) {
 
   };
 
+  const uploadFile = async (options: any) => {
+    const {onSuccess, onError, file, onProgress} = options;
+
+    const formData = new FormData();
+    const config = {
+      headers: {"content-type": "multipart/form-data"},
+    };
+
+    formData.append("documentFile", file);
+
+    try {
+      const res = await axiosWithAuth.post(`/tender-editor/upload-tender-document`, formData, config)
+      if (res.status == 200) {
+        onSuccess(res.data)
+      }
+    } catch (e: any) {
+      onError("failed")
+    }
+
+  }
+
+  const handlePreview = async (file: any) => {
+    console.log("file", file, file?.response?.url || file?.url)
+    setPreviewImage(file?.response?.url || file?.url);
+    setPreviewOpen(true);
+  };
+
   const getDefaultValue = () => {
     if (isEditPage) {
-      console.log("dataTenderDocumentDetails", dataTenderDocumentDetails)
       const newData = {
         ...dataTenderDocumentDetails,
+        document: {
+          "size": dataTenderDocumentDetails?.documentSize,
+          "originalFileName": dataTenderDocumentDetails?.documentOriginalName,
+          "fileName": dataTenderDocumentDetails?.documentName,
+          "contentType": dataTenderDocumentDetails?.documentContentType,
+          "url": dataTenderDocumentDetails?.documentUrl,
+        },
         documentDetails: dataTenderDocumentDetails?.documentDetails.map((detail: any) => ({
           ...detail,
         })),
@@ -130,6 +174,13 @@ export default function AddEditTenderDoc({id}: IProps) {
       return {
         "id": null,
         "tenderId": null,
+        "document": {
+          "size": null,
+          "originalFileName": null,
+          "fileName": null,
+          "contentType": null,
+          "url": null,
+        },
         "documentName": null,
         "documentUrl": null,
         "documentSize": null,
@@ -148,6 +199,20 @@ export default function AddEditTenderDoc({id}: IProps) {
       }
     }
   }
+
+  const dataFile = form.getFieldValue('document');
+
+  let fileList = dataFile?.url  ? 
+        [dataFile] 
+      : dataTenderDocumentDetails?.documentUrl ? 
+        [{
+        "size": dataTenderDocumentDetails?.documentSize,
+        "originalFileName": dataTenderDocumentDetails?.documentOriginalName,
+        "fileName": dataTenderDocumentDetails?.documentName,
+        "contentType": dataTenderDocumentDetails?.documentContentType,
+        "url": dataTenderDocumentDetails?.documentUrl,
+        }]
+      : [];
 
   return (
       <div className={"p-2 pb-[60px]"}>
@@ -175,37 +240,65 @@ export default function AddEditTenderDoc({id}: IProps) {
             onFinish={onFinish}
             size={'default' as SizeType}
             initialValues={getDefaultValue()}>
+              
 
           <Form.Item
-            name={'documentName'}
-            label={'Document Name'}
-          >
-            <Input placeholder="Document Name"/>
-          </Form.Item>
+              label={'document'}
+              name={'document'}
+              valuePropName="value"
+              getValueFromEvent={(e: any) => {
+              console.log("eee", e)
+              if (e.file.status === 'done') {
+                  return e.file.response
 
-          <Form.Item
-            name={'documentUrl'}
-            label={'Document Url'}
+              } else {
+                  return {
+                  "size": null,
+                  "originalFileName": null,
+                  "fileName": null,
+                  "contentType": null,
+                  "url": null
+                  }
+              }
+              }}
+              noStyle
           >
-            <Input placeholder="Document Url"/>
-          </Form.Item>
 
-          <Form.Item
-            name={'documentContentType'}
-            label={'Document Content Type'}
-          >
-            <Input placeholder="Document Content Type"/>
-          </Form.Item>
+              <Upload.Dragger
+                  // fileList={getFileList()}
+                  defaultFileList={fileList}
+                  //     uid: '-1',
+                  // name: 'image.png',
+                  // status: 'done',
+                  // url: data?.url,
+                  listType={"picture-card"}
+                  showUploadList={true}
+                  maxCount={1}
+                  multiple={false}
+                  customRequest={(e) => uploadFile(e)}
+                  onPreview={(e) => handlePreview(e)}
+              >
+              <p className="ant-upload-drag-icon">
+                  <InboxOutlined/>
+              </p>
 
-          <Form.Item
-            name={'documentOriginalName'}
-            label={'Document Original Name'}
-          >
-            <Input placeholder="Document Original Name"/>
+              <p className="ant-upload-text">Click or drag file to this area to upload</p>
+              </Upload.Dragger>
           </Form.Item>
+              
+          {previewImage && (
+              <Image
+                  wrapperStyle={{display: 'none'}}
+                  preview={{
+                      visible: previewOpen,
+                      onVisibleChange: (visible) => setPreviewOpen(visible),
+                      afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                  }}
+                  src={previewImage}
+              />
+          )}
 
-          <Form.List
-              name="documentDetails">
+          <Form.List name="documentDetails">
             {(fields, v) => {
               return <div className={"flex flex-col gap-y-5"}>
                 {
