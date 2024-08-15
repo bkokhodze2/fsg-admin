@@ -63,6 +63,7 @@ const items: MenuItem[] = [
   getItem((<Link href={`/b-card`}>B Card</Link>), '15', <FileOutlined/>),
   getItem((<Link href={`/tenders`}>Tenders</Link>), '16', <FileOutlined/>),
   getItem((<Link href={`/csr`}>CSR</Link>), '17', <FileOutlined/>),
+  getItem((<Link href={`/custom-page`}>Custom Page</Link>), '18', <FileOutlined/>),
 ];
 
 const items2: MenuItem[] = [
