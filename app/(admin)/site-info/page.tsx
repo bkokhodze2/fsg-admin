@@ -216,7 +216,7 @@ export default function SiteInfoPage() {
         "status": true,
         "mail": null,
         "phone": null,
-        "tenderPhoneEmail": null,
+        "tenderEmail": null,
         "tenderPhoneNumber": null,
         "facebookLink": null,
         "instagramLink": null,
@@ -265,6 +265,8 @@ export default function SiteInfoPage() {
                 "tenderContactTitle": null,
                 "tenderContactSubTitle": null,
                 "noEnergyCardTitle": null,
+                "waymartTitle": null,
+                "waymartSubTitle": null,
               }
             }),
       }
@@ -538,6 +540,20 @@ export default function SiteInfoPage() {
                                 <Input placeholder="No Energy Card Title"/>
                               </Form.Item>
 
+                              <Form.Item
+                                  name={[field.name, 'waymartTitle']}
+                                  label={'waymart Title'}
+                              >
+                                <Input placeholder="waymart Title"/>
+                              </Form.Item>
+
+                              <Form.Item
+                                  name={[field.name, 'waymartSubTitle']}
+                                  label={'waymart SubTitle'}
+                              >
+                                <Input placeholder="waymart SubTitle"/>
+                              </Form.Item>
+
                             </Card>
                         )
                       })}
@@ -568,10 +584,10 @@ export default function SiteInfoPage() {
                   </Form.Item>
 
                   <Form.Item
-                      name={'tenderPhoneEmail'}
-                      label={'Tender Phone Email'}
+                      name={'tenderEmail'}
+                      label={'Tender Email'}
                   >
-                    <Input placeholder="Tender Phone Email" />
+                    <Input placeholder="Tender Email" />
                   </Form.Item>
 
                   <Form.Item
