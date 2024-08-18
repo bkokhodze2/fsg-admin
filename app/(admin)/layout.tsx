@@ -27,26 +27,26 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem('Products & Services', '1', <FolderOpenOutlined/>, [
-    getItem((<Link href={"/E-card"}>E-card</Link>), '1-1',),
-    getItem((<Link href={"/E-chargers"}>E-chargers</Link>), '1-2'),
-    getItem((<Link href={"/self-service"}>Self service</Link>), '1-3'),
-    getItem((<Link href={"/service-centers"}>Service centers</Link>), '1-4'),
-    getItem((<Link href={"/way-mart"}>Way mart</Link>), '1-5'),
-    getItem((<Link href={"/quality"}>Quality</Link>), '1-6'),
-    getItem((<Link href={"/price-archive"}>Price archive</Link>), '1-7'),
-    getItem((<Link href={"/locations"}>Locations </Link>), '1-8'),
-  ]),
-  getItem('Company', '2', <FolderOpenOutlined/>, [
-    getItem((<Link href={"/about-company"}>About Company</Link>), '2-1',),
-    getItem((<Link href={"/socar-global"}>SOCAR Global</Link>), '2-2'),
-    getItem((<Link href={"/management"}>Management</Link>), '2-3'),
-  ]),
-  getItem('Business', '3', <FolderOpenOutlined/>, [
-    getItem((<Link href={"/about-company"}>Corporate Services</Link>), '3-1',),
-    getItem((<Link href={"/corporate-cabinet"}>Corporate Cabinet</Link>), '3-2'),
-    getItem((<Link href={"/tenders"}>Tenders</Link>), '3-3'),
-  ]),
+  // getItem('Products & Services', '1', <FolderOpenOutlined/>, [
+  //   getItem((<Link href={"/E-card"}>E-card</Link>), '1-1',),
+  //   getItem((<Link href={"/E-chargers"}>E-chargers</Link>), '1-2'),
+  //   getItem((<Link href={"/self-service"}>Self service</Link>), '1-3'),
+  //   getItem((<Link href={"/service-centers"}>Service centers</Link>), '1-4'),
+  //   getItem((<Link href={"/way-mart"}>Way mart</Link>), '1-5'),
+  //   getItem((<Link href={"/quality"}>Quality</Link>), '1-6'),
+  //   getItem((<Link href={"/price-archive"}>Price archive</Link>), '1-7'),
+  //   getItem((<Link href={"/locations"}>Locations </Link>), '1-8'),
+  // ]),
+  // getItem('Company', '2', <FolderOpenOutlined/>, [
+  //   getItem((<Link href={"/about-company"}>About Company</Link>), '2-1',),
+  //   getItem((<Link href={"/socar-global"}>SOCAR Global</Link>), '2-2'),
+  //   getItem((<Link href={"/management"}>Management</Link>), '2-3'),
+  // ]),
+  // getItem('Business', '3', <FolderOpenOutlined/>, [
+  //   getItem((<Link href={"/about-company"}>Corporate Services</Link>), '3-1',),
+  //   getItem((<Link href={"/corporate-cabinet"}>Corporate Cabinet</Link>), '3-2'),
+  //   getItem((<Link href={"/tenders"}>Tenders</Link>), '3-3'),
+  // ]),
 
   getItem((<Link href={"/slide"}>Pages Slider</Link>), '4', <DesktopOutlined/>),
 
