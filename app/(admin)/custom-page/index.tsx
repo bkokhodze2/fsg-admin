@@ -9,7 +9,7 @@ import {
   Form,
   Input,
   Select, Card, Divider, notification, Radio,
-  Popconfirm
+  Popconfirm, Checkbox
 } from 'antd';
 import {SizeType} from "antd/lib/config-provider/SizeContext";
 
@@ -116,7 +116,7 @@ export default function AddEditCustomPage({id}: IProps) {
           type: 'success',
           message: `Custom page was added`,
         });
-      isEditPage ? await refetch() : null;
+        isEditPage ? await refetch() : null;
         Router.push("/custom-page")
       }
     } catch (e: any) {
@@ -169,17 +169,17 @@ export default function AddEditCustomPage({id}: IProps) {
       <div className={"p-2 pb-[60px]"}>
         <div className={"w-full flex justify-between items-center mb-4"}>
 
-            <Popconfirm
+          <Popconfirm
               title="return back"
               description="Are you sure you want to go back? The current changes will be lost"
               okText={"Yes"}
               onConfirm={() => Router.back()}
-            >
-              <Button className={"flex items-center"} type="default">
-                <ArrowLeftOutlined/>
-                Back
-              </Button>
-            </Popconfirm>
+          >
+            <Button className={"flex items-center"} type="default">
+              <ArrowLeftOutlined/>
+              Back
+            </Button>
+          </Popconfirm>
 
           <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Custom Page" : "Add Custom Page"}</h2>
         </div>
@@ -209,8 +209,32 @@ export default function AddEditCustomPage({id}: IProps) {
           </Form.Item>
 
           <Form.Item
-            name={'slug'}
-            label={'slug'}
+              className={"mb-0"}
+              name={"about"}
+              valuePropName={"checked"}
+          >
+            <Checkbox>is about section</Checkbox>
+          </Form.Item>
+
+          <Form.Item
+              className={"mb-0"}
+              name={"services"}
+              valuePropName={"checked"}
+          >
+            <Checkbox>is services section</Checkbox>
+          </Form.Item>
+
+          <Form.Item
+              className={"mb-0"}
+              name={"corporate"}
+              valuePropName={"checked"}
+          >
+            <Checkbox>is corporate section</Checkbox>
+          </Form.Item>
+
+          <Form.Item
+              name={'slug'}
+              label={'slug'}
           >
             <Input placeholder="slug"/>
           </Form.Item>
@@ -235,7 +259,7 @@ export default function AddEditCustomPage({id}: IProps) {
                       >
                         <Input placeholder="title"/>
                       </Form.Item>
-                      
+
                       <Form.Item
                           name={[field.name, 'subTitle']}
                           label={'subTitle'}
