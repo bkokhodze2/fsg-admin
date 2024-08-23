@@ -15,6 +15,15 @@ import {SizeType} from "antd/lib/config-provider/SizeContext";
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 
+interface IFilter {
+  pageNumber?: number,
+  pageSize?: number,
+  slug?: undefined | string,
+  content?: undefined | string,
+  title?: undefined | string,
+  subTitle?: undefined | string,
+}
+
 const fetchLanguages = async () => {
   try {
     const {data} = await axiosWithAuth.get(`${BASEAPI}/news-editor/get-languages`);
@@ -64,6 +73,21 @@ const fetchSeoPageDetailsById = async (id: number) => {
   }
 }
 
+const fetchSeoPage = async (filter: IFilter) => {
+  try {
+    const {data} = await axiosWithAuth.get(`${BASEAPI}/seo-editor/get-seo-list`);
+    return data;
+  } catch (error: any) {
+    notification.open({
+      type: 'error',
+      message: `seo page`,
+      description:
+          'Something went wrong while fetching seo data',
+    });
+
+  }
+}
+
 interface IProps {
   id?: number
 }
@@ -71,6 +95,7 @@ interface IProps {
 export default function AddEditSeoPage({id}: IProps) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
+  const [filter, setFilter] = useState<IFilter>({});
   const [form] = Form.useForm();
   const Router = useRouter();
   const Params = useParams();
@@ -92,6 +117,28 @@ export default function AddEditSeoPage({id}: IProps) {
     staleTime: 0,
   });
 
+  console.log('kakuna', dataSeoPageDetails?.categoryId)
+
+
+
+  const {data: seoDataList, isLoading, isError} = useQuery({
+    queryKey: ["seoPage", filter],
+    queryFn: () => fetchSeoPage(filter)
+  });
+
+  const alreadyChosenCategoriesIdsArray = seoDataList?.map((item:any) => item.categoryId)
+
+  const filteredCategories = dataCategories?.filter(
+    item => {
+      const filteredEditPageCategories = alreadyChosenCategoriesIdsArray?.filter((item:number) => item !== dataSeoPageDetails?.categoryId)
+        return (
+          isEditPage ?
+              !filteredEditPageCategories?.includes(item.id)
+            : 
+              !alreadyChosenCategoriesIdsArray?.includes(item.id)
+        )
+      }
+  )
 
   const onchange = (values: any, allValues: any) => {
     console.log("values", values)
@@ -166,7 +213,6 @@ export default function AddEditSeoPage({id}: IProps) {
 
   const getDefaultValue = () => {
     if (isEditPage) {
-      console.log("dataSeoPageDetails:::::", dataSeoPageDetails)
       const newData = {
         ...dataSeoPageDetails,
         details: dataSeoPageDetails.details.map((detail: any) => ({
@@ -175,15 +221,13 @@ export default function AddEditSeoPage({id}: IProps) {
         }))
       };
 
-      console.log("NEW DATA:::::::", newData)
-
       return newData;
     } else {
       const activeLanguages = dataLanguages?.filter(e => e.active === true)
 
       return {
         "id": null,
-        "categoryId": dataCategories?.[0]?.id,
+        "categoryId": filteredCategories?.[0].id,
         "status": true,
         "details":
             activeLanguages?.map(e => {
@@ -236,7 +280,7 @@ export default function AddEditSeoPage({id}: IProps) {
 
           <Form.Item name={"categoryId"} label="category" className={"mt-2"}>
             <Select>
-              {dataCategories?.map((e) => {
+              {filteredCategories?.map((e) => {
                 return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
               })}
             </Select>
