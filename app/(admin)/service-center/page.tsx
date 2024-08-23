@@ -137,7 +137,7 @@ export default function ServiceCenter({searchParams}: IProps) {
   const [dataSource, setDataSource] = React.useState<DataType[]>(initialData);
   const [filter, setFilter] = useState<IFilter>({
     pageNumber: searchParams.pageNumber || undefined,
-    pageSize: searchParams.pageSize || undefined,
+    pageSize: 1000 || undefined,
     slug: searchParams.slug || undefined,
     content: searchParams.content || undefined,
     title: searchParams.title || undefined,
