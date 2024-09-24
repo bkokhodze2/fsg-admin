@@ -262,8 +262,8 @@ export default function AddEditServiceCenter({id}: IProps) {
 
         workingHours: dataServiceCenterDetails?.workingHours.map((workingHours: any) => ({
           ...workingHours,
-          fromHour: dayjs(workingHours.fromHour, 'HH:mm'),
-          toHour: dayjs(workingHours.toHour, 'HH:mm')
+          fromHour: workingHours.fromHour ? dayjs(workingHours.fromHour, 'HH:mm') : null,
+          toHour: workingHours.toHour ? dayjs(workingHours.toHour, 'HH:mm') : null
         }))
 
       };
