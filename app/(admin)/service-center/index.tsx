@@ -185,12 +185,13 @@ export default function AddEditServiceCenter({id}: IProps) {
   }
 
   const onFinish = async (values: any) => {
-    console.log("vv", values)
+    console.log("valexriv:", values)
 
     // Modify the form data here before submitting
     const modifiedValues = {
       ...values,
       id: isEditPage ? Number(id) : undefined,
+      sortOrder: dataServiceCenterDetails?.sortOrder,
       categoryIdList: typeof values.categoryIdList === 'number' ? [values.categoryIdList] : values.categoryIdList,
       useStartDateTimeMsec: dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
       useStartDateTime: values.useStartDateTimeMsec ? dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
@@ -324,6 +325,7 @@ export default function AddEditServiceCenter({id}: IProps) {
         "useEndDateTime": null,
         "useStartDateTimeMsec": null,
         "useEndDateTimeMsec": null,
+        "sortOrder": null,
       }
     }
   }
