@@ -94,13 +94,13 @@ export default function AddEditTenderDoc({id}: IProps) {
       // ...values,
       id: isEditPage ? id : undefined,
       tenderId: Number(tenderId) || dataTenderDocumentDetails.tenderId,
-      documentContentType: values?.document?.contentType,
-      documentName: values?.document?.fileName,
-      documentOriginalName: values?.document?.originalFileName,
-      documentUrl: values?.document?.url,
-      documentSize: values?.document?.size,
       documentDetails: values.documentDetails.map((detail: any) => ({
         ...detail,
+        documentContentType: detail?.document?.contentType,
+        documentName: detail?.document?.fileName,
+        documentOriginalName: detail?.document?.originalFileName,
+        documentUrl: detail?.document?.url,
+        documentSize: detail?.document?.size,
       }))
     };
     console.log("modifiedValues", modifiedValues)
@@ -152,19 +152,21 @@ export default function AddEditTenderDoc({id}: IProps) {
     setPreviewOpen(true);
   };
 
+  console.log('alex', dataTenderDocumentDetails)
+
   const getDefaultValue = () => {
     if (isEditPage) {
       const newData = {
         ...dataTenderDocumentDetails,
-        document: {
-          "size": dataTenderDocumentDetails?.documentSize,
-          "originalFileName": dataTenderDocumentDetails?.documentOriginalName,
-          "fileName": dataTenderDocumentDetails?.documentName,
-          "contentType": dataTenderDocumentDetails?.documentContentType,
-          "url": dataTenderDocumentDetails?.documentUrl,
-        },
         documentDetails: dataTenderDocumentDetails?.documentDetails.map((detail: any) => ({
           ...detail,
+          document: {
+            "size": detail?.documentSize,
+            "originalFileName": detail?.documentOriginalName,
+            "fileName": detail?.documentName,
+            "contentType": detail?.documentContentType,
+            "url": detail?.documentUrl,
+          },
         })),
       };
       return newData;
@@ -181,11 +183,6 @@ export default function AddEditTenderDoc({id}: IProps) {
           "contentType": null,
           "url": null,
         },
-        "documentName": null,
-        "documentUrl": null,
-        "documentSize": null,
-        "documentContentType": null,
-        "documentOriginalName": null,
         "documentDetails":
             activeLanguages?.map(e => {
               return {
@@ -194,25 +191,20 @@ export default function AddEditTenderDoc({id}: IProps) {
                 "languageId": e.id,
                 "documentTitle": null,
                 "formOfSupplying": null,
+                "documentName": null,
+                "documentUrl": null,
+                "documentSize": null,
+                "documentContentType": null,
+                "documentOriginalName": null,
               }
             }),
       }
     }
   }
 
-  const dataFile = form.getFieldValue('document');
 
-  let fileList = dataFile?.url  ? 
-        [dataFile] 
-      : dataTenderDocumentDetails?.documentUrl ? 
-        [{
-        "size": dataTenderDocumentDetails?.documentSize,
-        "originalFileName": dataTenderDocumentDetails?.documentOriginalName,
-        "fileName": dataTenderDocumentDetails?.documentName,
-        "contentType": dataTenderDocumentDetails?.documentContentType,
-        "url": dataTenderDocumentDetails?.documentUrl,
-        }]
-      : [];
+
+
 
   return (
       <div className={"p-2 pb-[60px]"}>
@@ -240,63 +232,6 @@ export default function AddEditTenderDoc({id}: IProps) {
             onFinish={onFinish}
             size={'default' as SizeType}
             initialValues={getDefaultValue()}>
-              
-
-          <Form.Item
-              label={'document'}
-              name={'document'}
-              valuePropName="value"
-              getValueFromEvent={(e: any) => {
-              console.log("eee", e)
-              if (e.file.status === 'done') {
-                  return e.file.response
-
-              } else {
-                  return {
-                  "size": null,
-                  "originalFileName": null,
-                  "fileName": null,
-                  "contentType": null,
-                  "url": null
-                  }
-              }
-              }}
-              noStyle
-          >
-
-              <Upload.Dragger
-                  // fileList={getFileList()}
-                  defaultFileList={fileList}
-                  //     uid: '-1',
-                  // name: 'image.png',
-                  // status: 'done',
-                  // url: data?.url,
-                  listType={"picture-card"}
-                  showUploadList={true}
-                  maxCount={1}
-                  multiple={false}
-                  customRequest={(e) => uploadFile(e)}
-                  onPreview={(e) => handlePreview(e)}
-              >
-              <p className="ant-upload-drag-icon">
-                  <InboxOutlined/>
-              </p>
-
-              <p className="ant-upload-text">Click or drag file to this area to upload</p>
-              </Upload.Dragger>
-          </Form.Item>
-              
-          {previewImage && (
-              <Image
-                  wrapperStyle={{display: 'none'}}
-                  preview={{
-                      visible: previewOpen,
-                      onVisibleChange: (visible) => setPreviewOpen(visible),
-                      afterOpenChange: (visible) => !visible && setPreviewImage(''),
-                  }}
-                  src={previewImage}
-              />
-          )}
 
           <Form.List name="documentDetails">
             {(fields, v) => {
@@ -306,6 +241,18 @@ export default function AddEditTenderDoc({id}: IProps) {
 
                     const languageId = form.getFieldValue(['documentDetails', field.name, 'languageId'])
                     const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
+                    const dataFile = form.getFieldValue(['documentDetails', field.name, 'document']);
+                    let fileList = dataFile?.url  ? 
+                      [dataFile] 
+                      : dataTenderDocumentDetails?.documentUrl ? 
+                        [{
+                        "size": dataTenderDocumentDetails?.documentSize,
+                        "originalFileName": dataTenderDocumentDetails?.documentOriginalName,
+                        "fileName": dataTenderDocumentDetails?.documentName,
+                        "contentType": dataTenderDocumentDetails?.documentContentType,
+                        "url": dataTenderDocumentDetails?.documentUrl,
+                        }]
+                      : [];
 
                     return <Card
                         key={fields[0].name + '' + index}
@@ -327,6 +274,61 @@ export default function AddEditTenderDoc({id}: IProps) {
                       >
                         <Input placeholder="Form Of Supplying"/>
                       </Form.Item>
+
+                      <Form.Item
+                        label={'document'}
+                        name={[field.name, 'document']}
+                        valuePropName="value"
+                        getValueFromEvent={(e: any) => {
+                        console.log("eee", e)
+                        if (e.file.status === 'done') {
+                            return e.file.response
+
+                        } else {
+                            return {
+                            "size": null,
+                            "originalFileName": null,
+                            "fileName": null,
+                            "contentType": null,
+                            "url": null
+                            }
+                        }
+                        }}
+                        noStyle
+                      >
+                        <Upload.Dragger
+                            // fileList={getFileList()}
+                            defaultFileList={fileList}
+                            //     uid: '-1',
+                            // name: 'image.png',
+                            // status: 'done',
+                            // url: data?.url,
+                            listType={"picture-card"}
+                            showUploadList={true}
+                            maxCount={1}
+                            multiple={false}
+                            customRequest={(e) => uploadFile(e)}
+                            onPreview={(e) => handlePreview(e)}
+                        >
+                        <p className="ant-upload-drag-icon">
+                            <InboxOutlined/>
+                        </p>
+
+                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                        </Upload.Dragger>
+                    </Form.Item>
+                        
+                    {previewImage && (
+                        <Image
+                            wrapperStyle={{display: 'none'}}
+                            preview={{
+                                visible: previewOpen,
+                                onVisibleChange: (visible) => setPreviewOpen(visible),
+                                afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                            }}
+                            src={previewImage}
+                        />
+                    )}
                     </Card>
                   })}
               </div>
