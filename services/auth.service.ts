@@ -15,7 +15,7 @@ export const authService = {
       const response = await axiosClassic.post<IAuthResponse>(`auth/login`, data);
       const {token, refresh} = response.data;
 
-      console.log("savetoken",token,refresh)
+      console.log("savetoken", token, refresh)
 
       if (token && refresh) {
         await saveTokenStorage(token, refresh)
@@ -35,13 +35,13 @@ export const authService = {
     const newAccessToken = response.data;
 
     if (newAccessToken) {
-      console.log("newAccessToken",newAccessToken)
+      console.log("newAccessToken", newAccessToken)
       saveTokenStorage(newAccessToken)
     }
     return response;
   },
   async logout() {
     const response = await axiosWithAuth.post('/user/logout');
-    if (response) removeFromStorage();
+    removeFromStorage();
   }
 }
