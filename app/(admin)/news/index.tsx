@@ -356,6 +356,7 @@ export default function AddEditNews({id, isCsr}: IProps) {
                     console.log("----dataImgList", dataImgList, !!dataImgList?.length)
 
                     let fileList = dataImg?.url ? [dataImg] : [];
+
                     let fileImagesList = !!dataImgList?.length ? dataImgList.map((e: any) => {
                       return {
                         ...e,
