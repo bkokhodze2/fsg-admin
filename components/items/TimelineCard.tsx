@@ -92,8 +92,11 @@ const CardItem: React.FC<ComponentProps> = ({ data, index, refetchCardsNewData }
         <Card
             hoverable
             className="flex flex-col justify-between w-full">
-          <div className="flex justify-between items-center mb-4">
-            <Meta title={title} description={subTitle}/>
+          <div className="flex justify-between mb-4">
+            <div>
+              <p className="font-black mb-[10px] textDots1">{title}</p>
+              <p className='textDots2'>{subTitle}</p>
+            </div>
             <div className='flex gap-x-2.5'>
               <Link href={`/timeline/edit-card/${timelineItemId}`}>
                 <Button type="primary">Edit</Button>
