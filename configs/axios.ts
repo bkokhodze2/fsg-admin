@@ -29,8 +29,9 @@ axiosWithAuth.interceptors.response.use(
     config => config,
     async error => {
       const originalRequest = error.config;
+      console.log("error-response",error)
 
-      if (error?.response.status === 401 && error.config && !error.config._isRetry) {
+      if (error?.response?.status === 401 && error.config && !error.config._isRetry) {
         originalRequest._isRetry = true;
         try {
           console.log("await authService.getNewTokens()")
