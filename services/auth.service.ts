@@ -29,6 +29,7 @@ export const authService = {
 
   },
   async getNewTokens() {
+    console.log("getNewTokens")
     const refreshTokenData = geRefreshToken()
 
     const response = await axiosClassic.post(`/auth/refresh-token`, {refreshToken: refreshTokenData}); //albat body unda refreshis
