@@ -308,13 +308,15 @@ export default function PartnersPage() {
   const onDragEnd = async ({active, over}: any) => {
     console.log("aaaa----bbb", active, over)
     if (active.id !== over?.id) {
+
       setDataSource((prev) => {
         const activeIndex = prev.findIndex((item) => {
-          item.id === active.id
+         return item.id === active.id
         });
         const overIndex = prev.findIndex((item) => item.id === over?.id);
         return arrayMove(prev, activeIndex, overIndex);
       });
+
       setDisabledSaveCardsOrderingBtn(false)
     }
   };
