@@ -9,23 +9,23 @@ import {
   HolderOutlined,
 } from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
-import {Button, notification, Popconfirm, Space, Table, Image, Tooltip, Form, } from 'antd';
+import {Button, notification, Popconfirm, Space, Table, Image, Tooltip, Form,} from 'antd';
 import type {TableProps} from 'antd';
 import dayjs from "dayjs";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
 
-import type { DragEndEvent } from '@dnd-kit/core';
-import { DndContext } from '@dnd-kit/core';
-import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import type {DragEndEvent} from '@dnd-kit/core';
+import {DndContext} from '@dnd-kit/core';
+import type {SyntheticListenerMap} from '@dnd-kit/core/dist/hooks/utilities';
+import {restrictToVerticalAxis} from '@dnd-kit/modifiers';
 import {
   arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import {CSS} from '@dnd-kit/utilities';
 
 var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
@@ -43,20 +43,20 @@ interface DataType {
   status: boolean,
   slug: string,
   linkedinUrl: string,
-  imageData:{
+  imageData: {
     url: string;
   }
   details:
-  {
-    "detailid": number,
-    "personId": number,
-    "name": string,
-    "surname": string,
-    "languageId": number,
-    "status": null,
-    "description": string,
-    "position": string,
-  }[]
+      {
+        "detailid": number,
+        "personId": number,
+        "name": string,
+        "surname": string,
+        "languageId": number,
+        "status": null,
+        "description": string,
+        "position": string,
+      }[]
 }
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
@@ -83,16 +83,16 @@ interface RowContextProps {
 const RowContext = React.createContext<RowContextProps>({});
 
 const DragHandle: React.FC = () => {
-  const { setActivatorNodeRef, listeners } = useContext(RowContext);
+  const {setActivatorNodeRef, listeners} = useContext(RowContext);
   return (
-    <Button
-      type="text"
-      size="small"
-      icon={<HolderOutlined />}
-      style={{ cursor: 'move' }}
-      ref={setActivatorNodeRef}
-      {...listeners}
-    />
+      <Button
+          type="text"
+          size="small"
+          icon={<HolderOutlined/>}
+          style={{cursor: 'move'}}
+          ref={setActivatorNodeRef}
+          {...listeners}
+      />
   );
 };
 
@@ -111,7 +111,7 @@ const Row: React.FC<RowProps> = (props) => {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: props['data-row-key'] });
+  } = useSortable({id: props['data-row-key']});
 
   const style: React.CSSProperties = {
     ...props.style,
@@ -124,14 +124,14 @@ const Row: React.FC<RowProps> = (props) => {
   };
 
   const contextValue = useMemo<RowContextProps>(
-    () => ({ setActivatorNodeRef, listeners }),
-    [setActivatorNodeRef, listeners],
+      () => ({setActivatorNodeRef, listeners}),
+      [setActivatorNodeRef, listeners],
   );
 
   return (
-    <RowContext.Provider value={contextValue}>
-      <tr {...props} ref={setNodeRef} style={style} {...attributes} />
-    </RowContext.Provider>
+      <RowContext.Provider value={contextValue}>
+        <tr {...props} ref={setNodeRef} style={style} {...attributes} />
+      </RowContext.Provider>
   );
 };
 
@@ -156,14 +156,14 @@ export default function ManagementPerson({searchParams}: IProps) {
 
   const fetchPerson = async (filter: IFilter) => {
     try {
-      const {data} = await axiosWithAuth.get(`${BASEAPI}/management-person-editor/get-management-persons`, 
-      // {
-      //   ...filter,
-      //   languageId: 1,
-      //   pageSize: parseInt(String(filter.pageSize)) || PAGE_SIZE,
-      //   pageNumber: filter?.pageNumber ? (filter?.pageNumber - 1) : 0,
-      // }
-  );
+      const {data} = await axiosWithAuth.get(`${BASEAPI}/management-person-editor/get-management-persons`,
+          // {
+          //   ...filter,
+          //   languageId: 1,
+          //   pageSize: parseInt(String(filter.pageSize)) || PAGE_SIZE,
+          //   pageNumber: filter?.pageNumber ? (filter?.pageNumber - 1) : 0,
+          // }
+      );
       setDataSource(data)
       return data;
     } catch (error: any) {
@@ -173,7 +173,7 @@ export default function ManagementPerson({searchParams}: IProps) {
         description:
             'Something went wrong while fetching persons',
       });
-  
+
     }
   }
 
@@ -196,7 +196,7 @@ export default function ManagementPerson({searchParams}: IProps) {
 
 
   const columns: TableProps<DataType>['columns'] = [
-    { key: 'sort', align: 'center', width: 80, render: () => <DragHandle /> },
+    {key: 'sort', align: 'center', width: 80, render: () => <DragHandle/>},
     {
       title: 'Name / Surname',
       dataIndex: 'name',
@@ -208,65 +208,65 @@ export default function ManagementPerson({searchParams}: IProps) {
       }
     },
     {
-        title: 'Description',
-        dataIndex: 'description',
-        align: "center",
-        key: 'description',
-        render: (text, obj) => (
-            <Tooltip 
-                placement="bottom"
-                destroyTooltipOnHide={true}
-                overlayInnerStyle={{
+      title: 'Description',
+      dataIndex: 'description',
+      align: "center",
+      key: 'description',
+      render: (text, obj) => (
+          <Tooltip
+              placement="bottom"
+              destroyTooltipOnHide={true}
+              overlayInnerStyle={{
                 width: "500px",
                 maxHeight: "600px",
                 overflowY: "scroll"
-                }}
-                overlayClassName={"w-[500px]"}
-                className={""}
-                title={() => <div dangerouslySetInnerHTML={{__html: obj?.details?.[0]?.description}}/>}>
-                <div
+              }}
+              overlayClassName={"w-[500px]"}
+              className={""}
+              title={() => <div dangerouslySetInnerHTML={{__html: obj?.details?.[0]?.description}}/>}>
+            <div
                 className={'textDots2 cursor-zoom-in'}
                 dangerouslySetInnerHTML={{__html: obj?.details?.[0]?.description}}
-                />
-            </Tooltip>
-        )
-      },
-    {
-        title: 'Position',
-        dataIndex: 'position',
-        align: "center",
-        key: 'position',
-        render: (text, obj) => {
-          console.log("obj", obj)
-          return <p>{obj?.details?.[0]?.position}</p>
-        }
+            />
+          </Tooltip>
+      )
     },
     {
-        title: 'Slug',
-        dataIndex: 'slug',
-        align: "center",
-        key: 'slug',
-        render: (text, obj) => {
-          console.log("obj", obj)
-          return <p>{obj?.slug}</p>
-        }
+      title: 'Position',
+      dataIndex: 'position',
+      align: "center",
+      key: 'position',
+      render: (text, obj) => {
+        console.log("obj", obj)
+        return <p>{obj?.details?.[0]?.position}</p>
+      }
+    },
+    {
+      title: 'Slug',
+      dataIndex: 'slug',
+      align: "center",
+      key: 'slug',
+      render: (text, obj) => {
+        console.log("obj", obj)
+        return <p>{obj?.slug}</p>
+      }
     },
 
     {
-        title: 'Image',
-        dataIndex: 'imageUrl',
-        key: 'imageUrl',
-        align: "center",
-  
-        render: (text, obj) => (
-            obj?.imageData?.url ? <Image
-                width={100}
-                src={obj.imageData.url}
-                alt={"person image"}
-            />
-            : "No Image"
-        )
-      },
+      title: 'Image',
+      dataIndex: 'imageUrl',
+      key: 'imageUrl',
+      align: "center",
+
+      render: (text, obj) => (
+          obj?.imageData?.url ? <Image
+                  width={100}
+                  src={obj.imageData.url}
+                  alt={"person image"}
+              />
+              : "No Image"
+      )
+    },
 
     {
       title: 'Action',
@@ -367,13 +367,13 @@ export default function ManagementPerson({searchParams}: IProps) {
 
   const postSortedData = async (sortedData: DataType[]) => {
     const sortElements = sortedData.map((item, index) => {
-    // console.log('item', item)
-     return {
-      sortElementId: item.id,
-      sortOrder: index,
-    }
-    }
-  );
+          // console.log('item', item)
+          return {
+            sortElementId: item.id,
+            sortOrder: index,
+          }
+        }
+    );
 
     try {
       await axiosWithAuth.post('/management-person-editor/sort-management-persons', {sortElements});
@@ -382,7 +382,7 @@ export default function ManagementPerson({searchParams}: IProps) {
     }
   };
 
-  const onDragEnd = ({ active, over }: DragEndEvent) => {
+  const onDragEnd = ({active, over}: DragEndEvent) => {
     // console.log("active & over", active, over)
 
     if (active.id !== over?.id) {
@@ -402,7 +402,9 @@ export default function ManagementPerson({searchParams}: IProps) {
           <h2 className={"text-[25px]"}>Management Persons</h2>
 
           <div className={"flex items-center flex-nowrap gap-x-4"}>
-            {dataSource?.length > 1 && <Button type="primary" className="" onClick={() => postSortedData(dataSource)}>Save Persons Ordering</Button> }
+            {dataSource?.length > 1 &&
+                <Button type="primary" className="" onClick={() => postSortedData(dataSource)}>Save Persons
+                  Ordering</Button>}
             <Link href={"/management/add"}>
               <Button type="primary" className={"flex items-center gap-x-2"}>
                 <PlusOutlined/>
@@ -415,26 +417,26 @@ export default function ManagementPerson({searchParams}: IProps) {
         <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
           <SortableContext items={dataSource.map((i) => i.id)} strategy={verticalListSortingStrategy}>
             <Table
-              sticky={{offsetHeader: 4}}
-              onChange={onChange}
-              scroll={{
-                x: 200,
-                y: "70vh"
-              }}
-              pagination={{
-                total: data?.allRecordsSize,
-                current: filter.pageNumber,
-                pageSize: filter.pageSize || PAGE_SIZE,
-                showQuickJumper: false,
-                showSizeChanger: true,
-                position: ["bottomCenter"],
-                // itemRender: itemRender,
-              }}
-              loading={isLoading}
-              rowKey="id"
-              components={{ body: { row: Row } }}
-              columns={columns}
-              dataSource={dataSource}
+                sticky={{offsetHeader: 4}}
+                onChange={onChange}
+                scroll={{
+                  x: 200,
+                  y: "70vh"
+                }}
+                pagination={{
+                  total: data?.allRecordsSize,
+                  current: filter.pageNumber,
+                  pageSize: filter.pageSize || PAGE_SIZE,
+                  showQuickJumper: false,
+                  showSizeChanger: true,
+                  position: ["bottomCenter"],
+                  // itemRender: itemRender,
+                }}
+                loading={isLoading}
+                rowKey="id"
+                components={{body: {row: Row}}}
+                columns={columns}
+                dataSource={dataSource}
             />
           </SortableContext>
         </DndContext>
