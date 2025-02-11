@@ -17,7 +17,7 @@ const axiosWithAuth = axios.create(options); //for request with auth
 axiosWithAuth.interceptors.request.use(config => {
   const accessToken = getAccessToken();
 
-  console.log("axios token",accessToken)
+  console.log("axios token", accessToken)
 
   if (config?.headers && accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`
@@ -29,9 +29,9 @@ axiosWithAuth.interceptors.response.use(
     config => config,
     async error => {
       const originalRequest = error.config;
-      console.log("error-response",error)
+      console.log("error-response", error)
 
-      if (error?.response?.status === 401 && error.config && !error.config._isRetry) {
+      if ((error?.response?.status === 401 && error.config && !error.config._isRetry) || error.code === "ERR_NETWORK") {
         originalRequest._isRetry = true;
         try {
           console.log("await authService.getNewTokens()")
