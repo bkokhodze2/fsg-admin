@@ -29,16 +29,21 @@ axiosWithAuth.interceptors.response.use(
     config => config,
     async error => {
       const originalRequest = error.config;
-      console.log("error-response", error)
 
-      if ((error?.response?.status === 401 && error.config && !error.config._isRetry) || error.code === "ERR_NETWORK") {
+      // Handle network errors separately
+      if (error.code === "ERR_NETWORK") {
+        // You might want to show a network error message to the user here
+        throw error;
+      }
+      // Handle 401 errors
+      if (error?.response?.status === 401 &&
+          error.config &&
+          !error.config._isRetry) {
         originalRequest._isRetry = true;
         try {
-          console.log("await authService.getNewTokens()")
           await authService.getNewTokens()
           return axiosWithAuth.request(originalRequest)
         } catch (error) {
-          console.log("removeFromStorage()")
           if (error) removeFromStorage()
         }
       }
