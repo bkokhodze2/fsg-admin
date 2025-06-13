@@ -14,9 +14,9 @@ import {
   Upload,
   Select,
   Space,
-  Card, 
-  Divider, 
-  notification, 
+  Card,
+  Divider,
+  notification,
   Radio,
   Popconfirm,
 } from 'antd';
@@ -148,12 +148,12 @@ export default function AddEditNews({id, isCsr}: IProps) {
     const modifiedValues = {
       ...values,
       id: isEditPage ? id : undefined,
+      useStartDateTimeMsec: dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
+      useStartDateTime: values.useStartDateTimeMsec ? dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
+      useEndDateTimeMsec: dayjs(values.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
+      useEndDateTime: values.useEndDateTimeMsec ? dayjs(values.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
       newsDetails: values.newsDetails.map((detail: any) => ({
         ...detail,
-        useStartDateTimeMsec: dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-        useStartDateTime: detail.useStartDateTimeMsec ? dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
-        useEndDateTimeMsec: dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-        useEndDateTime: detail.useEndDateTimeMsec ? dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
       })),
       parentNewsId: parentNewsId,
     };
@@ -167,7 +167,7 @@ export default function AddEditNews({id, isCsr}: IProps) {
           type: 'success',
           message: `news was added`,
         });
-       await refetch();
+        await refetch();
         Router.push(isCsr ? "/csr" : "/news")
       }
     } catch (e: any) {
@@ -203,11 +203,11 @@ export default function AddEditNews({id, isCsr}: IProps) {
   }
 
   const addEditText = () => {
-    if(id && isCsr) {
+    if (id && isCsr) {
       return "Edit CSR"
     } else if (isCsr) {
       return "Add CSR"
-    } else if(id) {
+    } else if (id) {
       return "Edit News"
     } else {
       return "Add News"
@@ -224,6 +224,8 @@ export default function AddEditNews({id, isCsr}: IProps) {
       console.log("dataNewsDetails", dataNewsDetails)
       const newData = {
         ...dataNewsDetails,
+        useStartDateTimeMsec: dataNewsDetails.useStartDateTimeMsec ? dayjs.unix(dataNewsDetails.useStartDateTimeMsec / 1000) : null,
+        useEndDateTimeMsec: dataNewsDetails.useEndDateTimeMsec ? dayjs.unix(dataNewsDetails.useEndDateTimeMsec / 1000) : null,
         newsDetails: dataNewsDetails.newsDetails.map((detail: any) => ({
           ...detail,
           useStartDateTimeMsec: detail.useStartDateTimeMsec ? dayjs.unix(detail.useStartDateTimeMsec / 1000) : null,
@@ -239,6 +241,8 @@ export default function AddEditNews({id, isCsr}: IProps) {
 
       return {
         "categoryIdList": isCsr ? [2] : [1],
+        "useStartDateTimeMsec": null,
+        "useEndDateTimeMsec": null,
         "newsDetails":
             activeLanguages?.map(e => {
               return {
@@ -277,18 +281,18 @@ export default function AddEditNews({id, isCsr}: IProps) {
   return (
       <div className={"p-2 pb-[60px]"}>
         <div className={"w-full flex justify-between items-center mb-4"}>
-            <Popconfirm
+          <Popconfirm
               title="return back"
               description="Are you sure you want to go back? The current changes will be lost"
               okText={"Yes"}
               onConfirm={() => Router.back()}
               // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
-            >
-              <Button className={"flex items-center"} type="default">
-                <ArrowLeftOutlined/>
-                Back
-              </Button>
-            </Popconfirm>
+          >
+            <Button className={"flex items-center"} type="default">
+              <ArrowLeftOutlined/>
+              Back
+            </Button>
+          </Popconfirm>
 
           {/*<Tooltip title="Edit" placement={'bottom'}>*/}
           {/*  <Link href={``}>*/}
@@ -318,10 +322,11 @@ export default function AddEditNews({id, isCsr}: IProps) {
 
           <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
             <Select mode={isCsr ? undefined : "multiple"}>
-              {isCsr ? 
+              {isCsr ?
                   <Select.Option value={2} key={1}>{isCsr && "CSR"}</Select.Option>
-                : 
-                  dataCategories?.filter(e => e?.id !== 2)?.map((e) => <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>)
+                  :
+                  dataCategories?.filter(e => e?.id !== 2)?.map((e) => <Select.Option value={e.id}
+                                                                                      key={e.id}>{e.category}</Select.Option>)
               }
             </Select>
           </Form.Item>
@@ -340,6 +345,21 @@ export default function AddEditNews({id, isCsr}: IProps) {
           >
             <Input placeholder="video link"/>
           </Form.Item>
+
+          <div className={"flex gap-x-2 flex-nowrap"}>
+            <Form.Item
+                className={"mb-0"}
+                name={'useStartDateTimeMsec'}
+                label="useStartDate">
+              <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+            </Form.Item>
+
+            <Form.Item
+                className={"mb-0"}
+                name={'useEndDateTimeMsec'} label="useEndDate">
+              <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+            </Form.Item>
+          </div>
 
           <Form.List
               name="newsDetails">
@@ -493,43 +513,6 @@ export default function AddEditNews({id, isCsr}: IProps) {
                             <Radio.Button className={""} value={false}>disable</Radio.Button>
                           </Radio.Group>
                         </Form.Item>
-
-                        <div className={"flex gap-x-2 flex-nowrap"}>
-                          <Form.Item
-                              // initialValue={dayjs('YYYY-MM-DD HH:mm:ss')}
-                              // valuePropName={"aba"}
-                              // getValueFromEvent={(e: any) => {
-                              //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
-                              //   return date.valueOf();
-                              // }}
-                              // getValueProps={(e: string) => ({
-                              //   value: e ? dayjs(e) : "",
-                              // })}
-                              className={"mb-0"}
-                              name={[field.name, 'useStartDateTimeMsec']}
-                              label="useStartDate">
-                            <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
-                          </Form.Item>
-
-                          <Form.Item
-                              // getValueFromEvent={(e: any) => {
-                              //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
-                              //   return date.valueOf();
-                              // }}
-                              // getValueProps={(e: string) => ({
-                              //   value: e ? dayjs(e) : "",
-                              // })}
-                              className={"mb-0"}
-                              name={[field.name, 'useEndDateTimeMsec']
-                              } label="useEndDate">
-                            <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
-                          </Form.Item>
-                        </div>
-                        {/*<Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"*/}
-                        {/*           valuePropName={"checked"}>*/}
-                        {/*  <Checkbox/>*/}
-                        {/*</Form.Item>*/}
-
                       </Space>
                     </Card>
                   })}
