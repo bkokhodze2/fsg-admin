@@ -1,5 +1,6 @@
 'use client'
 import {axiosWithAuth} from "@/configs/axios";
+import type {UploadFile} from 'antd/es/upload/interface';
 import {ArrowLeftOutlined, InboxOutlined} from "@ant-design/icons";
 import {useQuery} from "@tanstack/react-query";
 import dayjs from "dayjs";
@@ -214,7 +215,7 @@ export default function AddEditNews({id, isCsr}: IProps) {
     }
   }
 
-  const handlePreview = async (file: any) => {
+  const handlePreview = async (file: UploadFile) => {
     console.log("file", file, file?.response?.url || file?.url)
     setPreviewImage(file?.response?.url || file?.url);
     setPreviewOpen(true);
