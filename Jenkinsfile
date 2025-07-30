@@ -147,7 +147,7 @@ pipeline{
                 Result: ${currentBuild.result}<br>
                 """,
                 from: 'jenkins@socar.ge',
-                to: 'l.medoshvili@bmsapplications.com'
+                to: 'b.kokhodze@optimogroup.io'
         }
         failure {
             emailext attachLog: true,
@@ -163,7 +163,7 @@ pipeline{
                 Result: ${currentBuild.result}<br>
                 """,
                 from: 'jenkins@socar.ge',
-                to: 'l.medoshvili@bmsapplications.com'
+                to: 'b.kokhodze@optimogroup.io'
         }
         unstable {
             echo 'Unstuble build'
