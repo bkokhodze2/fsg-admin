@@ -1,7 +1,3 @@
-
-// supervisorctl stop socar_admin_front_main
-// supervisorctl stop socar_front_main 
-
 def Remote=[:]
 Remote.name = 'SGP-WEBAPP-F-DEV'
 Remote.host = '172.20.40.73'
@@ -36,20 +32,7 @@ pipeline{
             }
         }
 
-        // stage('Build NodeJS'){
-        //     steps{
-        //         dir("$env.WORKSPACE"){
-        //             sh 'node --version'
-        //             sh 'npm --version'
-        //             sh 'npm install next --verbose'
-        //             sh 'npm run build'
-        //             sh 'pwd'
-        //             sh 'ls -l'
-        //         }
-        //     }
-        // }
-
-        stage('Stop socar_front_main in supervisor on Remote Machine'){
+        stage('Stop SOCAR_Front_Admin in supervisor on Remote Machine'){
             steps{
                 script{
                     Remote.user=env.SGP_WEBAPP_F_DEV_USR
@@ -60,7 +43,7 @@ pipeline{
             }
         }
 
-        stage('Delete Content of SOCAR_Front folder on remote machine'){
+        stage('Delete Content of SOCAR_SOCAR_Front_Admin folder on remote machine'){
             steps{
                 script{
                     Remote.user=env.SGP_WEBAPP_F_DEV_USR
@@ -115,30 +98,10 @@ pipeline{
                 }
                 sshCommand(remote: Remote, command: "sudo -S <<< ${Remote.password=env.SGP_WEBAPP_F_DEV_PSW} npm install next --prefix /var/www/SOCAR-Front-Admin")
                 sshCommand(remote: Remote, command: "sudo -S <<< ${Remote.password=env.SGP_WEBAPP_F_DEV_PSW} npm run build --prefix /var/www/SOCAR-Front-Admin")
-                // sshCommand(remote: Remote, command: "sudo -S <<< ${Remote.password=env.SGP_WEBAPP_F_DEV_PSW} \$(cd /var/www/socar-front-main && npm install next)")
-                // sshCommand(remote: Remote, command: "sudo -S <<< ${Remote.password=env.SGP_WEBAPP_F_DEV_PSW} \$(cd /var/www/socar-front-main && npm run build)")
                 sleep(time:5, unit: "SECONDS")
             }
         }
 
-        // stage('Delete Temp Folder'){
-        //     steps{
-        //         // dir("$env.WORKSPACE"){
-        //         script{
-        //             def workspacePath = env.WORKSPACE
-        //             def folderName = workspacePath.tokenize('/').last()
-
-        //             Remote.user=env.SGP_WEBAPP_F_DEV_USR
-        //             Remote.password=env.SGP_WEBAPP_F_DEV_PSW
-                      
-        //             sh "echo ${folderName}"
-        //             sshCommand(remote: Remote, command: "rm -rf /var/www/socar-front-main/${folderName}")
-        //             // sshCommand(remote: Remote, command: "systemctl status nginx")
-        //             sleep(time:5, unit: "SECONDS")
-        //         // }
-        //         }
-        //     }
-        // }
 
         stage('Give Proper Permissions'){
             steps{
@@ -152,7 +115,7 @@ pipeline{
             }
         }
 
-        stage('Start socar_front_main in supervisor on Remote Machine'){
+        stage('Start SOCAR_Front_Admin in supervisor on Remote Machine'){
             steps{
                 script{
                     Remote.user=env.SGP_WEBAPP_F_DEV_USR
@@ -164,58 +127,6 @@ pipeline{
         }
 
     }
-
-//         stage('Stop socar_front_main in supervisor on Remote Machine'){
-//             steps{
-//                 script{
-//                     Remote.user=env.SGP_WEBAPP_F_USR
-//                     Remote.password=env.SGP_WEBAPP_F_PSW
-//                 }
-//                 sshCommand(remote: Remote, command: "sudo -S <<< ${Remote.password=env.SGP_WEBAPP_F_PSW} supervisorctl stop SOCAR_Front")
-//                 sleep(time:5, unit: "SECONDS")
-//             }
-//         }
-
-//         stage('Delete socar-front-main folder on remote machine'){
-//             steps{
-//                 script{
-//                     Remote.user=env.SGP_WEBAPP_F_USR
-//                     Remote.password=env.SGP_WEBAPP_F_PSW
-//                 }
-//                 sshCommand(remote: Remote, command: "sudo -S <<< ${Remote.password=env.SGP_WEBAPP_F_PSW} rm -rf /var/www/socar-front-main")
-//                 sleep(time:5, unit: "SECONDS")
-//             }
-//         }
-
-//         stage('Copy build files to remote machine'){
-//             steps{
-//                 dir("$env.WORKSPACE"){
-//                     script{
-//                         Remote.user=env.SGP_WEBAPP_F_USR
-//                         Remote.password=env.SGP_WEBAPP_F_PSW
-//                     }
-//                     sshCommand(remote: Remote, command: "sudo -S <<< ${Remote.password=env.SGP_WEBAPP_F_PSW} mkdir -p /var/www/socar-front-main")
-//                     sshCommand(remote: Remote, command: "sudo -S <<< ${Remote.password=env.SGP_WEBAPP_F_PSW} chmod --reference=/var/www/socar-admin-front-main /var/www/socar-front-main")
-//                     sshCommand(remote: Remote, command: "sudo -S <<< ${Remote.password=env.SGP_WEBAPP_F_PSW} chown --reference=/var/www/socar-admin-front-main /var/www/socar-front-main")                 
-//                     sshPut remote: Remote, from: '*.*', into: '/var/www/socar-front-main'
-//                     // sshCommand(remote: Remote, command: "systemctl status nginx")
-//                     sleep(time:5, unit: "SECONDS")
-//                 }
-//             }
-//         }
-
-        // stage('Start nginx on Remote Machine'){
-        //     steps{
-        //         script{
-        //             Remote.user=env.SGP_WEBAPP_F_USR
-        //             Remote.password=env.SGP_WEBAPP_F_PSW
-        //         }
-        //         sshCommand(remote: Remote, command: "systemctl start nginx")
-        //         sleep(time:5, unit: "SECONDS")
-        //     }
-        // }
-
-    // }
 
 
     post {
