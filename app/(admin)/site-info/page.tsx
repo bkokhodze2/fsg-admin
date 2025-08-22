@@ -1,5 +1,5 @@
 'use client'
-import React, {useContext, useMemo} from "react";
+import React from "react";
 import {axiosWithAuth} from "@/configs/axios";
 import {useQuery} from "@tanstack/react-query";
 import dayjs from "dayjs";
@@ -17,15 +17,41 @@ import {
   Radio,
 } from 'antd';
 
-import {HolderOutlined} from '@ant-design/icons';
 import SiteInfoAdvCard from "@/components/items/SiteInfoAdvCard";
 
 import type {SyntheticListenerMap} from '@dnd-kit/core/dist/hooks/utilities';
-import {useSortable} from '@dnd-kit/sortable';
-import {CSS} from '@dnd-kit/utilities';
 
 var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
+import type ReactQuill from 'react-quill';
+
+const ReactQuillComponent = dynamic(
+    async () => {
+      const {default: RQ} = await import('react-quill');
+      // eslint-disable-next-line react/display-name
+      return ({...props}) => <RQ {...props} />;
+    },
+    {
+      ssr: false,
+    }
+) as typeof ReactQuill;
+import "react-quill/dist/quill.snow.css";
+import dynamic from "next/dynamic";
+
+const modules = {
+  toolbar: {
+    container: [
+      ["bold", "italic", "underline", "strike"], // Custom toolbar buttons
+      [{header: [1, 2, 3, 4, 5, 6, false]}],
+      [{list: "ordered"}, {list: "bullet"}],
+      [{indent: "-1"}, {indent: "+1"}],
+      [{align: []}],
+      [{color: []}, {background: []}], // Dropdown with color options
+      ["link", "image", "video", "formula"],
+      ["clean"], // Remove formatting button
+    ],
+  },
+};
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 const fetchLanguages = async () => {
@@ -43,10 +69,6 @@ const fetchLanguages = async () => {
   }
 }
 
-interface IProps {
-  id?: number
-}
-
 interface RowContextProps {
   setActivatorNodeRef?: (element: HTMLElement | null) => void;
   listeners?: SyntheticListenerMap;
@@ -56,57 +78,6 @@ interface RowContextProps {
   setActivatorNodeRef?: (element: HTMLElement | null) => void;
   listeners?: SyntheticListenerMap;
 }
-
-interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
-  'data-row-key': string;
-}
-
-const RowContext = React.createContext<RowContextProps>({});
-const DragHandle: React.FC = () => {
-  const {setActivatorNodeRef, listeners} = useContext(RowContext);
-  return (
-      <Button
-          type="text"
-          size="large"
-          icon={<HolderOutlined/>}
-          style={{cursor: 'move'}}
-          ref={setActivatorNodeRef}
-          {...listeners}
-      />
-  );
-};
-
-const Row: React.FC<RowProps> = (props) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({id: props['data-row-key']});
-
-  const style: React.CSSProperties = {
-    ...props.style,
-    transform: CSS.Transform.toString(transform && {...transform, scaleY: 1.05}),
-    transition,
-    position: isDragging ? "relative" : "static",
-    zIndex: isDragging ? 9999 : "auto",
-  };
-
-  const contextValue = useMemo<RowContextProps>(
-      () => ({setActivatorNodeRef, listeners}),
-      [setActivatorNodeRef, listeners],
-  );
-
-  return (
-      <RowContext.Provider value={contextValue}>
-        <tr {...props} ref={setNodeRef} style={style} {...attributes} />
-      </RowContext.Provider>
-  );
-};
-
 
 const id = 1;
 
@@ -175,9 +146,6 @@ export default function SiteInfoPage() {
         ...detail,
       }))
     };
-    console.log("modifiedValues", modifiedValues)
-
-
     try {
       const res = await axiosWithAuth.post('/site-info-editor/add-or-modify-site-info-simple', modifiedValues)
       if (res.status == 200) {
@@ -204,9 +172,6 @@ export default function SiteInfoPage() {
           ...detail,
         }))
       };
-
-      console.log("data", newData)
-
       return newData;
     } else {
       const activeLanguages = dataLanguages?.filter(e => e.active === true)
@@ -353,9 +318,13 @@ export default function SiteInfoPage() {
 
                               <Form.Item
                                   name={[field.name, 'socarGlobalSubTitle']}
-                                  label={'Socar Global SubTitle'}
-                              >
-                                <Input placeholder="Socar Global SubTitle"/>
+                                  label={`Socar Global SubTitle`}
+                                  valuePropName="value"
+                                  getValueFromEvent={(value) => value}>
+                                <ReactQuillComponent
+                                    modules={modules}
+                                    className={`textEditor border markGeo`}
+                                />
                               </Form.Item>
 
                               <Form.Item
