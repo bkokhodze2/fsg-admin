@@ -37,6 +37,35 @@ import {CSS} from '@dnd-kit/utilities';
 var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
 import type {ColumnsType} from 'antd/es/table';
+import type ReactQuill from 'react-quill';
+import dynamic from "next/dynamic";
+const ReactQuillComponent = dynamic(
+    async () => {
+      const {default: RQ} = await import('react-quill');
+      // eslint-disable-next-line react/display-name
+      return ({...props}) => <RQ {...props} />;
+    },
+    {
+      ssr: false,
+    }
+) as typeof ReactQuill;
+
+import "react-quill/dist/quill.snow.css";
+
+const modules = {
+  toolbar: {
+    container: [
+      ["bold", "italic", "underline", "strike"], // Custom toolbar buttons
+      [{header: [1, 2, 3, 4, 5, 6, false]}],
+      [{list: "ordered"}, {list: "bullet"}],
+      [{indent: "-1"}, {indent: "+1"}],
+      [{align: []}],
+      [{color: []}, {background: []}], // Dropdown with color options
+      ["link", "image", "video", "formula"],
+      ["clean"], // Remove formatting button
+    ],
+  },
+};
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 const fetchLanguages = async () => {
@@ -400,12 +429,24 @@ export default function AddEditTimeline({id}: IProps) {
                             >
                               <Input placeholder="title"/>
                             </Form.Item>
+
                             <Form.Item
                                 name={[field.name, 'subTitle']}
-                                label={'subTitle'}
-                            >
-                              <Input placeholder="subTitle"/>
+                                label={`subTitle`}
+                                valuePropName="value"
+                                getValueFromEvent={(value) => value}>
+                              <ReactQuillComponent
+                                  modules={modules}
+                                  className={`textEditor border markGeo`}
+                              />
                             </Form.Item>
+
+                            {/*<Form.Item*/}
+                            {/*    name={[field.name, 'subTitle']}*/}
+                            {/*    label={'subTitle'}*/}
+                            {/*>*/}
+                            {/*  <Input placeholder="subTitle"/>*/}
+                            {/*</Form.Item>*/}
 
                             <div className={"flex gap-x-4 w-full"}>
                               <Form.Item
