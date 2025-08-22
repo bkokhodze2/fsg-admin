@@ -5,7 +5,6 @@ FirstRemote.port = 22
 // FirstRemote.port = 2204
 FirstRemote.allowAnyHosts = true
 
-
 pipeline{
     agent any
     options {
@@ -62,7 +61,7 @@ pipeline{
                     script{
                         FirstRemote.user=env.SGP_WEBAPP_F_01_USR
                         FirstRemote.password=env.SGP_WEBAPP_F_01_PSW
-                    }                 
+                    }
                     sshPut remote: FirstRemote, from: "${env.WORKSPACE}/", into: '/var/www/SOCAR-Front-Admin/'
                     sleep(time:5, unit: "SECONDS")
                 }
@@ -78,7 +77,7 @@ pipeline{
 
                     FirstRemote.user=env.SGP_WEBAPP_F_01_USR
                     FirstRemote.password=env.SGP_WEBAPP_F_01_PSW
-                      
+
                     sh "echo ${folderName}"
                     sshCommand(remote: FirstRemote, command: "mv /var/www/SOCAR-Front-Admin/${folderName}/* /var/www/SOCAR-Front-Admin/")
                     sshCommand(remote: FirstRemote, command: "mv /var/www/SOCAR-Front-Admin/${folderName}/.* /var/www/SOCAR-Front-Admin/")
