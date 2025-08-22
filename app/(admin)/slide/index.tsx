@@ -364,12 +364,25 @@ export default function AddEditSlide({id}: IProps) {
                       >
                         <Input placeholder="title"/>
                       </Form.Item>
+
+
                       <Form.Item
                           name={[field.name, 'description']}
-                          label={'description'}
-                      >
-                        <Input placeholder="description"/>
+                          label={`description`}
+                          valuePropName="value"
+                          getValueFromEvent={(value) => value}>
+                        <ReactQuillComponent
+                            modules={modules}
+                            className={`textEditor border markGeo`}
+                        />
                       </Form.Item>
+
+                      {/*<Form.Item*/}
+                      {/*    name={[field.name, 'description']}*/}
+                      {/*    label={'description'}*/}
+                      {/*>*/}
+                      {/*  <Input placeholder="description"/>*/}
+                      {/*</Form.Item>*/}
 
                       <Form.Item
                           name={[field.name, 'alt']}
