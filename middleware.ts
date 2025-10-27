@@ -21,9 +21,10 @@ export async function middleware(request: NextRequest, response: NextResponse) {
     return NextResponse.redirect(new URL("/", url));
   }
 
-  // if (isAuthPage) return NextResponse.next();
+  if (isAuthPage) return NextResponse.next();
 
-  // if (!accessToken && !isAuthPage) return NextResponse.redirect(new URL(`/login`, url))
+  if (!accessToken && !isAuthPage)
+    return NextResponse.redirect(new URL(`/login`, url));
 
   return NextResponse.next();
 }

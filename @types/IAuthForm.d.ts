@@ -1,5 +1,5 @@
 interface IAuthForm {
-  username: string,
-  password: string,
-  grantType?: string
+  email: string;
+  password: string;
+  grantType?: string;
 }
