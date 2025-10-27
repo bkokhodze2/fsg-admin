@@ -1,46 +1,51 @@
-'use client'
-import {axiosWithAuth} from "@/configs/axios";
-import {ArrowLeftOutlined, InboxOutlined} from "@ant-design/icons";
-import {useQuery} from "@tanstack/react-query";
+"use client";
+import { axiosWithAuth } from "@/configs/axios";
+import { ArrowLeftOutlined, InboxOutlined } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
-import {useRouter} from "next/navigation";
-import React, {useState} from "react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import {
-  Button, Image,
+  Button,
+  Image,
   Form,
   Input,
   Upload,
-  Select, Card, Divider, notification,
+  Select,
+  Card,
+  Divider,
+  notification,
   Popconfirm,
-} from 'antd';
-import {SizeType} from "antd/lib/config-provider/SizeContext";
-import type ReactQuill from 'react-quill';
+} from "antd";
+import { SizeType } from "antd/lib/config-provider/SizeContext";
+import type ReactQuill from "react-quill";
 
-var customParseFormat = require('dayjs/plugin/customParseFormat')
-dayjs.extend(customParseFormat)
+var customParseFormat = require("dayjs/plugin/customParseFormat");
+dayjs.extend(customParseFormat);
 
 const ReactQuillComponent = dynamic(
-    async () => {
-      const {default: RQ} = await import('react-quill');
-      // eslint-disable-next-line react/display-name
-      return ({...props}) => <RQ {...props} />;
-    },
-    {
-      ssr: false,
-    }
+  async () => {
+    const { default: RQ } = await import("react-quill");
+    // eslint-disable-next-line react/display-name
+    return ({ ...props }) => <RQ {...props} />;
+  },
+  {
+    ssr: false,
+  }
 ) as typeof ReactQuill;
 import "react-quill/dist/quill.snow.css";
+import { fetchLanguages } from "@/services/fetch/fetchLanguage";
 
 const modules = {
   toolbar: {
     container: [
       ["bold", "italic", "underline", "strike"], // Custom toolbar buttons
-      [{header: [1, 2, 3, 4, 5, 6, false]}],
-      [{list: "ordered"}, {list: "bullet"}],
-      [{indent: "-1"}, {indent: "+1"}],
-      [{align: []}],
-      [{color: []}, {background: []}], // Dropdown with color options
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ indent: "-1" }, { indent: "+1" }],
+      [{ align: [] }],
+      [{ color: [] }, { background: [] }], // Dropdown with color options
       ["link", "image", "video", "formula"],
       ["clean"], // Remove formatting button
     ],
@@ -48,81 +53,72 @@ const modules = {
 };
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
-const fetchLanguages = async () => {
-  try {
-    const {data} = await axiosWithAuth.get(`${BASEAPI}/news-editor/get-languages`);
-    return data;
-  } catch (error: any) {
-    console.log("errr", error)
-    notification.open({
-      type: 'error',
-      message: `languages`,
-      description:
-          'Something went wrong while fetching languages',
-    });
-  }
-}
+
 const fetchCategories = async () => {
   try {
-    const {data} = await axiosWithAuth.get(`${BASEAPI}/slide-editor/get-slide-categories`);
+    const { data } = await axiosWithAuth.get(
+      `${BASEAPI}/slide-editor/get-slide-categories`
+    );
     return data;
   } catch (error: any) {
-    console.log("errr", error)
+    console.log("errr", error);
     notification.open({
-      type: 'error',
+      type: "error",
       message: `categories`,
-      description:
-          'Something went wrong while fetching categories',
+      description: "Something went wrong while fetching categories",
     });
   }
-}
+};
 const fetchSlideDetailsById = async (id: number) => {
   try {
-    const {data} = await axiosWithAuth.get(`/slide-editor/get-slide-detail`, {
+    const { data } = await axiosWithAuth.get(`/slide-editor/get-slide-detail`, {
       params: {
-        slideId: id
-      }
+        slideId: id,
+      },
     });
 
     return data;
-
   } catch (error: any) {
-    console.log("errr", error)
+    console.log("errr", error);
     notification.open({
-      type: 'error',
+      type: "error",
       message: `slide`,
-      description:
-          'Something went wrong while fetching slide details',
+      description: "Something went wrong while fetching slide details",
     });
   }
-}
+};
 
 interface IProps {
-  id?: number
+  id?: number;
 }
 
-export default function AddEditSlide({id}: IProps) {
+export default function AddEditSlide({ id }: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
 
   const isEditPage = !!id;
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
-  const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
-
-  const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
-  const {data: dataSlideDetails} = useQuery({
-    queryKey: ['slideDetails', id],
-    queryFn: () => fetchSlideDetailsById(id as number),
-    enabled: !!id
+  const [previewImage, setPreviewImage] = useState("");
+  const { data: dataLanguages } = useQuery<ILanguage[]>({
+    queryKey: ["languages"],
+    queryFn: fetchLanguages,
   });
 
+  const { data: dataCategories } = useQuery<ICategories[]>({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+  });
+  const { data: dataSlideDetails } = useQuery({
+    queryKey: ["slideDetails", id],
+    queryFn: () => fetchSlideDetailsById(id as number),
+    enabled: !!id,
+  });
 
   const onchange = (values: any) => {
-    console.log("values", values)
-  }
+    console.log("values", values);
+  };
   const onFinish = async (values: any) => {
-    console.log("vv", values)
+    console.log("vv", values);
 
     // Modify the form data here before submitting
     const modifiedValues = {
@@ -134,24 +130,26 @@ export default function AddEditSlide({id}: IProps) {
         // useStartDateTime: detail.useStartDateTimeMsec ? dayjs(detail.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
         // useEndDateTimeMsec: dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
         // useEndDateTime: detail.useEndDateTimeMsec ? dayjs(detail.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
-      }))
+      })),
     };
-    console.log("modifiedValues", modifiedValues)
-
+    console.log("modifiedValues", modifiedValues);
 
     try {
-      const res = await axiosWithAuth.post('/slide-editor/add-or-modify-slide', modifiedValues)
+      const res = await axiosWithAuth.post(
+        "/slide-editor/add-or-modify-slide",
+        modifiedValues
+      );
       if (res.status == 200) {
         notification.open({
-          type: 'success',
+          type: "success",
           message: `slide was added`,
         });
-        Router.push("/slide")
+        Router.push("/slide");
       }
     } catch (e: any) {
-      console.log("e",)
+      console.log("e");
       notification.open({
-        type: 'error',
+        type: "error",
         message: `${e.response.data.message || "error"}`,
       });
     }
@@ -161,48 +159,53 @@ export default function AddEditSlide({id}: IProps) {
   };
 
   const uploadImage = async (options: any) => {
-    const {onSuccess, onError, file, onProgress} = options;
+    const { onSuccess, onError, file, onProgress } = options;
 
     const formData = new FormData();
     const config = {
-      headers: {"content-type": "multipart/form-data"},
+      headers: { "content-type": "multipart/form-data" },
     };
     formData.append("imageFile", file);
 
     try {
-      const res = await axiosWithAuth.post(`/slide-editor/upload-slide-image`, formData, config)
+      const res = await axiosWithAuth.post(
+        `/slide-editor/upload-slide-image`,
+        formData,
+        config
+      );
       if (res.status == 200) {
-        onSuccess(res.data)
+        onSuccess(res.data);
       }
     } catch (e: any) {
-      onError("failed")
+      onError("failed");
     }
-
-  }
-
+  };
 
   const uploadVideo = async (options: any) => {
-    const {onSuccess, onError, file, onProgress} = options;
+    const { onSuccess, onError, file, onProgress } = options;
 
     const formData = new FormData();
     const config = {
-      headers: {"content-type": "multipart/form-data"},
+      headers: { "content-type": "multipart/form-data" },
     };
     formData.append("videoFile", file);
 
     try {
-      const res = await axiosWithAuth.post(`/slide-editor/upload-slide-video`, formData, config)
+      const res = await axiosWithAuth.post(
+        `/slide-editor/upload-slide-video`,
+        formData,
+        config
+      );
       if (res.status == 200) {
-        onSuccess(res.data)
+        onSuccess(res.data);
       }
     } catch (e: any) {
-      onError("failed")
+      onError("failed");
     }
-
-  }
+  };
 
   const handlePreview = async (file: any) => {
-    console.log("file", file, file?.response?.url || file?.url)
+    console.log("file", file, file?.response?.url || file?.url);
     setPreviewImage(file?.response?.url || file?.url);
     setPreviewOpen(true);
   };
@@ -214,100 +217,97 @@ export default function AddEditSlide({id}: IProps) {
           ...detail,
           // useStartDateTimeMsec: detail.useStartDateTimeMsec ? dayjs.unix(detail.useStartDateTimeMsec / 1000) : null,
           // useEndDateTimeMsec: detail.useEndDateTimeMsec ? dayjs.unix(detail.useEndDateTimeMsec / 1000) : null,
-        }))
+        })),
       };
 
-      console.log("data", newData)
+      console.log("data", newData);
 
       return newData;
     } else {
-      const activeLanguages = dataLanguages?.filter(e => e.active === true)
+      const activeLanguages = dataLanguages?.filter((e) => e.status === true);
 
       return {
-        "categoryIdList": [1],
-        "slideDetails":
-            activeLanguages?.map(e => {
-              return {
-                // "slug": null,
-                // "useStartDateTime": null,
-                // "useEndDateTime": null,
-                // "slideId": 0,
-                // "slideDetailId": null,
-                // "useStartDateTimeMsec": null,
-                // "useEndDateTimeMsec": null,
-                "title": null,
-                "description": null,
-                "alt": null,
-                // "content": null,
-                "languageId": e.id,
-                // "status": true,
-                "webImageData": {
-                  "size": null,
-                  "originalFileName": null,
-                  "imageName": null,
-                  "contentType": null,
-                  "url": null
-                },
-                "mobileImageData": {
-                  "size": null,
-                  "originalFileName": null,
-                  "imageName": null,
-                  "contentType": null,
-                  "url": null
-                },
-                "videoFile": {
-                  "size": null,
-                  "originalFileName": null,
-                  "fileName": null,
-                  "contentType": null,
-                  "url": null
-                }
-              }
-            })
-        ,
+        categoryIdList: [1],
+        slideDetails: activeLanguages?.map((e) => {
+          return {
+            // "slug": null,
+            // "useStartDateTime": null,
+            // "useEndDateTime": null,
+            // "slideId": 0,
+            // "slideDetailId": null,
+            // "useStartDateTimeMsec": null,
+            // "useEndDateTimeMsec": null,
+            title: null,
+            description: null,
+            alt: null,
+            // "content": null,
+            languageId: e.id,
+            // "status": true,
+            webImageData: {
+              size: null,
+              originalFileName: null,
+              imageName: null,
+              contentType: null,
+              url: null,
+            },
+            mobileImageData: {
+              size: null,
+              originalFileName: null,
+              imageName: null,
+              contentType: null,
+              url: null,
+            },
+            videoFile: {
+              size: null,
+              originalFileName: null,
+              fileName: null,
+              contentType: null,
+              url: null,
+            },
+          };
+        }),
         // "status": true
-      }
-
-
+      };
     }
-  }
-
+  };
 
   return (
-      <div className={"p-2 pb-[60px]"}>
-        <div className={"w-full flex justify-between items-center mb-4"}>
-          <Popconfirm
-              title="return back"
-              description="Are you sure you want to go back? The current changes will be lost"
-              okText={"Yes"}
-              onConfirm={() => Router.back()}
-              // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
-          >
-            <Button className={"flex items-center"} type="default">
-              <ArrowLeftOutlined/>
-              Back
-            </Button>
-          </Popconfirm>
+    <div className={"p-2 pb-[60px]"}>
+      <div className={"w-full flex justify-between items-center mb-4"}>
+        <Popconfirm
+          title="return back"
+          description="Are you sure you want to go back? The current changes will be lost"
+          okText={"Yes"}
+          onConfirm={() => Router.back()}
+          // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+        >
+          <Button className={"flex items-center"} type="default">
+            <ArrowLeftOutlined />
+            Back
+          </Button>
+        </Popconfirm>
 
-          {/*<Tooltip title="Edit" placement={'bottom'}>*/}
-          {/*  <Link href={``}>*/}
-          {/*    <Button shape="circle" className={"flex items-center justify-center"} icon={<EditOutlined/>}/>*/}
-          {/*  </Link>*/}
-          {/*</Tooltip>*/}
+        {/*<Tooltip title="Edit" placement={'bottom'}>*/}
+        {/*  <Link href={``}>*/}
+        {/*    <Button shape="circle" className={"flex items-center justify-center"} icon={<EditOutlined/>}/>*/}
+        {/*  </Link>*/}
+        {/*</Tooltip>*/}
 
-
-          <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Slide" : "Add Slide"}</h2>
-        </div>
-        <Divider className={"my-3"}/>
-        {((isEditPage && dataSlideDetails) || (!isEditPage && dataLanguages)) && <Form
-            form={form}
-            layout="vertical"
-            onValuesChange={onchange}
-            onFinish={onFinish}
-            size={'default' as SizeType}
-            // style={{maxWidth: 800}}
-            initialValues={getDefaultValue()}>
-
+        <h2 className={"text-center text-[30px] w-full"}>
+          {id ? "Edit Slide" : "Add Slide"}
+        </h2>
+      </div>
+      <Divider className={"my-3"} />
+      {((isEditPage && dataSlideDetails) || (!isEditPage && dataLanguages)) && (
+        <Form
+          form={form}
+          layout="vertical"
+          onValuesChange={onchange}
+          onFinish={onFinish}
+          size={"default" as SizeType}
+          // style={{maxWidth: 800}}
+          initialValues={getDefaultValue()}
+        >
           {/*<Form.Item*/}
           {/*    name={'slug'}*/}
           {/*    label={'slug'}*/}
@@ -315,10 +315,18 @@ export default function AddEditSlide({id}: IProps) {
           {/*  <Input placeholder="slug"/>*/}
           {/*</Form.Item>*/}
 
-          <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
+          <Form.Item
+            name={"categoryIdList"}
+            label="category"
+            className={"mt-2"}
+          >
             <Select mode={"multiple"}>
               {dataCategories?.map((e) => {
-                return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
+                return (
+                  <Select.Option value={e.id} key={e.id}>
+                    {e.category}
+                  </Select.Option>
+                );
               })}
             </Select>
           </Form.Item>
@@ -331,86 +339,100 @@ export default function AddEditSlide({id}: IProps) {
             </Radio.Group>
           </Form.Item> */}
 
-
-          <Form.List
-              name="slideDetails"
-          >
+          <Form.List name="slideDetails">
             {(fields, v) => {
-              return <div className={"flex flex-col gap-y-5"}>
-                {
-                  fields.map((field, index, c) => {
-                    const languageId = form.getFieldValue(['slideDetails', field.name, 'languageId'])
-                    const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
-                    const dataImg = form.getFieldValue(['slideDetails', field.name, 'webImageData']);
-                    const dataImgMob = form.getFieldValue(['slideDetails', field.name, 'mobileImageData']);
-                    const dataVideo = form.getFieldValue(['slideDetails', field.name, 'videoFile']);
+              return (
+                <div className={"flex flex-col gap-y-5"}>
+                  {fields.map((field, index, c) => {
+                    const languageId = form.getFieldValue([
+                      "slideDetails",
+                      field.name,
+                      "languageId",
+                    ]);
+                    const findLang = dataLanguages?.find(
+                      (e) => e.id === languageId
+                    )?.language;
+                    const dataImg = form.getFieldValue([
+                      "slideDetails",
+                      field.name,
+                      "webImageData",
+                    ]);
+                    const dataImgMob = form.getFieldValue([
+                      "slideDetails",
+                      field.name,
+                      "mobileImageData",
+                    ]);
+                    const dataVideo = form.getFieldValue([
+                      "slideDetails",
+                      field.name,
+                      "videoFile",
+                    ]);
 
                     let fileList = dataImg?.url ? [dataImg] : [];
                     let fileListMob = dataImgMob?.url ? [dataImgMob] : [];
 
-                    console.log("dataVideo", dataVideo)
+                    console.log("dataVideo", dataVideo);
 
-                    let fileListVideo = dataVideo?.url ? [{...dataVideo, name: dataVideo?.originalFileName}] : [];
+                    let fileListVideo = dataVideo?.url
+                      ? [{ ...dataVideo, name: dataVideo?.originalFileName }]
+                      : [];
 
-                    return <Card
-                        key={fields[0].name + '' + index}
-                        className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2]"}>
-                      <Divider orientation="left" className={"!my-0"}>
-                        <h3 className={"text-[25px]"}>{findLang}</h3>
-                      </Divider>
-                      <Form.Item
-                          name={[field.name, 'title']}
-                          label={'title'}
+                    return (
+                      <Card
+                        key={fields[0].name + "" + index}
+                        className={
+                          "border-[1px] rounded-2xl border-solid border-[#b2b2b2]"
+                        }
                       >
-                        <Input placeholder="title"/>
-                      </Form.Item>
+                        <Divider orientation="left" className={"!my-0"}>
+                          <h3 className={"text-[25px]"}>{findLang}</h3>
+                        </Divider>
+                        <Form.Item name={[field.name, "title"]} label={"title"}>
+                          <Input placeholder="title" />
+                        </Form.Item>
 
-
-                      <Form.Item
-                          name={[field.name, 'description']}
+                        <Form.Item
+                          name={[field.name, "description"]}
                           label={`description`}
                           valuePropName="value"
-                          getValueFromEvent={(value) => value}>
-                        <ReactQuillComponent
+                          getValueFromEvent={(value) => value}
+                        >
+                          <ReactQuillComponent
                             modules={modules}
                             className={`textEditor border markGeo`}
-                        />
-                      </Form.Item>
-
-                      {/*<Form.Item*/}
-                      {/*    name={[field.name, 'description']}*/}
-                      {/*    label={'description'}*/}
-                      {/*>*/}
-                      {/*  <Input placeholder="description"/>*/}
-                      {/*</Form.Item>*/}
-
-                      <Form.Item
-                          name={[field.name, 'alt']}
-                          label={'alt'}
-                      >
-                        <Input placeholder="alt"/>
-                      </Form.Item>
-
-                      <div className={"flex gap-x-4 w-full"}>
-                        <Form.Item
-                            name={[field.name, 'buttonText']}
-                            label={'button text'}
-                            className="w-1/2"
-                        >
-                          <Input placeholder="button text"/>
+                          />
                         </Form.Item>
 
-                        <Form.Item
-                            name={[field.name, 'buttonLink']}
-                            label={'button link'}
-                            className="w-1/2"
-                        >
-                          <Input placeholder="button link"/>
+                        {/*<Form.Item*/}
+                        {/*    name={[field.name, 'description']}*/}
+                        {/*    label={'description'}*/}
+                        {/*>*/}
+                        {/*  <Input placeholder="description"/>*/}
+                        {/*</Form.Item>*/}
+
+                        <Form.Item name={[field.name, "alt"]} label={"alt"}>
+                          <Input placeholder="alt" />
                         </Form.Item>
-                      </div>
 
+                        <div className={"flex gap-x-4 w-full"}>
+                          <Form.Item
+                            name={[field.name, "buttonText"]}
+                            label={"button text"}
+                            className="w-1/2"
+                          >
+                            <Input placeholder="button text" />
+                          </Form.Item>
 
-                      {/* <Form.Item
+                          <Form.Item
+                            name={[field.name, "buttonLink"]}
+                            label={"button link"}
+                            className="w-1/2"
+                          >
+                            <Input placeholder="button link" />
+                          </Form.Item>
+                        </div>
+
+                        {/* <Form.Item
                           name={[field.name, 'content']}
                           label={`Content`}
                           valuePropName="value"
@@ -421,29 +443,27 @@ export default function AddEditSlide({id}: IProps) {
                         />
                       </Form.Item> */}
 
-                      <Form.Item
-                          label={'image'}
-                          name={[field.name, 'webImageData']}
+                        <Form.Item
+                          label={"image"}
+                          name={[field.name, "webImageData"]}
                           valuePropName="value"
                           getValueFromEvent={(e: any) => {
-                            console.log("eee", e)
-                            if (e.file.status === 'done') {
-                              return e.file.response
-
+                            console.log("eee", e);
+                            if (e.file.status === "done") {
+                              return e.file.response;
                             } else {
                               return {
-                                "size": null,
-                                "originalFileName": null,
-                                "imageName": null,
-                                "contentType": null,
-                                "url": null
-                              }
+                                size: null,
+                                originalFileName: null,
+                                imageName: null,
+                                contentType: null,
+                                url: null,
+                              };
                             }
                           }}
                           noStyle
-                      >
-
-                        <Upload.Dragger
+                        >
+                          <Upload.Dragger
                             // fileList={getFileList()}
                             defaultFileList={fileList}
                             //     uid: '-1',
@@ -456,50 +476,51 @@ export default function AddEditSlide({id}: IProps) {
                             multiple={false}
                             customRequest={(e) => uploadImage(e)}
                             onPreview={(e) => handlePreview(e)}
-                        >
-                          <p className="ant-upload-drag-icon">
-                            <InboxOutlined/>
-                          </p>
+                          >
+                            <p className="ant-upload-drag-icon">
+                              <InboxOutlined />
+                            </p>
 
-                          <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                        </Upload.Dragger>
-                      </Form.Item>
-                      {previewImage && (
+                            <p className="ant-upload-text">
+                              Click or drag file to this area to upload
+                            </p>
+                          </Upload.Dragger>
+                        </Form.Item>
+                        {previewImage && (
                           <Image
-                              wrapperStyle={{display: 'none'}}
-                              preview={{
-                                visible: previewOpen,
-                                onVisibleChange: (visible) => setPreviewOpen(visible),
-                                afterOpenChange: (visible) => !visible && setPreviewImage(''),
-                              }}
-                              src={previewImage}
+                            wrapperStyle={{ display: "none" }}
+                            preview={{
+                              visible: previewOpen,
+                              onVisibleChange: (visible) =>
+                                setPreviewOpen(visible),
+                              afterOpenChange: (visible) =>
+                                !visible && setPreviewImage(""),
+                            }}
+                            src={previewImage}
                           />
-                      )}
+                        )}
 
-
-                      <Form.Item
-                          label={'image'}
-                          name={[field.name, 'mobileImageData']}
+                        <Form.Item
+                          label={"image"}
+                          name={[field.name, "mobileImageData"]}
                           valuePropName="value"
                           getValueFromEvent={(e: any) => {
-                            console.log("eee", e)
-                            if (e.file.status === 'done') {
-                              return e.file.response
-
+                            console.log("eee", e);
+                            if (e.file.status === "done") {
+                              return e.file.response;
                             } else {
                               return {
-                                "size": null,
-                                "originalFileName": null,
-                                "imageName": null,
-                                "contentType": null,
-                                "url": null
-                              }
+                                size: null,
+                                originalFileName: null,
+                                imageName: null,
+                                contentType: null,
+                                url: null,
+                              };
                             }
                           }}
                           noStyle
-                      >
-
-                        <Upload.Dragger
+                        >
+                          <Upload.Dragger
                             // fileList={getFileList()}
                             defaultFileList={fileListMob}
                             //     uid: '-1',
@@ -512,49 +533,52 @@ export default function AddEditSlide({id}: IProps) {
                             multiple={false}
                             customRequest={(e) => uploadImage(e)}
                             onPreview={(e) => handlePreview(e)}
-                        >
-                          <p className="ant-upload-drag-icon">
-                            <InboxOutlined/>
-                          </p>
+                          >
+                            <p className="ant-upload-drag-icon">
+                              <InboxOutlined />
+                            </p>
 
-                          <p className="ant-upload-text">Click or drag file to this area to upload mobile image</p>
-                        </Upload.Dragger>
-                      </Form.Item>
-                      {previewImage && (
+                            <p className="ant-upload-text">
+                              Click or drag file to this area to upload mobile
+                              image
+                            </p>
+                          </Upload.Dragger>
+                        </Form.Item>
+                        {previewImage && (
                           <Image
-                              wrapperStyle={{display: 'none'}}
-                              preview={{
-                                visible: previewOpen,
-                                onVisibleChange: (visible) => setPreviewOpen(visible),
-                                afterOpenChange: (visible) => !visible && setPreviewImage(''),
-                              }}
-                              src={previewImage}
+                            wrapperStyle={{ display: "none" }}
+                            preview={{
+                              visible: previewOpen,
+                              onVisibleChange: (visible) =>
+                                setPreviewOpen(visible),
+                              afterOpenChange: (visible) =>
+                                !visible && setPreviewImage(""),
+                            }}
+                            src={previewImage}
                           />
-                      )}
+                        )}
 
-                      <Form.Item
-                          label={'Video File'}
-                          name={[field.name, 'videoFile']}
+                        <Form.Item
+                          label={"Video File"}
+                          name={[field.name, "videoFile"]}
                           valuePropName="value"
                           getValueFromEvent={(e: any) => {
-                            console.log("eee", e)
-                            if (e.file.status === 'done') {
-                              return e.file.response
-
+                            console.log("eee", e);
+                            if (e.file.status === "done") {
+                              return e.file.response;
                             } else {
                               return {
-                                "size": null,
-                                "originalFileName": null,
-                                "fileName": null,
-                                "contentType": null,
-                                "url": null
-                              }
+                                size: null,
+                                originalFileName: null,
+                                fileName: null,
+                                contentType: null,
+                                url: null,
+                              };
                             }
                           }}
                           noStyle
-                      >
-
-                        <Upload.Dragger
+                        >
+                          <Upload.Dragger
                             // fileList={getFileList()}
                             defaultFileList={fileListVideo}
                             //     uid: '-1',
@@ -566,28 +590,32 @@ export default function AddEditSlide({id}: IProps) {
                             maxCount={1}
                             multiple={false}
                             customRequest={(e) => uploadVideo(e)}
-                        >
-                          <p className="ant-upload-drag-icon">
-                            <InboxOutlined/>
-                          </p>
-                          <p className="ant-upload-text">Click or drag video file to this area to upload a video</p>
-                          {/* <p className="absolute bottom-[-50px] left-[10%]">
+                          >
+                            <p className="ant-upload-drag-icon">
+                              <InboxOutlined />
+                            </p>
+                            <p className="ant-upload-text">
+                              Click or drag video file to this area to upload a
+                              video
+                            </p>
+                            {/* <p className="absolute bottom-[-50px] left-[10%]">
                             {fileListVideo?.[0]?.originalFileName}
                           </p> */}
-                        </Upload.Dragger>
-
-                      </Form.Item>
-                    </Card>
+                          </Upload.Dragger>
+                        </Form.Item>
+                      </Card>
+                    );
                   })}
-              </div>
+                </div>
+              );
             }}
-
           </Form.List>
 
-
-          <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>Submit</Button>
+          <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>
+            Submit
+          </Button>
         </Form>
-        }
-      </div>
+      )}
+    </div>
   );
 }

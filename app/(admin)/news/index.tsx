@@ -1,14 +1,15 @@
-'use client'
-import {axiosWithAuth} from "@/configs/axios";
-import type {UploadFile} from 'antd/es/upload/interface';
-import {ArrowLeftOutlined, InboxOutlined} from "@ant-design/icons";
-import {useQuery} from "@tanstack/react-query";
+"use client";
+import { axiosWithAuth } from "@/configs/axios";
+import type { UploadFile } from "antd/es/upload/interface";
+import { ArrowLeftOutlined, InboxOutlined } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
-import {useRouter, useParams, useSearchParams} from "next/navigation";
-import React, {useState} from "react";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
+import React, { useState } from "react";
 import {
-  Button, Image,
+  Button,
+  Image,
   DatePicker,
   Form,
   Input,
@@ -20,34 +21,35 @@ import {
   notification,
   Radio,
   Popconfirm,
-} from 'antd';
-import {SizeType} from "antd/lib/config-provider/SizeContext";
-import type ReactQuill from 'react-quill';
+} from "antd";
+import { SizeType } from "antd/lib/config-provider/SizeContext";
+import type ReactQuill from "react-quill";
 
-var customParseFormat = require('dayjs/plugin/customParseFormat')
-dayjs.extend(customParseFormat)
+var customParseFormat = require("dayjs/plugin/customParseFormat");
+dayjs.extend(customParseFormat);
 
 const ReactQuillComponent = dynamic(
-    async () => {
-      const {default: RQ} = await import('react-quill');
-      // eslint-disable-next-line react/display-name
-      return ({...props}) => <RQ {...props} />;
-    },
-    {
-      ssr: false,
-    }
+  async () => {
+    const { default: RQ } = await import("react-quill");
+    // eslint-disable-next-line react/display-name
+    return ({ ...props }) => <RQ {...props} />;
+  },
+  {
+    ssr: false,
+  }
 ) as typeof ReactQuill;
 import "react-quill/dist/quill.snow.css";
+import { fetchLanguages } from "@/services/fetch/fetchLanguage";
 
 const modules = {
   toolbar: {
     container: [
       ["bold", "italic", "underline", "strike"], // Custom toolbar buttons
-      [{header: [1, 2, 3, 4, 5, 6, false]}],
-      [{list: "ordered"}, {list: "bullet"}],
-      [{indent: "-1"}, {indent: "+1"}],
-      [{align: []}],
-      [{color: []}, {background: []}], // Dropdown with color options
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ indent: "-1" }, { indent: "+1" }],
+      [{ align: [] }],
+      [{ color: [] }, { background: [] }], // Dropdown with color options
       ["link", "image", "video", "formula"],
       ["clean"], // Remove formatting button
     ],
@@ -56,79 +58,73 @@ const modules = {
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 
-const fetchLanguages = async () => {
-  try {
-    const {data} = await axiosWithAuth.get(`${BASEAPI}/news-editor/get-languages`);
-    return data;
-  } catch (error: any) {
-    console.log("errr", error)
-    notification.open({
-      type: 'error',
-      message: `languages`,
-      description:
-          'Something went wrong while fetching languages',
-    });
-  }
-}
-
 const fetchCategories = async () => {
   try {
-    const {data} = await axiosWithAuth.get(`${BASEAPI}/news-editor/get-news-categories`);
+    const { data } = await axiosWithAuth.get(
+      `${BASEAPI}/news-editor/get-news-categories`
+    );
     return data;
   } catch (error: any) {
-    console.log("errr", error)
+    console.log("errr", error);
     notification.open({
-      type: 'error',
+      type: "error",
       message: `categories`,
-      description:
-          'Something went wrong while fetching categories',
+      description: "Something went wrong while fetching categories",
     });
   }
-}
+};
 
 const fetchNewsDetailsById = async (id: number) => {
   try {
-    const {data} = await axiosWithAuth.get(`/news-editor/get-news-info-detail`, {
-      params: {
-        newsId: id
+    const { data } = await axiosWithAuth.get(
+      `/news-editor/get-news-info-detail`,
+      {
+        params: {
+          newsId: id,
+        },
       }
-    });
+    );
 
     return data;
-
   } catch (error: any) {
-    console.log("errr", error)
+    console.log("errr", error);
     notification.open({
-      type: 'error',
+      type: "error",
       message: `news`,
-      description:
-          'Something went wrong while fetching news details',
+      description: "Something went wrong while fetching news details",
     });
   }
-}
+};
 
 interface IProps {
-  id?: number,
-  isCsr?: boolean,
+  id?: number;
+  isCsr?: boolean;
 }
 
-export default function AddEditNews({id, isCsr}: IProps) {
+export default function AddEditNews({ id, isCsr }: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
   const Params = useParams();
-  const SParams = useSearchParams()
+  const SParams = useSearchParams();
 
-  const parentNewsId = parseInt(SParams?.getAll("parentNewsId")?.toString()) || null;
+  const parentNewsId =
+    parseInt(SParams?.getAll("parentNewsId")?.toString()) || null;
 
   const isEditPage = !!id;
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
-  const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
+  const [previewImage, setPreviewImage] = useState("");
+  const { data: dataLanguages } = useQuery<ILanguage[]>({
+    queryKey: ["languages"],
+    queryFn: fetchLanguages,
+  });
 
-  const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
+  const { data: dataCategories } = useQuery<ICategories[]>({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+  });
 
-  const {data: dataNewsDetails, refetch} = useQuery({
-    queryKey: ['newsDetails', id],
+  const { data: dataNewsDetails, refetch } = useQuery({
+    queryKey: ["newsDetails", id],
     queryFn: () => fetchNewsDetailsById(id as number),
     enabled: !!id,
     retry: 1,
@@ -137,44 +133,59 @@ export default function AddEditNews({id, isCsr}: IProps) {
     staleTime: 0,
   });
 
-
   const onchange = (values: any, allValues: any) => {
-    console.log("values", values)
-    console.log("allValues", allValues)
-  }
+    console.log("values", values);
+    console.log("allValues", allValues);
+  };
   const onFinish = async (values: any) => {
-    console.log("vv", values)
+    console.log("vv", values);
 
     // Modify the form data here before submitting
     const modifiedValues = {
       ...values,
       id: isEditPage ? id : undefined,
-      useStartDateTimeMsec: dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-      useStartDateTime: values.useStartDateTimeMsec ? dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
-      useEndDateTimeMsec: dayjs(values.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-      useEndDateTime: values.useEndDateTimeMsec ? dayjs(values.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
+      useStartDateTimeMsec: dayjs(
+        values.useStartDateTimeMsec,
+        "DD-MM-YYYY HH:mm:ss"
+      ).valueOf(),
+      useStartDateTime: values.useStartDateTimeMsec
+        ? dayjs(values.useStartDateTimeMsec, "DD-MM-YYYY HH:mm:ss").format(
+            "DD-MM-YYYY HH:mm:ss"
+          )
+        : null,
+      useEndDateTimeMsec: dayjs(
+        values.useEndDateTimeMsec,
+        "DD-MM-YYYY HH:mm:ss"
+      ).valueOf(),
+      useEndDateTime: values.useEndDateTimeMsec
+        ? dayjs(values.useEndDateTimeMsec, "DD-MM-YYYY HH:mm:ss").format(
+            "DD-MM-YYYY HH:mm:ss"
+          )
+        : null,
       newsDetails: values.newsDetails.map((detail: any) => ({
         ...detail,
       })),
       parentNewsId: parentNewsId,
     };
-    console.log("modifiedValues", modifiedValues)
-
+    console.log("modifiedValues", modifiedValues);
 
     try {
-      const res = await axiosWithAuth.post('/news-editor/add-or-modify-news', modifiedValues)
+      const res = await axiosWithAuth.post(
+        "/news-editor/add-or-modify-news",
+        modifiedValues
+      );
       if (res.status == 200) {
         notification.open({
-          type: 'success',
+          type: "success",
           message: `news was added`,
         });
         await refetch();
-        Router.push(isCsr ? "/csr" : "/news")
+        Router.push(isCsr ? "/csr" : "/news");
       }
     } catch (e: any) {
-      console.log("e",)
+      console.log("e");
       notification.open({
-        type: 'error',
+        type: "error",
         message: `${e.response.data.message || "error"}`,
       });
     }
@@ -184,136 +195,142 @@ export default function AddEditNews({id, isCsr}: IProps) {
   };
 
   const uploadImage = async (options: any) => {
-    const {onSuccess, onError, file, onProgress} = options;
+    const { onSuccess, onError, file, onProgress } = options;
 
     const formData = new FormData();
     const config = {
-      headers: {"content-type": "multipart/form-data"},
+      headers: { "content-type": "multipart/form-data" },
     };
     formData.append("imageFile", file);
 
     try {
-      const res = await axiosWithAuth.post(`/news-editor/upload-news-image`, formData, config)
+      const res = await axiosWithAuth.post(
+        `/news-editor/upload-news-image`,
+        formData,
+        config
+      );
       if (res.status == 200) {
-        onSuccess(res.data)
+        onSuccess(res.data);
       }
     } catch (e: any) {
-      onError("failed")
+      onError("failed");
     }
-
-  }
+  };
 
   const addEditText = () => {
     if (id && isCsr) {
-      return "Edit CSR"
+      return "Edit CSR";
     } else if (isCsr) {
-      return "Add CSR"
+      return "Add CSR";
     } else if (id) {
-      return "Edit News"
+      return "Edit News";
     } else {
-      return "Add News"
+      return "Add News";
     }
-  }
+  };
 
   const handlePreview = async (file: UploadFile) => {
-    console.log("file", file, file?.response?.url || file?.url)
+    console.log("file", file, file?.response?.url || file?.url);
     setPreviewImage(file?.response?.url || file?.url);
     setPreviewOpen(true);
   };
   const getDefaultValue = () => {
     if (isEditPage) {
-      console.log("dataNewsDetails", dataNewsDetails)
+      console.log("dataNewsDetails", dataNewsDetails);
       const newData = {
         ...dataNewsDetails,
-        useStartDateTimeMsec: dataNewsDetails.useStartDateTimeMsec ? dayjs.unix(dataNewsDetails.useStartDateTimeMsec / 1000) : null,
-        useEndDateTimeMsec: dataNewsDetails.useEndDateTimeMsec ? dayjs.unix(dataNewsDetails.useEndDateTimeMsec / 1000) : null,
+        useStartDateTimeMsec: dataNewsDetails.useStartDateTimeMsec
+          ? dayjs.unix(dataNewsDetails.useStartDateTimeMsec / 1000)
+          : null,
+        useEndDateTimeMsec: dataNewsDetails.useEndDateTimeMsec
+          ? dayjs.unix(dataNewsDetails.useEndDateTimeMsec / 1000)
+          : null,
         newsDetails: dataNewsDetails.newsDetails.map((detail: any) => ({
           ...detail,
-          useStartDateTimeMsec: detail.useStartDateTimeMsec ? dayjs.unix(detail.useStartDateTimeMsec / 1000) : null,
-          useEndDateTimeMsec: detail.useEndDateTimeMsec ? dayjs.unix(detail.useEndDateTimeMsec / 1000) : null,
-        }))
+          useStartDateTimeMsec: detail.useStartDateTimeMsec
+            ? dayjs.unix(detail.useStartDateTimeMsec / 1000)
+            : null,
+          useEndDateTimeMsec: detail.useEndDateTimeMsec
+            ? dayjs.unix(detail.useEndDateTimeMsec / 1000)
+            : null,
+        })),
       };
 
-      console.log("data", newData)
+      console.log("data", newData);
 
       return newData;
     } else {
-      const activeLanguages = dataLanguages?.filter(e => e.active === true)
+      const activeLanguages = dataLanguages?.filter((e) => e.status === true);
 
       return {
-        "categoryIdList": isCsr ? [2] : [1],
-        "useStartDateTimeMsec": null,
-        "useEndDateTimeMsec": null,
-        "newsDetails":
-            activeLanguages?.map(e => {
-              return {
-                "slug": null,
-                "useStartDateTime": null,
-                "useEndDateTime": null,
-                // "newsId": 0,
-                // "newsDetailId": null,
-                "useStartDateTimeMsec": null,
-                "useEndDateTimeMsec": null,
-                "title": null,
-                "content": null,
-                "languageId": e.id,
-                "status": true,
-                "additionalImages": [],
-                "imageData": {
-                  "size": null,
-                  "originalFileName": null,
-                  "imageName": null,
-                  "contentType": null,
-                  "url": null
-                }
-              }
-            })
-        ,
-        "status": true,
-        "videoLink": null,
-        "parentNewsId": parentNewsId,
-      }
-
-
+        categoryIdList: isCsr ? [2] : [1],
+        useStartDateTimeMsec: null,
+        useEndDateTimeMsec: null,
+        newsDetails: activeLanguages?.map((e) => {
+          return {
+            slug: null,
+            useStartDateTime: null,
+            useEndDateTime: null,
+            // "newsId": 0,
+            // "newsDetailId": null,
+            useStartDateTimeMsec: null,
+            useEndDateTimeMsec: null,
+            title: null,
+            content: null,
+            languageId: e.id,
+            status: true,
+            additionalImages: [],
+            imageData: {
+              size: null,
+              originalFileName: null,
+              imageName: null,
+              contentType: null,
+              url: null,
+            },
+          };
+        }),
+        status: true,
+        videoLink: null,
+        parentNewsId: parentNewsId,
+      };
     }
-  }
-
+  };
 
   return (
-      <div className={"p-2 pb-[60px]"}>
-        <div className={"w-full flex justify-between items-center mb-4"}>
-          <Popconfirm
-              title="return back"
-              description="Are you sure you want to go back? The current changes will be lost"
-              okText={"Yes"}
-              onConfirm={() => Router.back()}
-              // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
-          >
-            <Button className={"flex items-center"} type="default">
-              <ArrowLeftOutlined/>
-              Back
-            </Button>
-          </Popconfirm>
+    <div className={"p-2 pb-[60px]"}>
+      <div className={"w-full flex justify-between items-center mb-4"}>
+        <Popconfirm
+          title="return back"
+          description="Are you sure you want to go back? The current changes will be lost"
+          okText={"Yes"}
+          onConfirm={() => Router.back()}
+          // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+        >
+          <Button className={"flex items-center"} type="default">
+            <ArrowLeftOutlined />
+            Back
+          </Button>
+        </Popconfirm>
 
-          {/*<Tooltip title="Edit" placement={'bottom'}>*/}
-          {/*  <Link href={``}>*/}
-          {/*    <Button shape="circle" className={"flex items-center justify-center"} icon={<EditOutlined/>}/>*/}
-          {/*  </Link>*/}
-          {/*</Tooltip>*/}
+        {/*<Tooltip title="Edit" placement={'bottom'}>*/}
+        {/*  <Link href={``}>*/}
+        {/*    <Button shape="circle" className={"flex items-center justify-center"} icon={<EditOutlined/>}/>*/}
+        {/*  </Link>*/}
+        {/*</Tooltip>*/}
 
-
-          <h2 className={"text-center text-[30px] w-full"}>{addEditText()}</h2>
-        </div>
-        <Divider className={"my-3"}/>
-        {((isEditPage && dataNewsDetails) || (!isEditPage && dataLanguages)) && <Form
-            form={form}
-            layout="vertical"
-            onValuesChange={onchange}
-            onFinish={onFinish}
-            size={'default' as SizeType}
-            // style={{maxWidth: 800}}
-            initialValues={getDefaultValue()}>
-
+        <h2 className={"text-center text-[30px] w-full"}>{addEditText()}</h2>
+      </div>
+      <Divider className={"my-3"} />
+      {((isEditPage && dataNewsDetails) || (!isEditPage && dataLanguages)) && (
+        <Form
+          form={form}
+          layout="vertical"
+          onValuesChange={onchange}
+          onFinish={onFinish}
+          size={"default" as SizeType}
+          // style={{maxWidth: 800}}
+          initialValues={getDefaultValue()}
+        >
           {/*<Form.Item*/}
           {/*    name={'slug'}*/}
           {/*    label={'slug'}*/}
@@ -321,120 +338,155 @@ export default function AddEditNews({id, isCsr}: IProps) {
           {/*  <Input placeholder="slug"/>*/}
           {/*</Form.Item>*/}
 
-          <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
+          <Form.Item
+            name={"categoryIdList"}
+            label="category"
+            className={"mt-2"}
+          >
             <Select mode={isCsr ? undefined : "multiple"}>
-              {isCsr ?
-                  <Select.Option value={2} key={1}>{isCsr && "CSR"}</Select.Option>
-                  :
-                  dataCategories?.filter(e => e?.id !== 2)?.map((e) => <Select.Option value={e.id}
-                                                                                      key={e.id}>{e.category}</Select.Option>)
-              }
+              {isCsr ? (
+                <Select.Option value={2} key={1}>
+                  {isCsr && "CSR"}
+                </Select.Option>
+              ) : (
+                dataCategories
+                  ?.filter((e) => e?.id !== 2)
+                  ?.map((e) => (
+                    <Select.Option value={e.id} key={e.id}>
+                      {e.category}
+                    </Select.Option>
+                  ))
+              )}
             </Select>
           </Form.Item>
 
-          <Form.Item className={"mb-0"} name={'status'} label="status"
-                     valuePropName={"value"}>
+          <Form.Item
+            className={"mb-0"}
+            name={"status"}
+            label="status"
+            valuePropName={"value"}
+          >
             <Radio.Group buttonStyle="solid">
               <Radio.Button value={true}>active</Radio.Button>
-              <Radio.Button className={""} value={false}>disable</Radio.Button>
+              <Radio.Button className={""} value={false}>
+                disable
+              </Radio.Button>
             </Radio.Group>
           </Form.Item>
 
-          <Form.Item
-              name={"videoLink"}
-              label={'video link'}
-          >
-            <Input placeholder="video link"/>
+          <Form.Item name={"videoLink"} label={"video link"}>
+            <Input placeholder="video link" />
           </Form.Item>
 
           <div className={"flex gap-x-2 flex-nowrap"}>
             <Form.Item
-                className={"mb-0"}
-                name={'useStartDateTimeMsec'}
-                label="useStartDate">
-              <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+              className={"mb-0"}
+              name={"useStartDateTimeMsec"}
+              label="useStartDate"
+            >
+              <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime />
             </Form.Item>
 
             <Form.Item
-                className={"mb-0"}
-                name={'useEndDateTimeMsec'} label="useEndDate">
-              <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+              className={"mb-0"}
+              name={"useEndDateTimeMsec"}
+              label="useEndDate"
+            >
+              <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime />
             </Form.Item>
           </div>
 
-          <Form.List
-              name="newsDetails">
+          <Form.List name="newsDetails">
             {(fields, v) => {
-              return <div className={"flex flex-col gap-y-5"}>
-                {
-                  fields.map((field, index, c) => {
-                    const languageId = form.getFieldValue(['newsDetails', field.name, 'languageId'])
-                    const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
-                    const dataImg = form.getFieldValue(['newsDetails', field.name, 'imageData']);
+              return (
+                <div className={"flex flex-col gap-y-5"}>
+                  {fields.map((field, index, c) => {
+                    const languageId = form.getFieldValue([
+                      "newsDetails",
+                      field.name,
+                      "languageId",
+                    ]);
+                    const findLang = dataLanguages?.find(
+                      (e) => e.id === languageId
+                    )?.language;
+                    const dataImg = form.getFieldValue([
+                      "newsDetails",
+                      field.name,
+                      "imageData",
+                    ]);
 
-                    const dataImgList = form.getFieldValue(['newsDetails', field.name, 'additionalImages']);
+                    const dataImgList = form.getFieldValue([
+                      "newsDetails",
+                      field.name,
+                      "additionalImages",
+                    ]);
 
-                    console.log("----dataImgList", dataImgList, !!dataImgList?.length)
+                    console.log(
+                      "----dataImgList",
+                      dataImgList,
+                      !!dataImgList?.length
+                    );
 
                     let fileList = dataImg?.url ? [dataImg] : [];
 
-                    let fileImagesList = !!dataImgList?.length ? dataImgList.map((e: any) => {
-                      return {
-                        ...e,
-                        uid: e.url,
-                      }
-                    }) : [];
+                    let fileImagesList = !!dataImgList?.length
+                      ? dataImgList.map((e: any) => {
+                          return {
+                            ...e,
+                            uid: e.url,
+                          };
+                        })
+                      : [];
 
-                    return <Card
-                        key={fields[0].name + '' + index}
-                        className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2]"}>
-                      <Divider orientation="left" className={"!my-0"}>
-                        <h3 className={"text-[25px]"}>{findLang}</h3>
-                      </Divider>
-                      <Form.Item
-                          name={[field.name, 'title']}
-                          label={'title'}
+                    return (
+                      <Card
+                        key={fields[0].name + "" + index}
+                        className={
+                          "border-[1px] rounded-2xl border-solid border-[#b2b2b2]"
+                        }
                       >
-                        <Input placeholder="title"/>
-                      </Form.Item>
-                      <Form.Item
-                          name={[field.name, 'slug']}
-                          label={'slug'}
-                      >
-                        <Input placeholder="slug"/>
-                      </Form.Item>
-                      <Form.Item
-                          name={[field.name, 'content']}
+                        <Divider orientation="left" className={"!my-0"}>
+                          <h3 className={"text-[25px]"}>{findLang}</h3>
+                        </Divider>
+                        <Form.Item name={[field.name, "title"]} label={"title"}>
+                          <Input placeholder="title" />
+                        </Form.Item>
+                        <Form.Item name={[field.name, "slug"]} label={"slug"}>
+                          <Input placeholder="slug" />
+                        </Form.Item>
+                        <Form.Item
+                          name={[field.name, "content"]}
                           label={`Content`}
                           valuePropName="value"
-                          getValueFromEvent={(value) => value}>
-                        <ReactQuillComponent
+                          getValueFromEvent={(value) => value}
+                        >
+                          <ReactQuillComponent
                             modules={modules}
                             className={`textEditor border markGeo`}
-                        />
-                      </Form.Item>
+                          />
+                        </Form.Item>
 
-                      <Form.Item label={'image'}
-                                 name={[field.name, 'imageData']}
-                                 valuePropName="value"
-                                 getValueFromEvent={(e: any) => {
-                                   console.log("eee", e)
-                                   if (e.file.status === 'done') {
-                                     return e.file.response
-
-                                   } else {
-                                     return {
-                                       "size": null,
-                                       "originalFileName": null,
-                                       "imageName": null,
-                                       "contentType": null,
-                                       "url": null
-                                     }
-                                   }
-                                 }}
-                                 noStyle>
-
-                        <Upload.Dragger
+                        <Form.Item
+                          label={"image"}
+                          name={[field.name, "imageData"]}
+                          valuePropName="value"
+                          getValueFromEvent={(e: any) => {
+                            console.log("eee", e);
+                            if (e.file.status === "done") {
+                              return e.file.response;
+                            } else {
+                              return {
+                                size: null,
+                                originalFileName: null,
+                                imageName: null,
+                                contentType: null,
+                                url: null,
+                              };
+                            }
+                          }}
+                          noStyle
+                        >
+                          <Upload.Dragger
                             // fileList={getFileList()}
                             defaultFileList={fileList}
                             //     uid: '-1',
@@ -447,32 +499,36 @@ export default function AddEditNews({id, isCsr}: IProps) {
                             multiple={false}
                             customRequest={(e) => uploadImage(e)}
                             onPreview={(e) => handlePreview(e)}
+                          >
+                            <p className="ant-upload-drag-icon">
+                              <InboxOutlined />
+                            </p>
+
+                            <p className="ant-upload-text">
+                              Click or drag file to this area to upload main
+                              image
+                            </p>
+                          </Upload.Dragger>
+                        </Form.Item>
+
+                        <Form.Item
+                          label={"image"}
+                          name={[field.name, "additionalImages"]}
+                          valuePropName="value"
+                          getValueFromEvent={(e: any) => {
+                            console.log("eee", e);
+                            // if (e.file.status === 'done') {
+                            return e.fileList.map((e: any) => {
+                              return e.response || e;
+                            });
+
+                            // } else {
+                            //   return []
+                            // }
+                          }}
+                          noStyle
                         >
-                          <p className="ant-upload-drag-icon">
-                            <InboxOutlined/>
-                          </p>
-
-                          <p className="ant-upload-text">Click or drag file to this area to upload main image</p>
-                        </Upload.Dragger>
-                      </Form.Item>
-
-                      <Form.Item label={'image'}
-                                 name={[field.name, 'additionalImages']}
-                                 valuePropName="value"
-                                 getValueFromEvent={(e: any) => {
-                                   console.log("eee", e)
-                                   // if (e.file.status === 'done') {
-                                   return e.fileList.map((e: any) => {
-                                     return e.response || e
-                                   })
-
-                                   // } else {
-                                   //   return []
-                                   // }
-                                 }}
-                                 noStyle>
-
-                        <Upload.Dragger
+                          <Upload.Dragger
                             // fileList={getFileList()}
                             defaultFileList={fileImagesList}
                             //     uid: '-1',
@@ -485,47 +541,63 @@ export default function AddEditNews({id, isCsr}: IProps) {
                             multiple={true}
                             customRequest={(e) => uploadImage(e)}
                             onPreview={(e) => handlePreview(e)}
-                        >
-                          <p className="ant-upload-drag-icon">
-                            <InboxOutlined/>
-                          </p>
+                          >
+                            <p className="ant-upload-drag-icon">
+                              <InboxOutlined />
+                            </p>
 
-                          <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                        </Upload.Dragger>
-                      </Form.Item>
-
-                      {previewImage && (
-                          <Image
-                              wrapperStyle={{display: 'none'}}
-                              preview={{
-                                visible: previewOpen,
-                                onVisibleChange: (visible) => setPreviewOpen(visible),
-                                afterOpenChange: (visible) => !visible && setPreviewImage(''),
-                              }}
-                              src={previewImage}
-                          />
-                      )}
-
-                      <Space className={"w-full mt-2 flex items-center justify-between"}>
-                        <Form.Item className={"mb-0"} name={[field.name, 'status']} label="status"
-                                   valuePropName={"value"}>
-                          <Radio.Group buttonStyle="solid">
-                            <Radio.Button value={true}>active</Radio.Button>
-                            <Radio.Button className={""} value={false}>disable</Radio.Button>
-                          </Radio.Group>
+                            <p className="ant-upload-text">
+                              Click or drag file to this area to upload
+                            </p>
+                          </Upload.Dragger>
                         </Form.Item>
-                      </Space>
-                    </Card>
-                  })}
-              </div>
-            }}
 
+                        {previewImage && (
+                          <Image
+                            wrapperStyle={{ display: "none" }}
+                            preview={{
+                              visible: previewOpen,
+                              onVisibleChange: (visible) =>
+                                setPreviewOpen(visible),
+                              afterOpenChange: (visible) =>
+                                !visible && setPreviewImage(""),
+                            }}
+                            src={previewImage}
+                          />
+                        )}
+
+                        <Space
+                          className={
+                            "w-full mt-2 flex items-center justify-between"
+                          }
+                        >
+                          <Form.Item
+                            className={"mb-0"}
+                            name={[field.name, "status"]}
+                            label="status"
+                            valuePropName={"value"}
+                          >
+                            <Radio.Group buttonStyle="solid">
+                              <Radio.Button value={true}>active</Radio.Button>
+                              <Radio.Button className={""} value={false}>
+                                disable
+                              </Radio.Button>
+                            </Radio.Group>
+                          </Form.Item>
+                        </Space>
+                      </Card>
+                    );
+                  })}
+                </div>
+              );
+            }}
           </Form.List>
 
-
-          <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>Submit</Button>
+          <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>
+            Submit
+          </Button>
         </Form>
-        }
-      </div>
+      )}
+    </div>
   );
 }

@@ -1,51 +1,63 @@
-'use client'
-import {axiosWithAuth} from "@/configs/axios";
-import {ArrowLeftOutlined, InboxOutlined, DeleteOutlined, QuestionCircleOutlined} from "@ant-design/icons";
-import {useQuery} from "@tanstack/react-query";
+"use client";
+import { axiosWithAuth } from "@/configs/axios";
+import {
+  ArrowLeftOutlined,
+  InboxOutlined,
+  DeleteOutlined,
+  QuestionCircleOutlined,
+} from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
-import {useRouter, useParams} from "next/navigation";
-import React, {useState} from "react";
+import { useRouter, useParams } from "next/navigation";
+import React, { useState } from "react";
 import {
-  Button, Image,
+  Button,
+  Image,
   Form,
   Input,
   Upload,
-  Select, Space, Card, Divider, notification, Radio,
+  Select,
+  Space,
+  Card,
+  Divider,
+  notification,
+  Radio,
   Checkbox,
   DatePicker,
   InputNumber,
   TimePicker,
   Popconfirm,
-  Tooltip
-} from 'antd';
-import {SizeType} from "antd/lib/config-provider/SizeContext";
-import type ReactQuill from 'react-quill';
+  Tooltip,
+} from "antd";
+import { SizeType } from "antd/lib/config-provider/SizeContext";
+import type ReactQuill from "react-quill";
 
-var customParseFormat = require('dayjs/plugin/customParseFormat')
-dayjs.extend(customParseFormat)
+var customParseFormat = require("dayjs/plugin/customParseFormat");
+dayjs.extend(customParseFormat);
 
 const ReactQuillComponent = dynamic(
-    async () => {
-      const {default: RQ} = await import('react-quill');
-      // eslint-disable-next-line react/display-name
-      return ({...props}) => <RQ {...props} />;
-    },
-    {
-      ssr: false,
-    }
+  async () => {
+    const { default: RQ } = await import("react-quill");
+    // eslint-disable-next-line react/display-name
+    return ({ ...props }) => <RQ {...props} />;
+  },
+  {
+    ssr: false,
+  }
 ) as typeof ReactQuill;
 import "react-quill/dist/quill.snow.css";
+import { fetchLanguages } from "@/services/fetch/fetchLanguage";
 
 const modules = {
   toolbar: {
     container: [
       ["bold", "italic", "underline", "strike"], // Custom toolbar buttons
-      [{header: [1, 2, 3, 4, 5, 6, false]}],
-      [{list: "ordered"}, {list: "bullet"}],
-      [{indent: "-1"}, {indent: "+1"}],
-      [{align: []}],
-      [{color: []}, {background: []}], // Dropdown with color options
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ indent: "-1" }, { indent: "+1" }],
+      [{ align: [] }],
+      [{ color: [] }, { background: [] }], // Dropdown with color options
       ["link", "image", "formula"],
       ["clean"], // Remove formatting button
     ],
@@ -81,63 +93,53 @@ const weekDaysArr = [
     label: "Sunday",
     value: 6,
   },
-]
+];
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
-const fetchLanguages = async () => {
-  try {
-    const {data} = await axiosWithAuth.get(`${BASEAPI}/news-editor/get-languages`);
-    return data;
-  } catch (error: any) {
-    console.log("errr", error)
-    notification.open({
-      type: 'error',
-      message: `languages`,
-      description:
-          'Something went wrong while fetching languages',
-    });
-  }
-}
 
 const fetchServiceCenterDetailsById = async (id: number) => {
   try {
-    const {data} = await axiosWithAuth.get(`/service-center-editor/get-service-center-details`, {
-      params: {
-        serviceCenterId: id
+    const { data } = await axiosWithAuth.get(
+      `/service-center-editor/get-service-center-details`,
+      {
+        params: {
+          serviceCenterId: id,
+        },
       }
-    });
+    );
 
     return data;
-
   } catch (error: any) {
-    console.log("errr", error)
+    console.log("errr", error);
     notification.open({
-      type: 'error',
+      type: "error",
       message: `service center`,
-      description:
-          'Something went wrong while fetching service center details',
+      description: "Something went wrong while fetching service center details",
     });
   }
-}
+};
 
 interface IProps {
-  id?: number
+  id?: number;
 }
 
-export default function AddEditServiceCenter({id}: IProps) {
+export default function AddEditServiceCenter({ id }: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
   const Params = useParams();
 
-  console.log("Params", Params)
+  console.log("Params", Params);
 
   const isEditPage = !!id;
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
-  const {data: dataLanguages} = useQuery<ILanguage[]>({queryKey: ["languages"], queryFn: fetchLanguages});
+  const [previewImage, setPreviewImage] = useState("");
+  const { data: dataLanguages } = useQuery<ILanguage[]>({
+    queryKey: ["languages"],
+    queryFn: fetchLanguages,
+  });
 
-  const {data: dataServiceCenterDetails, refetch} = useQuery({
-    queryKey: ['serviceCenterDetails', id],
+  const { data: dataServiceCenterDetails, refetch } = useQuery({
+    queryKey: ["serviceCenterDetails", id],
     queryFn: () => fetchServiceCenterDetailsById(id as number),
     enabled: !!id,
     retry: 1,
@@ -148,73 +150,100 @@ export default function AddEditServiceCenter({id}: IProps) {
 
   const fetchCategories = async () => {
     try {
-      const {data} = await axiosWithAuth.get(`${BASEAPI}/service-center-editor/get-service-center-categories`);
+      const { data } = await axiosWithAuth.get(
+        `${BASEAPI}/service-center-editor/get-service-center-categories`
+      );
       return data;
     } catch (error: any) {
-      console.log("errr", error)
+      console.log("errr", error);
       notification.open({
-        type: 'error',
+        type: "error",
         message: `categories`,
-        description:
-            'Something went wrong while fetching categories',
+        description: "Something went wrong while fetching categories",
       });
     }
-  }
+  };
 
   const fetchSettlements = async () => {
     try {
-      const {data} = await axiosWithAuth.get(`${BASEAPI}/service-center-editor/get-service-center-settlements`);
+      const { data } = await axiosWithAuth.get(
+        `${BASEAPI}/service-center-editor/get-service-center-settlements`
+      );
       return data;
     } catch (error: any) {
-      console.log("errr", error)
+      console.log("errr", error);
       notification.open({
-        type: 'error',
+        type: "error",
         message: `settlements`,
-        description:
-            'Something went wrong while fetching settlements',
+        description: "Something went wrong while fetching settlements",
       });
     }
-  }
+  };
 
-  const {data: dataCategories} = useQuery<ICategories[]>({queryKey: ["categories"], queryFn: fetchCategories});
-  const {data: dataSettlements} = useQuery<ISettlements[]>({queryKey: ["settlements"], queryFn: fetchSettlements});
+  const { data: dataCategories } = useQuery<ICategories[]>({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+  });
+  const { data: dataSettlements } = useQuery<ISettlements[]>({
+    queryKey: ["settlements"],
+    queryFn: fetchSettlements,
+  });
 
   const onchange = (values: any, allValues: any) => {
-    console.log("values", values)
-    console.log("allValues", allValues)
-  }
+    console.log("values", values);
+    console.log("allValues", allValues);
+  };
 
   const onFinish = async (values: any) => {
-    console.log("valexriv:", values)
+    console.log("valexriv:", values);
 
     // Modify the form data here before submitting
     const modifiedValues = {
       ...values,
       id: isEditPage ? Number(id) : undefined,
       sortOrder: dataServiceCenterDetails?.sortOrder,
-      categoryIdList: typeof values.categoryIdList === 'number' ? [values.categoryIdList] : values.categoryIdList,
-      useStartDateTimeMsec: dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-      useStartDateTime: values.useStartDateTimeMsec ? dayjs(values.useStartDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
-      useEndDateTimeMsec: dayjs(values.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').valueOf(),
-      useEndDateTime: values.useEndDateTimeMsec ? dayjs(values.useEndDateTimeMsec, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY HH:mm:ss') : null,
+      categoryIdList:
+        typeof values.categoryIdList === "number"
+          ? [values.categoryIdList]
+          : values.categoryIdList,
+      useStartDateTimeMsec: dayjs(
+        values.useStartDateTimeMsec,
+        "DD-MM-YYYY HH:mm:ss"
+      ).valueOf(),
+      useStartDateTime: values.useStartDateTimeMsec
+        ? dayjs(values.useStartDateTimeMsec, "DD-MM-YYYY HH:mm:ss").format(
+            "DD-MM-YYYY HH:mm:ss"
+          )
+        : null,
+      useEndDateTimeMsec: dayjs(
+        values.useEndDateTimeMsec,
+        "DD-MM-YYYY HH:mm:ss"
+      ).valueOf(),
+      useEndDateTime: values.useEndDateTimeMsec
+        ? dayjs(values.useEndDateTimeMsec, "DD-MM-YYYY HH:mm:ss").format(
+            "DD-MM-YYYY HH:mm:ss"
+          )
+        : null,
     };
-    console.log("modifiedValues", modifiedValues)
-
+    console.log("modifiedValues", modifiedValues);
 
     try {
-      const res = await axiosWithAuth.post('/service-center-editor/add-or-modify-service-center', modifiedValues)
+      const res = await axiosWithAuth.post(
+        "/service-center-editor/add-or-modify-service-center",
+        modifiedValues
+      );
       if (res.status == 200) {
         notification.open({
-          type: 'success',
+          type: "success",
           message: `Service Center was added`,
         });
         isEditPage ? await refetch() : null;
-        Router.push("/service-center")
+        Router.push("/service-center");
       }
     } catch (e: any) {
-      console.log("e",)
+      console.log("e");
       notification.open({
-        type: 'error',
+        type: "error",
         message: `${e.response.data.message || "error"}`,
       });
     }
@@ -224,446 +253,509 @@ export default function AddEditServiceCenter({id}: IProps) {
   };
 
   const uploadImage = async (options: any) => {
-    const {onSuccess, onError, file, onProgress} = options;
+    const { onSuccess, onError, file, onProgress } = options;
 
     const formData = new FormData();
     const config = {
-      headers: {"content-type": "multipart/form-data"},
+      headers: { "content-type": "multipart/form-data" },
     };
     formData.append("imageFile", file);
 
     try {
-      const res = await axiosWithAuth.post(`/service-center-editor/upload-service-center-image`, formData, config)
+      const res = await axiosWithAuth.post(
+        `/service-center-editor/upload-service-center-image`,
+        formData,
+        config
+      );
       if (res.status == 200) {
-        onSuccess(res.data)
+        onSuccess(res.data);
       }
     } catch (e: any) {
-      onError("failed")
+      onError("failed");
     }
-
-  }
+  };
 
   const handlePreview = async (file: any) => {
-    console.log("file", file, file?.response?.url || file?.url)
+    console.log("file", file, file?.response?.url || file?.url);
     setPreviewImage(file?.response?.url || file?.url);
     setPreviewOpen(true);
   };
 
   const getDefaultValue = () => {
     if (isEditPage) {
-      console.log("dataServiceCenterDetails", dataServiceCenterDetails)
+      console.log("dataServiceCenterDetails", dataServiceCenterDetails);
       const newData = {
         ...dataServiceCenterDetails,
-        useStartDateTimeMsec: dataServiceCenterDetails.useStartDateTimeMsec ? dayjs.unix(dataServiceCenterDetails.useStartDateTimeMsec / 1000) : null,
-        useEndDateTimeMsec: dataServiceCenterDetails.useEndDateTimeMsec ? dayjs.unix(dataServiceCenterDetails.useEndDateTimeMsec / 1000) : null,
+        useStartDateTimeMsec: dataServiceCenterDetails.useStartDateTimeMsec
+          ? dayjs.unix(dataServiceCenterDetails.useStartDateTimeMsec / 1000)
+          : null,
+        useEndDateTimeMsec: dataServiceCenterDetails.useEndDateTimeMsec
+          ? dayjs.unix(dataServiceCenterDetails.useEndDateTimeMsec / 1000)
+          : null,
         details: dataServiceCenterDetails?.details.map((detail: any) => ({
           ...detail,
         })),
 
-        workingHours: dataServiceCenterDetails?.workingHours.map((workingHours: any) => ({
-          ...workingHours,
-          fromHour: workingHours.fromHour ? dayjs(workingHours.fromHour, 'HH:mm') : null,
-          toHour: workingHours.toHour ? dayjs(workingHours.toHour, 'HH:mm') : null
-        }))
-
+        workingHours: dataServiceCenterDetails?.workingHours.map(
+          (workingHours: any) => ({
+            ...workingHours,
+            fromHour: workingHours.fromHour
+              ? dayjs(workingHours.fromHour, "HH:mm")
+              : null,
+            toHour: workingHours.toHour
+              ? dayjs(workingHours.toHour, "HH:mm")
+              : null,
+          })
+        ),
       };
 
-      console.log("data", newData)
+      console.log("data", newData);
 
       return newData;
     } else {
-      const activeLanguages = dataLanguages?.filter(e => e.active === true)
+      const activeLanguages = dataLanguages?.filter((e) => e.status === true);
 
       return {
-        "categoryIdList": [dataCategories?.[0].id],
-        "settlementId": dataSettlements?.[5].id,
-        "settlementDataForResult": {
-          "id": null,
-          "typeId": null,
-          "nameGeo": null,
-          "nameEng": null,
-          "community": null,
-          "communityGeo": null,
-          "regionId": null,
-          "municipalityId": null
+        categoryIdList: [dataCategories?.[0].id],
+        settlementId: dataSettlements?.[5].id,
+        settlementDataForResult: {
+          id: null,
+          typeId: null,
+          nameGeo: null,
+          nameEng: null,
+          community: null,
+          communityGeo: null,
+          regionId: null,
+          municipalityId: null,
         },
-        "phoneNumber": null,
-        "link": null,
-        "imageData": {
-          "size": null,
-          "originalFileName": null,
-          "imageName": null,
-          "contentType": null,
-          "url": null
+        phoneNumber: null,
+        link: null,
+        imageData: {
+          size: null,
+          originalFileName: null,
+          imageName: null,
+          contentType: null,
+          url: null,
         },
-        "details":
-            activeLanguages?.map(e => {
-              return {
-                "description": null,
-                "title": null,
-                "languageId": e.id,
-                "location": null,
-              }
-            })
-        ,
-        "workingHours":
-            [
-              {
-                "fromWeekDayId": 0,
-                "toWeekDayId": 0,
-                "closed": false,
-                "fromHour": null,
-                "toHour": null,
-              }
-            ]
-        ,
-        "status": true,
-        "id": null,
-        "latitude": null,
-        "longitude": null,
-        "useStartDateTime": null,
-        "useEndDateTime": null,
-        "useStartDateTimeMsec": null,
-        "useEndDateTimeMsec": null,
-        "sortOrder": null,
-      }
+        details: activeLanguages?.map((e) => {
+          return {
+            description: null,
+            title: null,
+            languageId: e.id,
+            location: null,
+          };
+        }),
+        workingHours: [
+          {
+            fromWeekDayId: 0,
+            toWeekDayId: 0,
+            closed: false,
+            fromHour: null,
+            toHour: null,
+          },
+        ],
+        status: true,
+        id: null,
+        latitude: null,
+        longitude: null,
+        useStartDateTime: null,
+        useEndDateTime: null,
+        useStartDateTimeMsec: null,
+        useEndDateTimeMsec: null,
+        sortOrder: null,
+      };
     }
-  }
+  };
 
-  const dataImg = form.getFieldValue('imageData');
-  let fileList = dataImg?.url ? [dataImg] : (dataServiceCenterDetails ? [dataServiceCenterDetails?.imageData] : []);
+  const dataImg = form.getFieldValue("imageData");
+  let fileList = dataImg?.url
+    ? [dataImg]
+    : dataServiceCenterDetails
+    ? [dataServiceCenterDetails?.imageData]
+    : [];
 
   return (
-      <div className={"p-2 pb-[60px]"}>
-        <div className={"w-full flex justify-between items-center mb-4"}>
-          <Popconfirm
-            title="return back"
-            description="Are you sure you want to go back? The current changes will be lost"
-            okText={"Yes"}
-            onConfirm={() => Router.back()}
-            // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+    <div className={"p-2 pb-[60px]"}>
+      <div className={"w-full flex justify-between items-center mb-4"}>
+        <Popconfirm
+          title="return back"
+          description="Are you sure you want to go back? The current changes will be lost"
+          okText={"Yes"}
+          onConfirm={() => Router.back()}
+          // icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+        >
+          <Button className={"flex items-center"} type="default">
+            <ArrowLeftOutlined />
+            Back
+          </Button>
+        </Popconfirm>
+
+        <h2 className={"text-center text-[30px] w-full"}>
+          {id ? "Edit Service Center" : "Add Service Center"}
+        </h2>
+      </div>
+      <Divider className={"my-3"} />
+      {((isEditPage && dataServiceCenterDetails) ||
+        (!isEditPage && dataLanguages && dataSettlements)) && (
+        <Form
+          form={form}
+          layout="vertical"
+          onValuesChange={onchange}
+          onFinish={onFinish}
+          size={"default" as SizeType}
+          initialValues={getDefaultValue()}
+        >
+          <Form.Item
+            name={"categoryIdList"}
+            label="category"
+            className={"mt-2"}
           >
-            <Button className={"flex items-center"} type="default" >
-              <ArrowLeftOutlined/>
-              Back
-            </Button>
-          </Popconfirm>
-
-          <h2 className={"text-center text-[30px] w-full"}>{id ? "Edit Service Center" : "Add Service Center"}</h2>
-        </div>
-        <Divider className={"my-3"}/>
-        {((isEditPage && dataServiceCenterDetails ) || (!isEditPage && dataLanguages && dataSettlements)) && <Form
-            form={form}
-            layout="vertical"
-            onValuesChange={onchange}
-            onFinish={onFinish}
-            size={'default' as SizeType}
-            initialValues={getDefaultValue()}>
-
-            <Form.Item name={"categoryIdList"} label="category" className={"mt-2"}>
-              <Select>
+            <Select>
               {dataCategories?.map((e) => {
-                  return <Select.Option value={e.id} key={e.id}>{e.category}</Select.Option>
+                return (
+                  <Select.Option value={e.id} key={e.id}>
+                    {e.category}
+                  </Select.Option>
+                );
               })}
-              </Select>
-            </Form.Item>
+            </Select>
+          </Form.Item>
 
           {
-            <Form.Item name={"settlementId"} label="settlement" className={"mt-2"}>
-                <Select>
+            <Form.Item
+              name={"settlementId"}
+              label="settlement"
+              className={"mt-2"}
+            >
+              <Select>
                 {dataSettlements?.map((e) => {
-                    return <Select.Option value={e.id} key={e.id}>{e.nameGeo}</Select.Option>
+                  return (
+                    <Select.Option value={e.id} key={e.id}>
+                      {e.nameGeo}
+                    </Select.Option>
+                  );
                 })}
-                </Select>
+              </Select>
             </Form.Item>
           }
 
-          <Form.Item className={"mb-0"} name={'status'} label="status"
-                     valuePropName={"value"}>
+          <Form.Item
+            className={"mb-0"}
+            name={"status"}
+            label="status"
+            valuePropName={"value"}
+          >
             <Radio.Group buttonStyle="solid">
               <Radio.Button value={true}>active</Radio.Button>
-              <Radio.Button className={""} value={false}>disable</Radio.Button>
+              <Radio.Button className={""} value={false}>
+                disable
+              </Radio.Button>
             </Radio.Group>
           </Form.Item>
 
-          <Form.Item
-              name={'latitude'}
-              label={'latitude'}
-          >
-            <InputNumber placeholder="latitude - Enter a number" className="w-full"/>
+          <Form.Item name={"latitude"} label={"latitude"}>
+            <InputNumber
+              placeholder="latitude - Enter a number"
+              className="w-full"
+            />
           </Form.Item>
 
-          <Form.Item
-              name={'longitude'}
-              label={'longitude'}
-          >
-            <InputNumber placeholder="longitude - Enter a number" className="w-full"/>
+          <Form.Item name={"longitude"} label={"longitude"}>
+            <InputNumber
+              placeholder="longitude - Enter a number"
+              className="w-full"
+            />
           </Form.Item>
 
-
-          <Form.Item
-              name={'phoneNumber'}
-              label={'Phone Number'}
-          >
-            <InputNumber placeholder="Phone - Enter a phone number" className="w-full"/>
+          <Form.Item name={"phoneNumber"} label={"Phone Number"}>
+            <InputNumber
+              placeholder="Phone - Enter a phone number"
+              className="w-full"
+            />
           </Form.Item>
 
-          <Form.Item
-              name={'link'}
-              label={'Link'}
-          >
-            <Input placeholder="Link" className="w-full"/>
+          <Form.Item name={"link"} label={"Link"}>
+            <Input placeholder="Link" className="w-full" />
           </Form.Item>
-
 
           <div className={"flex gap-x-2 flex-nowrap"}>
             <Form.Item
-                // initialValue={dayjs('YYYY-MM-DD HH:mm:ss')}
-                // valuePropName={"aba"}
-                // getValueFromEvent={(e: any) => {
-                //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
-                //   return date.valueOf();
-                // }}
-                // getValueProps={(e: string) => ({
-                //   value: e ? dayjs(e) : "",
-                // })}
-                className={"mb-0"}
-                name={'useStartDateTimeMsec'}
-                label="useStartDate"
+              // initialValue={dayjs('YYYY-MM-DD HH:mm:ss')}
+              // valuePropName={"aba"}
+              // getValueFromEvent={(e: any) => {
+              //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
+              //   return date.valueOf();
+              // }}
+              // getValueProps={(e: string) => ({
+              //   value: e ? dayjs(e) : "",
+              // })}
+              className={"mb-0"}
+              name={"useStartDateTimeMsec"}
+              label="useStartDate"
             >
-              <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+              <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime />
             </Form.Item>
 
             <Form.Item
-                // getValueFromEvent={(e: any) => {
-                //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
-                //   return date.valueOf();
-                // }}
-                // getValueProps={(e: string) => ({
-                //   value: e ? dayjs(e) : "",
-                // })}
-                className={"mb-0"}
-                name={'useEndDateTimeMsec'}
-                label="useEndDate"
+              // getValueFromEvent={(e: any) => {
+              //   const date = dayjs(e, 'YYYY-MM-DD HH:mm:ss'); //date in miliseconds
+              //   return date.valueOf();
+              // }}
+              // getValueProps={(e: string) => ({
+              //   value: e ? dayjs(e) : "",
+              // })}
+              className={"mb-0"}
+              name={"useEndDateTimeMsec"}
+              label="useEndDate"
             >
-              <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime/>
+              <DatePicker format={"DD-MM-YYYY HH:mm:ss"} showTime />
             </Form.Item>
           </div>
 
-
-          <Form.Item label={'image'}
-                     name={"imageData"}
-                     valuePropName="value"
-                     getValueFromEvent={(e: any) => {
-                       console.log("eee", e)
-                       if (e.file.status === 'done') {
-                         return e.file.response
-
-                       } else {
-                         return {
-                           "size": null,
-                           "originalFileName": null,
-                           "imageName": null,
-                           "contentType": null,
-                           "url": null
-                         }
-                       }
-                     }}
-                     noStyle
+          <Form.Item
+            label={"image"}
+            name={"imageData"}
+            valuePropName="value"
+            getValueFromEvent={(e: any) => {
+              console.log("eee", e);
+              if (e.file.status === "done") {
+                return e.file.response;
+              } else {
+                return {
+                  size: null,
+                  originalFileName: null,
+                  imageName: null,
+                  contentType: null,
+                  url: null,
+                };
+              }
+            }}
+            noStyle
           >
-
             <Upload.Dragger
-                // fileList={getFileList()}
-                defaultFileList={fileList}
-                //     uid: '-1',
-                // name: 'image.png',
-                // status: 'done',
-                // url: data?.url,
-                listType={"picture-card"}
-                showUploadList={true}
-                maxCount={1}
-                multiple={false}
-                customRequest={(e) => uploadImage(e)}
-                onPreview={(e) => handlePreview(e)}
+              // fileList={getFileList()}
+              defaultFileList={fileList}
+              //     uid: '-1',
+              // name: 'image.png',
+              // status: 'done',
+              // url: data?.url,
+              listType={"picture-card"}
+              showUploadList={true}
+              maxCount={1}
+              multiple={false}
+              customRequest={(e) => uploadImage(e)}
+              onPreview={(e) => handlePreview(e)}
             >
               <p className="ant-upload-drag-icon">
-                <InboxOutlined/>
+                <InboxOutlined />
               </p>
 
-              <p className="ant-upload-text">Click or drag file to this area to upload main image</p>
+              <p className="ant-upload-text">
+                Click or drag file to this area to upload main image
+              </p>
             </Upload.Dragger>
           </Form.Item>
 
           {previewImage && (
-              <Image
-                  wrapperStyle={{display: 'none'}}
-                  preview={{
-                    visible: previewOpen,
-                    onVisibleChange: (visible) => setPreviewOpen(visible),
-                    afterOpenChange: (visible) => !visible && setPreviewImage(''),
-                  }}
-                  src={previewImage}
-              />
+            <Image
+              wrapperStyle={{ display: "none" }}
+              preview={{
+                visible: previewOpen,
+                onVisibleChange: (visible) => setPreviewOpen(visible),
+                afterOpenChange: (visible) => !visible && setPreviewImage(""),
+              }}
+              src={previewImage}
+            />
           )}
 
-          <Form.List
-              name="details">
+          <Form.List name="details">
             {(fields, v) => {
-              return <div className={"flex flex-col gap-y-5"}>
-                {
-                  fields.map((field, index, c) => {
-                    const languageId = form.getFieldValue(['details', field.name, 'languageId'])
-                    const findLang = dataLanguages?.find((e) => e.id === languageId)?.language;
-                    return <Card
-                        key={fields[0].name + '' + index}
-                        className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2]"}>
-                      <Divider orientation="left" className={"!my-0"}>
-                        <h3 className={"text-[25px]"}>{findLang}</h3>
-                      </Divider>
-                      <Form.Item
-                          name={[field.name, 'title']}
-                          label={'title'}
+              return (
+                <div className={"flex flex-col gap-y-5"}>
+                  {fields.map((field, index, c) => {
+                    const languageId = form.getFieldValue([
+                      "details",
+                      field.name,
+                      "languageId",
+                    ]);
+                    const findLang = dataLanguages?.find(
+                      (e) => e.id === languageId
+                    )?.language;
+                    return (
+                      <Card
+                        key={fields[0].name + "" + index}
+                        className={
+                          "border-[1px] rounded-2xl border-solid border-[#b2b2b2]"
+                        }
                       >
-                        <Input placeholder="title"/>
-                      </Form.Item>
+                        <Divider orientation="left" className={"!my-0"}>
+                          <h3 className={"text-[25px]"}>{findLang}</h3>
+                        </Divider>
+                        <Form.Item name={[field.name, "title"]} label={"title"}>
+                          <Input placeholder="title" />
+                        </Form.Item>
 
-                      <Form.Item
-                          name={[field.name, 'description']}
-                          label={'description'}
-                      >
-                        <Input placeholder="description"/>
-                      </Form.Item>
+                        <Form.Item
+                          name={[field.name, "description"]}
+                          label={"description"}
+                        >
+                          <Input placeholder="description" />
+                        </Form.Item>
 
-                      <Form.Item
-                          name={[field.name, 'location']}
-                          label={'location'}
-                      >
-                        <Input placeholder="location"/>
-                      </Form.Item>
-                    </Card>
+                        <Form.Item
+                          name={[field.name, "location"]}
+                          label={"location"}
+                        >
+                          <Input placeholder="location" />
+                        </Form.Item>
+                      </Card>
+                    );
                   })}
-              </div>
+                </div>
+              );
             }}
-
           </Form.List>
 
           {/* Working hours Form List */}
 
-          <Form.List
-              name="workingHours">
-            {(fields, {add, remove}, v) => {
-              return <div className={"flex flex-col gap-y-5"}>
-                {
-                  fields.map((field, index, c) => {
-                    console.log('field0', field)
-                    return <Card
-                        key={fields[0].name + '' + index}
-                        className={"border-[1px] rounded-2xl border-solid border-[#b2b2b2] mt-6"}
+          <Form.List name="workingHours">
+            {(fields, { add, remove }, v) => {
+              return (
+                <div className={"flex flex-col gap-y-5"}>
+                  {fields.map((field, index, c) => {
+                    console.log("field0", field);
+                    return (
+                      <Card
+                        key={fields[0].name + "" + index}
+                        className={
+                          "border-[1px] rounded-2xl border-solid border-[#b2b2b2] mt-6"
+                        }
                         title={
-                          <h3 className={"text-[25px] font-normal"}>Working Hours</h3>
+                          <h3 className={"text-[25px] font-normal"}>
+                            Working Hours
+                          </h3>
                         }
                         extra={
-                            fields.length > 1 && <Popconfirm
-                                title="Delete the service center"
-                                description="Are you sure to delete this working hours form?"
-                                okText={"Yes"}
-                                onConfirm={() => remove(field.name)}
-                                icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+                          fields.length > 1 && (
+                            <Popconfirm
+                              title="Delete the service center"
+                              description="Are you sure to delete this working hours form?"
+                              okText={"Yes"}
+                              onConfirm={() => remove(field.name)}
+                              icon={
+                                <QuestionCircleOutlined
+                                  style={{ color: "red" }}
+                                />
+                              }
                             >
-                              <Tooltip title="Delete" placement={'bottom'}>
+                              <Tooltip title="Delete" placement={"bottom"}>
                                 <Button
-                                    danger
-                                    shape="circle"
-                                    className={"flex items-center justify-center"}
-                                    icon={<DeleteOutlined/>}
+                                  danger
+                                  shape="circle"
+                                  className={"flex items-center justify-center"}
+                                  icon={<DeleteOutlined />}
                                 />
                               </Tooltip>
                             </Popconfirm>
+                          )
                         }
-                    >
-
-                      <div className={"flex gap-x-4 w-full"}>
-                        <Card className="w-1/2">
-                          <Divider orientation="left" className={"!my-0"}>
-                            <h3 className={"text-[25px]"}>Days</h3>
-                          </Divider>
-                          <Form.Item
-                              label={'From'}
-                              name={[field.name, 'fromWeekDayId']}
-                              fieldKey={[field.key, 'fromWeekDayId']}
-                          >
-                            <Select placeholder="From Day">
-                              {weekDaysArr.map(day => (
-                                  <Select.Option key={day.value} value={day.value}>
+                      >
+                        <div className={"flex gap-x-4 w-full"}>
+                          <Card className="w-1/2">
+                            <Divider orientation="left" className={"!my-0"}>
+                              <h3 className={"text-[25px]"}>Days</h3>
+                            </Divider>
+                            <Form.Item
+                              label={"From"}
+                              name={[field.name, "fromWeekDayId"]}
+                              fieldKey={[field.key, "fromWeekDayId"]}
+                            >
+                              <Select placeholder="From Day">
+                                {weekDaysArr.map((day) => (
+                                  <Select.Option
+                                    key={day.value}
+                                    value={day.value}
+                                  >
                                     {day.label}
                                   </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
+                                ))}
+                              </Select>
+                            </Form.Item>
 
-                          <Form.Item
-                              label={'To'}
-                              name={[field.name, 'toWeekDayId']}
-                              fieldKey={[field.key, 'toWeekDayId']}
-                          >
-                            <Select placeholder="To Day">
-                              {weekDaysArr.map(day => (
-                                  <Select.Option key={day.value} value={day.value}>
+                            <Form.Item
+                              label={"To"}
+                              name={[field.name, "toWeekDayId"]}
+                              fieldKey={[field.key, "toWeekDayId"]}
+                            >
+                              <Select placeholder="To Day">
+                                {weekDaysArr.map((day) => (
+                                  <Select.Option
+                                    key={day.value}
+                                    value={day.value}
+                                  >
                                     {day.label}
                                   </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                        </Card>
+                                ))}
+                              </Select>
+                            </Form.Item>
+                          </Card>
 
-                        <Card className="w-1/2">
-                          <Divider orientation="left" className={"!my-0"}>
-                            <h3 className={"text-[25px]"}>Hours</h3>
-                          </Divider>
-                          <Form.Item
-                              label={'From'}
-                              name={[field.name, 'fromHour']}
-                              fieldKey={[field.key, 'fromHour']}
-                          >
-                            <TimePicker format="HH:mm" defaultValue={dayjs('00:00', 'HH:mm')} className="w-full"/>
-                          </Form.Item>
+                          <Card className="w-1/2">
+                            <Divider orientation="left" className={"!my-0"}>
+                              <h3 className={"text-[25px]"}>Hours</h3>
+                            </Divider>
+                            <Form.Item
+                              label={"From"}
+                              name={[field.name, "fromHour"]}
+                              fieldKey={[field.key, "fromHour"]}
+                            >
+                              <TimePicker
+                                format="HH:mm"
+                                defaultValue={dayjs("00:00", "HH:mm")}
+                                className="w-full"
+                              />
+                            </Form.Item>
 
-                          <Form.Item
-                              label={'To'}
-                              name={[field.name, 'toHour']}
-                              fieldKey={[field.key, 'toHour']}
-                          >
-                            <TimePicker format="HH:mm" defaultValue={dayjs('00:00', 'HH:mm')} className="w-full"/>
-                          </Form.Item>
-                        </Card>
-                      </div>
+                            <Form.Item
+                              label={"To"}
+                              name={[field.name, "toHour"]}
+                              fieldKey={[field.key, "toHour"]}
+                            >
+                              <TimePicker
+                                format="HH:mm"
+                                defaultValue={dayjs("00:00", "HH:mm")}
+                                className="w-full"
+                              />
+                            </Form.Item>
+                          </Card>
+                        </div>
 
-                      <Form.Item
+                        <Form.Item
                           className={"mb-0 font-bold mt-4"}
-                          name={[field.name, 'closed']}
+                          name={[field.name, "closed"]}
                           label="Closed"
                           valuePropName={"checked"}
-                      >
-                        <Checkbox/>
-                      </Form.Item>
-                    </Card>
+                        >
+                          <Checkbox />
+                        </Form.Item>
+                      </Card>
+                    );
                   })}
 
-
-                <Form.Item className="text-right">
-                  <Button
-                      type={"primary"}
-                      onClick={() => add()}
-                  >
-                    + Add Working Hours Form
-                  </Button>
-                </Form.Item>
-              </div>
+                  <Form.Item className="text-right">
+                    <Button type={"primary"} onClick={() => add()}>
+                      + Add Working Hours Form
+                    </Button>
+                  </Form.Item>
+                </div>
+              );
             }}
           </Form.List>
-          <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>Submit</Button>
+          <Button className={"mt-4"} type={"primary"} htmlType={"submit"}>
+            Submit
+          </Button>
         </Form>
-        }
-      </div>
+      )}
+    </div>
   );
 }
