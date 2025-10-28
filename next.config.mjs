@@ -2,11 +2,15 @@
 const nextConfig = {
   crossOrigin: 'anonymous',
   reactStrictMode: true,
-  async headers(){
+  async headers() {
     return [
       {
         source: '/(.*)',
         headers: [
+          {key: 'Access-Control-Allow-Origin', value: '*'},
+          {key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,PATCH,DELETE,OPTIONS'},
+          {key: 'Access-Control-Allow-Headers', value: 'X-Requested-With, Content-Type, Authorization'},
+          {key: 'Access-Control-Allow-Credentials', value: 'false'},
           // Strict Transport Security - Forces HTTPS
           {
             key: 'Strict-Transport-Security',
