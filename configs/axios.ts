@@ -4,11 +4,6 @@ import axios, {type CreateAxiosDefaults} from "axios";
 
 const options: CreateAxiosDefaults = {
   baseURL: process.env.NEXT_PUBLIC_API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    "Access-Control-Allow-Origin": "*",
-  },
-  withCredentials: true
 }
 
 const axiosClassic = axios.create(options); //for request without auth
