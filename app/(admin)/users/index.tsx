@@ -56,14 +56,7 @@ const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 
 const fetchPersonDetailsById = async (id: number) => {
   try {
-    const { data } = await axiosWithAuth.get(
-      `/management-person-editor/get-management-person-detail`,
-      {
-        params: {
-          personId: id,
-        },
-      }
-    );
+    const { data } = await axiosWithAuth.get(`/users/${id}`);
 
     return data;
   } catch (error: any) {

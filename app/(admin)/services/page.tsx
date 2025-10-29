@@ -1,5 +1,4 @@
 "use client";
-import React, { useEffect, useState, useContext, useMemo } from "react";
 import { axiosWithAuth } from "@/configs/axios";
 import {
   DeleteOutlined,
@@ -8,6 +7,7 @@ import {
   QuestionCircleOutlined,
   HolderOutlined,
 } from "@ant-design/icons";
+import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { useQuery } from "@tanstack/react-query";
 import {
   Button,
@@ -15,73 +15,58 @@ import {
   Popconfirm,
   Space,
   Table,
-  Image,
   Tooltip,
   Form,
+  Image,
 } from "antd";
 import type { TableProps } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
+import React, { useEffect, useState, useContext, useMemo } from "react";
 import type { DragEndEvent } from "@dnd-kit/core";
-import { DndContext } from "@dnd-kit/core";
-import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { DndContext } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+
 import { CSS } from "@dnd-kit/utilities";
+import { IFilter } from "@/@types/IServices";
+import { fetchServiceCenter } from "@/services/fetch/fetchServices";
 
 var customParseFormat = require("dayjs/plugin/customParseFormat");
 dayjs.extend(customParseFormat);
 
 interface DataType {
-  personId?: number;
-  id: number;
+  serviceCenterId?: number;
+  _id: number;
   key: string | number;
-  name: string;
-  surname: string;
+  title: string;
+  description: string;
   content: string;
   imageUrl: string;
   useStartDateTime: number;
   useEndDateTime: number;
   status: boolean;
-  slug: string;
-  linkedinUrl: string;
+  latitude: number;
+  longitude: number;
   imageData: {
     url: string;
   };
-  details: {
-    detailid: number;
-    personId: number;
-    name: string;
-    surname: string;
-    languageId: number;
-    status: null;
+  details?: {
+    title: string;
     description: string;
-    position: string;
+    location: string;
+    languageId: number;
   }[];
 }
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 const PAGE_SIZE = 10;
-
-interface IProps {
-  searchParams: IFilter;
-}
-
-interface IFilter {
-  pageNumber?: number;
-  pageSize?: number;
-  slug?: undefined | string;
-  content?: undefined | string;
-  name?: undefined | string;
-  surname?: undefined | string;
-}
 
 interface RowContextProps {
   setActivatorNodeRef?: (element: HTMLElement | null) => void;
@@ -129,8 +114,6 @@ const Row: React.FC<RowProps> = (props) => {
     transition,
     position: isDragging ? "relative" : "static",
     zIndex: isDragging ? 9999 : "auto",
-    // transition,
-    // ...(isDragging ? { position: 'relative', zIndex: 9999 } : {}),
   };
 
   const contextValue = useMemo<RowContextProps>(
@@ -145,53 +128,30 @@ const Row: React.FC<RowProps> = (props) => {
   );
 };
 
-export default function ManagementPerson({ searchParams }: IProps) {
+interface IProps {
+  searchParams: IFilter;
+}
+
+export default function ServiceCenter({ searchParams }: IProps) {
   const [isOpenFilter, setIsOpenFilter] = useState<boolean>(false);
-
   const [dataSource, setDataSource] = React.useState<DataType[]>(initialData);
-
-  console.log("dataSource", dataSource);
-
   const [filter, setFilter] = useState<IFilter>({
     pageNumber: searchParams.pageNumber || undefined,
-    pageSize: searchParams.pageSize || undefined,
+    pageSize: PAGE_SIZE || undefined,
     slug: searchParams.slug || undefined,
     content: searchParams.content || undefined,
-    name: searchParams.name || undefined,
-    surname: searchParams.surname || undefined,
+    title: searchParams.title || undefined,
+    description: searchParams.description || undefined,
   });
   const [form] = Form.useForm();
   const Router = useRouter();
 
-  const fetchPerson = async (filter: IFilter) => {
-    try {
-      const params: any = {
-        limit: filter.pageSize || PAGE_SIZE,
-        skip: filter.pageNumber
-          ? (filter.pageNumber - 1) * (filter.pageSize || PAGE_SIZE)
-          : 0,
-      };
-      if (filter.name) params.firstName = filter.name;
-      if (filter.surname) params.lastName = filter.surname;
-      if (filter.content) params.email = filter.content;
-      // Add more filters as needed
-
-      const { data } = await axiosWithAuth.get(`${BASEAPI}/users`, { params });
-      setDataSource(data?.data || []);
-      return data;
-    } catch (error: any) {
-      notification.open({
-        type: "error",
-        message: `person`,
-        description: "Something went wrong while fetching persons",
-      });
-    }
-  };
-
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["management", filter],
-    queryFn: () => fetchPerson(filter),
+    queryKey: ["serviceCenter", filter],
+    queryFn: () => fetchServiceCenter(filter),
   });
+
+  console.log("data service center", data);
 
   useEffect(() => {
     const clearFilter: any = Object.fromEntries(
@@ -202,93 +162,58 @@ export default function ManagementPerson({ searchParams }: IProps) {
 
     const params = new URLSearchParams(clearFilter).toString();
 
-    // Router.push(`/management?${params}`);
+    // Router.push(`/service-center?${params}`);
   }, [filter]);
 
-  console.log("personsDataa", data);
-
-  const columns: TableProps<DataType>["columns"] = [
+  const columns: TableProps<any>["columns"] = [
     { key: "sort", align: "center", width: 80, render: () => <DragHandle /> },
     {
-      title: "Name / Surname",
-      dataIndex: "name",
-      key: "name",
+      title: "Title",
+      dataIndex: "title",
+      key: "title",
       align: "center",
-      render: (text, obj) => {
-        console.log("obj", obj);
-        return (
-          <p>
-            {obj?.details?.[0]?.name} / {obj?.details?.[0]?.surname}
-          </p>
-        );
-      },
+      render: (text, obj) => obj?.translations?.[0]?.title || "-",
     },
     {
-      title: "Description",
-      dataIndex: "description",
+      title: "Sub Title",
+      dataIndex: "subTitle",
+      key: "subTitle",
       align: "center",
-      key: "description",
-      render: (text, obj) => (
-        <Tooltip
-          placement="bottom"
-          destroyTooltipOnHide={true}
-          overlayInnerStyle={{
-            width: "500px",
-            maxHeight: "600px",
-            overflowY: "scroll",
-          }}
-          overlayClassName={"w-[500px]"}
-          className={""}
-          title={() => (
-            <div
-              dangerouslySetInnerHTML={{
-                __html: obj?.details?.[0]?.description,
-              }}
-            />
-          )}
-        >
-          <div
-            className={"textDots2 cursor-zoom-in"}
-            dangerouslySetInnerHTML={{ __html: obj?.details?.[0]?.description }}
-          />
-        </Tooltip>
-      ),
-    },
-    {
-      title: "Position",
-      dataIndex: "position",
-      align: "center",
-      key: "position",
-      render: (text, obj) => {
-        console.log("obj", obj);
-        return <p>{obj?.details?.[0]?.position}</p>;
-      },
+      render: (text, obj) => obj?.translations?.[0]?.subTitle || "-",
     },
     {
       title: "Slug",
       dataIndex: "slug",
-      align: "center",
       key: "slug",
-      render: (text, obj) => {
-        console.log("obj", obj);
-        return <p>{obj?.slug}</p>;
-      },
+      align: "center",
+      render: (text, obj) => obj?.slug || "-",
     },
-
+    {
+      title: "Category",
+      dataIndex: "categoryId",
+      key: "categoryId",
+      align: "center",
+      render: (text, obj) => obj?.categoryId || "-",
+    },
     {
       title: "Image",
-      dataIndex: "imageUrl",
-      key: "imageUrl",
+      dataIndex: "image",
+      key: "image",
       align: "center",
-
       render: (text, obj) =>
-        obj?.imageData?.url ? (
-          <Image width={100} src={obj.imageData.url} alt={"person image"} />
+        obj?.image?.url ? (
+          <Image width={100} src={obj.image.url} alt={"service image"} />
         ) : (
           "No Image"
         ),
     },
-
+    {
+      title: "Active",
+      dataIndex: "active",
+      key: "active",
+      align: "center",
+      render: (text, obj) => (obj?.active ? "Yes" : "No"),
+    },
     {
       title: "Action",
       key: "action",
@@ -297,7 +222,7 @@ export default function ManagementPerson({ searchParams }: IProps) {
       render: (_, record) => (
         <Space size="middle">
           <Tooltip title="Edit" placement={"bottom"}>
-            <Link href={`/management/edit/${record?.id}`}>
+            <Link href={`/services/edit/${record?._id}`}>
               <Button
                 shape="circle"
                 className={"flex items-center justify-center"}
@@ -305,12 +230,11 @@ export default function ManagementPerson({ searchParams }: IProps) {
               />
             </Link>
           </Tooltip>
-
           <Popconfirm
-            title="Delete the Person info"
-            description="Are you sure to delete this Person info?"
+            title="Delete the service center"
+            description="Are you sure to delete this service center?"
             okText={"Yes"}
-            onConfirm={() => handleDeletePersonById(record)}
+            onConfirm={() => handleDeleteServiceCenterById(record)}
             icon={<QuestionCircleOutlined style={{ color: "red" }} />}
           >
             <Tooltip title="Delete" placement={"bottom"}>
@@ -327,48 +251,51 @@ export default function ManagementPerson({ searchParams }: IProps) {
     },
   ];
 
-  const handleDeletePersonById = async (record: DataType): Promise<void> => {
-    const { id } = record;
+  useEffect(() => {
+    if (data?.data) setDataSource(data.data);
+  }, [data]);
+
+  const handleDeleteServiceCenterById = async (
+    record: DataType
+  ): Promise<void> => {
+    const { _id: id } = record;
     try {
-      const res = await axiosWithAuth.delete(`${BASEAPI}/users/${id}`);
+      const res = await axiosWithAuth.delete(`${BASEAPI}/services/${id}`);
       console.log(res);
 
       notification.open({
         type: "success",
-        message: `person Id - ${id}`,
-        description: "person successfully deleted",
+        message: `service Id - ${id}`,
+        description: "service successfully deleted",
       });
-
       await refetch();
     } catch (error: any) {
       notification.open({
         type: "error",
-        message: `person Id - ${id}`,
-        description: "Something went wrong while deleting person",
+        message: `service Id - ${id}`,
+        description: "Something went wrong while deleting service center",
       });
-      console.error("Erroreeeeeee-----------:", error.message); // Log the error
     }
   };
-  console.log("filter", filter);
 
-  const onSubmit = (values: IFilter) => {
-    setFilter((prevState: IFilter) => ({
-      ...prevState,
-      ...values,
-      pageNumber: 1,
-    }));
+  // const onSubmit = (values: IFilter) => {
+  //   setFilter((prevState: IFilter) => ({
+  //     ...prevState,
+  //     ...values,
+  //     pageNumber: 1,
+  //   }));
 
-    setIsOpenFilter(false);
-  };
-  const onReset = () => {
-    setFilter({ pageNumber: filter.pageNumber, pageSize: filter.pageSize });
+  //   setIsOpenFilter(false);
+  // };
+  // const onReset = () => {
+  //   setFilter({ pageNumber: filter.pageNumber, pageSize: filter.pageSize });
 
-    // Router.push(`/management?page=${page}`)
-    setIsOpenFilter(false);
-    setTimeout(() => {
-      form.resetFields();
-    }, 100);
-  };
+  //   // Router.push(`/service-center?page=${page}`)
+  //   setIsOpenFilter(false);
+  //   setTimeout(() => {
+  //     form.resetFields();
+  //   }, 100);
+  // };
 
   const onChange: TableProps<DataType>["onChange"] = (
     pagination,
@@ -397,35 +324,24 @@ export default function ManagementPerson({ searchParams }: IProps) {
   };
 
   const postSortedData = async (sortedData: DataType[]) => {
-    const sortElements = sortedData.map((item, index) => {
-      // console.log('item', item)
-      return {
-        sortElementId: item.id,
-        sortOrder: index,
-      };
-    });
-
+    const sortElements = sortedData.map((item, index) => item._id);
     try {
-      await axiosWithAuth.post(
-        "/management-person-editor/sort-management-persons",
-        { sortElements }
-      );
+      await axiosWithAuth.post("/services/reorder", {
+        order: sortElements,
+      });
     } catch (error) {
       console.error("Error posting sorted data:", error);
     }
   };
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
-    // console.log("active & over", active, over)
-
     if (active.id !== over?.id) {
       setDataSource((prevState) => {
         const activeIndex = prevState.findIndex(
-          (item) => item.id === active?.id
+          (item) => item._id === active?.id
         );
-        const overIndex = prevState.findIndex((item) => item.id === over?.id);
+        const overIndex = prevState.findIndex((item) => item._id === over?.id);
         const newData = arrayMove(prevState, activeIndex, overIndex);
-        // console.log('New DataSource', newData)
         return newData;
       });
     }
@@ -434,8 +350,7 @@ export default function ManagementPerson({ searchParams }: IProps) {
   return (
     <>
       <div className={"w-full p-2 flex justify-between items-center"}>
-        <h2 className={"text-[25px]"}>Management Persons</h2>
-
+        <h2 className={"text-[25px]"}>Services</h2>
         <div className={"flex items-center flex-nowrap gap-x-4"}>
           {dataSource?.length > 1 && (
             <Button
@@ -443,45 +358,43 @@ export default function ManagementPerson({ searchParams }: IProps) {
               className=""
               onClick={() => postSortedData(dataSource)}
             >
-              Save Persons Ordering
+              Save Services Ordering
             </Button>
           )}
-          <Link href={"/management/add"}>
+          <Link href={"/services/add"}>
             <Button type="primary" className={"flex items-center gap-x-2"}>
               <PlusOutlined />
-              <p>Add Person</p>
+              <p>Add Service</p>
             </Button>
           </Link>
         </div>
       </div>
-
       <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
         <SortableContext
-          items={dataSource.map((i) => i.id)}
+          items={dataSource.map((i: any) => i.id)}
           strategy={verticalListSortingStrategy}
         >
           <Table
-            sticky={{ offsetHeader: 4 }}
             onChange={onChange}
+            sticky={{ offsetHeader: 4 }}
             scroll={{
               x: 200,
               y: "70vh",
             }}
+            loading={isLoading}
+            columns={columns}
             pagination={{
               total: data?.totalItems,
-              current: filter.pageNumber,
-              pageSize: filter.pageSize || PAGE_SIZE,
+              current: data?.currentPage,
+              pageSize: data?.limit || PAGE_SIZE,
               showQuickJumper: false,
               showSizeChanger: true,
               position: ["bottomCenter"],
-              // itemRender: itemRender,
             }}
-            loading={isLoading}
-            rowKey="id"
-            components={{ body: { row: Row } }}
-            columns={columns}
             dataSource={dataSource}
-          />
+            rowKey={"_id"}
+            components={{ body: { row: Row } }}
+          ></Table>
         </SortableContext>
       </DndContext>
     </>
