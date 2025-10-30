@@ -55,7 +55,7 @@ const items: MenuItem[] = [
 
   // getItem(<Link href={"/slide"}>Pages Slider</Link>, "4", <DesktopOutlined />),
 
-  // getItem(<Link href={"/news"}>News</Link>, "5", <FileOutlined />),
+  getItem(<Link href={"/news"}>News</Link>, "5", <FileOutlined />),
   // getItem(<Link href={"/timeline"}>Timeline</Link>, "6", <DesktopOutlined />),
   // getItem(<Link href={"/info-card"}>Info Card</Link>, "7", <FileOutlined />),
   // getItem(<Link href={"/users"}>Users</Link>, "8", <UserOutlined />),

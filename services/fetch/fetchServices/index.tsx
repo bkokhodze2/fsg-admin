@@ -4,7 +4,7 @@ import { notification } from "antd";
 
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
 
-export const fetchServiceCenter = async (filter: IFilter) => {
+export const fetchServices = async (filter: IFilter) => {
   try {
     const params: any = {};
     if (filter.slug) params.slug = filter.slug;

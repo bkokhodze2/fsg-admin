@@ -36,7 +36,7 @@ import {
 
 import { CSS } from "@dnd-kit/utilities";
 import { IFilter } from "@/@types/IServices";
-import { fetchServiceCenter } from "@/services/fetch/fetchServices";
+import { fetchServices } from "@/services/fetch/fetchServices";
 
 var customParseFormat = require("dayjs/plugin/customParseFormat");
 dayjs.extend(customParseFormat);
@@ -132,7 +132,7 @@ interface IProps {
   searchParams: IFilter;
 }
 
-export default function ServiceCenter({ searchParams }: IProps) {
+export default function Services({ searchParams }: IProps) {
   const [isOpenFilter, setIsOpenFilter] = useState<boolean>(false);
   const [dataSource, setDataSource] = React.useState<DataType[]>(initialData);
   const [filter, setFilter] = useState<IFilter>({
@@ -147,8 +147,8 @@ export default function ServiceCenter({ searchParams }: IProps) {
   const Router = useRouter();
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["serviceCenter", filter],
-    queryFn: () => fetchServiceCenter(filter),
+    queryKey: ["services", filter],
+    queryFn: () => fetchServices(filter),
   });
 
   console.log("data service center", data);
@@ -371,7 +371,7 @@ export default function ServiceCenter({ searchParams }: IProps) {
       </div>
       <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
         <SortableContext
-          items={dataSource.map((i: any) => i.id)}
+          items={dataSource.map((i: any) => i._id)}
           strategy={verticalListSortingStrategy}
         >
           <Table

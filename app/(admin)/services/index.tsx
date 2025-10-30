@@ -3,7 +3,7 @@ import { axiosWithAuth } from "@/configs/axios";
 import { ArrowLeftOutlined, InboxOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import {
   Button,
@@ -19,34 +19,46 @@ import {
   Popconfirm,
 } from "antd";
 import { SizeType } from "antd/lib/config-provider/SizeContext";
+import { fetchLanguages } from "@/services/fetch/fetchLanguage";
+import { fetchServiceDetailsById } from "@/services/fetch/fetchServiceDetailsById";
+import dynamic from "next/dynamic";
+import { modules } from "@/components/ui/react-quill-module";
+import type ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 var customParseFormat = require("dayjs/plugin/customParseFormat");
 dayjs.extend(customParseFormat);
 
-import { fetchLanguages } from "@/services/fetch/fetchLanguage";
-import { fetchServiceDetailsById } from "@/services/fetch/fetchServiceDetailsById";
-
 const BASEAPI = process.env.NEXT_PUBLIC_API_URL;
+
+const ReactQuillComponent = dynamic(
+  async () => {
+    const { default: RQ } = await import("react-quill");
+    // eslint-disable-next-line react/display-name
+    return ({ ...props }) => <RQ {...props} />;
+  },
+  {
+    ssr: false,
+  }
+) as typeof ReactQuill;
 
 interface IProps {
   id?: number;
 }
 
-export default function AddEditServiceCenter({ id }: IProps) {
+export default function AddEditService({ id }: IProps) {
   const [form] = Form.useForm();
   const Router = useRouter();
   const isEditPage = !!id;
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
-  const [imagesFileList, setImagesFileList] = useState<any[]>([]);
-
   const { data: dataLanguages } = useQuery<ILanguage[]>({
     queryKey: ["languages"],
     queryFn: fetchLanguages,
   });
 
   const { data: dataServiceDetails, refetch } = useQuery({
-    queryKey: ["serviceCenterDetails", id],
+    queryKey: ["serviceDetails", id],
     queryFn: () => fetchServiceDetailsById(id as number),
     enabled: !!id,
     retry: 1,
@@ -55,16 +67,13 @@ export default function AddEditServiceCenter({ id }: IProps) {
   });
 
   const onchange = (values: any, allValues: any) => {
-    console.log("values", values);
-    console.log("allValues", allValues);
+    // console.log("values", values);
+    // console.log("allValues", allValues);
   };
 
-  // State for file lists for main and additional images
-  const [fileMainList, setFileMainList] = useState<any[]>([]);
-  const [fileImagesList, setFileImagesList] = useState<any[]>([]);
-
   const uploadImage = async (options: any) => {
-    const { onSuccess, onError, file } = options;
+    const { onSuccess, onError, file, onProgress } = options;
+
     const formData = new FormData();
     const config = {
       headers: { "content-type": "multipart/form-data" },
@@ -72,12 +81,8 @@ export default function AddEditServiceCenter({ id }: IProps) {
     formData.append("images", file);
 
     try {
-      const res = await axiosWithAuth.post(
-        `/news-editor/upload-news-image`,
-        formData,
-        config
-      );
-      if (res.status == 200) {
+      const res = await axiosWithAuth.post(`/upload-images`, formData, config);
+      if (res.status == 201) {
         onSuccess(res.data);
       }
     } catch (e: any) {
@@ -85,24 +90,10 @@ export default function AddEditServiceCenter({ id }: IProps) {
     }
   };
 
-  // Helper to prepare translations and submit final payload
-  const submitServicePayload = async (values: any, images: any[]) => {
-    const translations = (values.details || []).map((detail: any) => ({
-      languageId: detail.languageId,
-      title: detail.title,
-      subTitle: detail.subTitle,
-      description: detail.description,
-      metaTitle: detail.metaTitle,
-      metaDescription: detail.metaDescription,
-    }));
-
+  const onFinish = async (values: any) => {
     const payload = {
-      active: values.status,
-      categoryId: values.categoryIdList?.[0] || 0,
-      images,
-      translations,
+      ...values,
     };
-
     try {
       let res;
       if (isEditPage) {
@@ -126,46 +117,6 @@ export default function AddEditServiceCenter({ id }: IProps) {
     }
   };
 
-  const onFinish = async (values: any) => {
-    console.log("Final Values:", values);
-
-    // 1. Upload all images first if there are new files
-    let images = [];
-    if (imagesFileList.length > 0) {
-      try {
-        const formData = new FormData();
-        imagesFileList.forEach((file: any) => {
-          formData.append("images", file.originFileObj || file);
-        });
-        formData.append("imagesCount", imagesFileList.length.toString());
-        const config = {
-          headers: { "content-type": "multipart/form-data" },
-        };
-        await axiosWithAuth
-          .post(`/upload-images`, formData, config)
-          .then((res) => {
-            console.log("res upload images-------", res);
-            images = (res.data?.images || []).map((img: any, idx: number) => ({
-              _id: img._id,
-              url: img.url,
-              filename: img.filename,
-              size: img.size,
-              contentType: img.contentType,
-              storage: img.storage,
-              localUrl: img.localUrl,
-              bucket: img.bucket,
-              path: img.path,
-              publicUrl: img.publicUrl,
-              cloudinaryPublicId: img.cloudinaryPublicId,
-            }));
-            images && submitServicePayload(values, images);
-          });
-      } catch (e: any) {
-        console.log("erooorr");
-      }
-    }
-  };
-
   const handlePreview = async (file: any) => {
     setPreviewImage(file?.response?.url || file?.url);
     setPreviewOpen(true);
@@ -174,23 +125,7 @@ export default function AddEditServiceCenter({ id }: IProps) {
   const getDefaultValue = () => {
     if (isEditPage) {
       if (!dataServiceDetails) return {};
-      return {
-        active: dataServiceDetails.active,
-        categoryIdList: [dataServiceDetails.categoryId],
-        slug: dataServiceDetails.slug,
-        sortOrder: dataServiceDetails.sort,
-        imageData: dataServiceDetails.image || {},
-        images: dataServiceDetails.images || [],
-        details:
-          dataServiceDetails.translations?.map((t: any) => ({
-            languageId: t.languageId,
-            title: t.title,
-            subTitle: t.subTitle,
-            description: t.description,
-            metaTitle: t.metaTitle,
-            metaDescription: t.metaDescription,
-          })) || [],
-      };
+      return dataServiceDetails;
     } else {
       const activeLanguages = dataLanguages?.filter((e) => e.status === true);
       return {
@@ -200,7 +135,7 @@ export default function AddEditServiceCenter({ id }: IProps) {
         sortOrder: null,
         imageData: {},
         images: [],
-        details:
+        translations:
           activeLanguages?.map((e) => ({
             languageId: e.id,
             title: null,
@@ -213,11 +148,17 @@ export default function AddEditServiceCenter({ id }: IProps) {
     }
   };
 
-  const dataImg = form.getFieldValue("imageData");
+  const dataImg = form.getFieldValue("image");
   let fileList = dataImg?.url
     ? [dataImg]
     : dataServiceDetails
     ? [dataServiceDetails?.imageData]
+    : [];
+
+  let fileImagesList = form.getFieldValue("images")
+    ? form.getFieldValue("images")
+    : dataServiceDetails
+    ? dataServiceDetails?.images
     : [];
 
   return (
@@ -254,13 +195,13 @@ export default function AddEditServiceCenter({ id }: IProps) {
             <Input placeholder="Slug" />
           </Form.Item>
 
-          <Form.Item name={"sortOrder"} label="Sort Order">
+          <Form.Item name={"sort"} label="Sort Order">
             <InputNumber placeholder="Sort Order" className="w-full" />
           </Form.Item>
 
           <Form.Item
             className={"mb-0"}
-            name={"status"}
+            name={"active"}
             label="Active"
             valuePropName={"value"}
           >
@@ -273,44 +214,69 @@ export default function AddEditServiceCenter({ id }: IProps) {
           </Form.Item>
 
           <Form.Item
-            label={"Images"}
-            name={"images"}
-            valuePropName="fileList"
-            getValueFromEvent={(e) => {
-              if (Array.isArray(e)) return e;
-              return (
-                e &&
-                e.fileList &&
-                e.fileList.map((file: any) => {
-                  if (file.response) {
-                    return {
-                      ...file.response,
-                      uid: file.uid,
-                      name: file.name || file.response.filename,
-                      status: "done",
-                      url: file.response.url,
-                    };
-                  }
-                  return file;
-                })
-              );
+            label={"image"}
+            name={"image"}
+            valuePropName="value"
+            getValueFromEvent={(e: any) => {
+              if (e.file.status === "done") {
+                return e.file.response?.images[0];
+              } else {
+                return {
+                  size: null,
+                  originalFileName: null,
+                  imageName: null,
+                  contentType: null,
+                  url: null,
+                };
+              }
             }}
+            noStyle
           >
             <Upload.Dragger
-              listType="picture-card"
+              defaultFileList={fileList}
+              listType={"picture-card"}
               showUploadList={true}
-              multiple={true}
-              beforeUpload={() => false}
-              fileList={imagesFileList}
-              onChange={({ fileList }) => setImagesFileList(fileList)}
-              onPreview={handlePreview}
-              accept="image/*"
+              maxCount={1}
+              multiple={false}
+              customRequest={(e) => uploadImage(e)}
+              onPreview={(e) => handlePreview(e)}
             >
               <p className="ant-upload-drag-icon">
                 <InboxOutlined />
               </p>
+
               <p className="ant-upload-text">
-                Click or drag file(s) to upload service images
+                Click or drag file to this area to upload main image
+              </p>
+            </Upload.Dragger>
+          </Form.Item>
+
+          <Form.Item
+            label={"image"}
+            name={"images"}
+            valuePropName="value"
+            getValueFromEvent={(e: any) => {
+              return e.fileList.map((e: any) => {
+                return e.response?.images[0] || e;
+              });
+            }}
+            noStyle
+          >
+            <Upload.Dragger
+              defaultFileList={fileImagesList}
+              listType={"picture-card"}
+              showUploadList={true}
+              maxCount={12}
+              multiple={true}
+              customRequest={(e) => uploadImage(e)}
+              onPreview={(e) => handlePreview(e)}
+            >
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined />
+              </p>
+
+              <p className="ant-upload-text">
+                Click or drag file to this area to upload
               </p>
             </Upload.Dragger>
           </Form.Item>
@@ -328,12 +294,12 @@ export default function AddEditServiceCenter({ id }: IProps) {
           )}
 
           <Divider orientation="left" className={"!my-0 mt-6"}></Divider>
-          <Form.List name="details">
+          <Form.List name="translations">
             {(fields) => (
               <div className="flex flex-col gap-y-5">
                 {fields.map((field, index) => {
                   const languageId = form.getFieldValue([
-                    "details",
+                    "translations",
                     field.name,
                     "languageId",
                   ]);
@@ -348,7 +314,6 @@ export default function AddEditServiceCenter({ id }: IProps) {
                       <Divider orientation="left" className="!my-0">
                         <h3 className="text-[25px]">{findLang}</h3>
                       </Divider>
-                      {/* Hidden field to keep languageId in form values */}
                       <Form.Item name={[field.name, "languageId"]} hidden>
                         <Input type="hidden" />
                       </Form.Item>
@@ -364,9 +329,12 @@ export default function AddEditServiceCenter({ id }: IProps) {
                       <Form.Item
                         name={[field.name, "description"]}
                         label={"Description"}
+                        valuePropName="value"
+                        getValueFromEvent={(value) => value}
                       >
-                        <Input
-                          placeholder={`Description in ${findLang || ""}`}
+                        <ReactQuillComponent
+                          modules={modules}
+                          className={`textEditor border markGeo`}
                         />
                       </Form.Item>
                       <Form.Item
@@ -385,84 +353,6 @@ export default function AddEditServiceCenter({ id }: IProps) {
                           placeholder={`Meta Description in ${findLang || ""}`}
                         />
                       </Form.Item>
-                      <Form.Item
-                        label={"image"}
-                        name={[field.name, "imageData"]}
-                        valuePropName="value"
-                        getValueFromEvent={(e: any) => {
-                          if (e.file.status === "done") {
-                            return e.file.response;
-                          } else {
-                            return {
-                              size: null,
-                              originalFileName: null,
-                              imageName: null,
-                              contentType: null,
-                              url: null,
-                            };
-                          }
-                        }}
-                        noStyle
-                      >
-                        <Upload.Dragger
-                          fileList={fileMainList}
-                          onChange={({ fileList }) => setFileMainList(fileList)}
-                          listType={"picture-card"}
-                          showUploadList={true}
-                          maxCount={1}
-                          multiple={false}
-                          customRequest={uploadImage}
-                          onPreview={handlePreview}
-                        >
-                          <p className="ant-upload-drag-icon">
-                            <InboxOutlined />
-                          </p>
-                          <p className="ant-upload-text">
-                            Click or drag file to this area to upload main image
-                          </p>
-                        </Upload.Dragger>
-                      </Form.Item>
-
-                      <Form.Item
-                        label={"image"}
-                        name={[field.name, "additionalImages"]}
-                        valuePropName="value"
-                        getValueFromEvent={(e: any) => {
-                          return e.fileList.map((f: any) => f.response || f);
-                        }}
-                        noStyle
-                      >
-                        <Upload.Dragger
-                          defaultFileList={fileImagesList}
-                          listType={"picture-card"}
-                          showUploadList={true}
-                          maxCount={12}
-                          multiple={true}
-                          customRequest={uploadImage}
-                          onPreview={handlePreview}
-                        >
-                          <p className="ant-upload-drag-icon">
-                            <InboxOutlined />
-                          </p>
-                          <p className="ant-upload-text">
-                            Click or drag file to this area to upload
-                          </p>
-                        </Upload.Dragger>
-                      </Form.Item>
-
-                      {previewImage && (
-                        <Image
-                          wrapperStyle={{ display: "none" }}
-                          preview={{
-                            visible: previewOpen,
-                            onVisibleChange: (visible) =>
-                              setPreviewOpen(visible),
-                            afterOpenChange: (visible) =>
-                              !visible && setPreviewImage(""),
-                          }}
-                          src={previewImage}
-                        />
-                      )}
                     </Card>
                   );
                 })}
