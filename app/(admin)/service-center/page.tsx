@@ -35,15 +35,13 @@ import {
 } from "@dnd-kit/sortable";
 
 import { CSS } from "@dnd-kit/utilities";
-import { IFilter } from "@/@types/IServices";
-import { fetchServices } from "@/services/fetch/fetchServices";
 
 var customParseFormat = require("dayjs/plugin/customParseFormat");
 dayjs.extend(customParseFormat);
 
 interface DataType {
   serviceCenterId?: number;
-  _id: number;
+  id: number;
   key: string | number;
   title: string;
   description: string;
@@ -114,6 +112,8 @@ const Row: React.FC<RowProps> = (props) => {
     transition,
     position: isDragging ? "relative" : "static",
     zIndex: isDragging ? 9999 : "auto",
+    // transition,
+    // ...(isDragging ? { position: 'relative', zIndex: 9999 } : {}),
   };
 
   const contextValue = useMemo<RowContextProps>(
@@ -132,71 +132,120 @@ interface IProps {
   searchParams: IFilter;
 }
 
-export default function Services({ searchParams }: IProps) {
-  const [activeOrdering, setActiveOrdering] = useState<boolean>(false);
+interface IFilter {
+  pageNumber?: number;
+  pageSize?: number;
+  slug?: undefined | string;
+  content?: undefined | string;
+  title?: undefined | string;
+  description?: undefined | string;
+}
+
+export default function ServiceCenter({ searchParams }: IProps) {
+  const [isOpenFilter, setIsOpenFilter] = useState<boolean>(false);
   const [dataSource, setDataSource] = React.useState<DataType[]>(initialData);
   const [filter, setFilter] = useState<IFilter>({
     pageNumber: searchParams.pageNumber || undefined,
-    pageSize: PAGE_SIZE || undefined,
+    pageSize: 1000 || undefined,
     slug: searchParams.slug || undefined,
     content: searchParams.content || undefined,
     title: searchParams.title || undefined,
     description: searchParams.description || undefined,
   });
+  const [form] = Form.useForm();
+  const Router = useRouter();
+
+  const fetchServiceCenter = async (filter: IFilter) => {
+    try {
+      const { data } = await axiosWithAuth.get(
+        `${BASEAPI}/service-center-editor/get-service-centers`
+      );
+      setDataSource(data);
+      return data;
+    } catch (error: any) {
+      notification.open({
+        type: "error",
+        message: `service center`,
+        description: "Something went wrong while fetching service center",
+      });
+    }
+  };
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["services", filter],
-    queryFn: () => fetchServices(filter),
+    queryKey: ["serviceCenter", filter],
+    queryFn: () => fetchServiceCenter(filter),
   });
 
-  const columns: TableProps<any>["columns"] = [
+  useEffect(() => {
+    const clearFilter: any = Object.fromEntries(
+      Object.entries(filter).filter(
+        ([_, value]) => value !== undefined && value !== ""
+      )
+    );
+
+    const params = new URLSearchParams(clearFilter).toString();
+
+    Router.push(`/service-center?${params}`);
+  }, [filter]);
+
+  const columns: TableProps<DataType>["columns"] = [
     { key: "sort", align: "center", width: 80, render: () => <DragHandle /> },
     {
       title: "Title",
       dataIndex: "title",
       key: "title",
       align: "center",
-      render: (text, obj) => obj?.translations?.[0]?.title || "-",
+      render: (text, obj) => {
+        console.log("obj", obj);
+        return <p>{obj?.details?.[0]?.title}</p>;
+      },
     },
     {
-      title: "Sub Title",
-      dataIndex: "subTitle",
-      key: "subTitle",
+      title: "Description",
+      dataIndex: "description",
       align: "center",
-      render: (text, obj) => obj?.translations?.[0]?.subTitle || "-",
+      key: "description",
+      render: (text, obj) => {
+        console.log("obj", obj);
+        return <p>{obj?.details?.[0]?.description}</p>;
+      },
     },
     {
-      title: "Slug",
-      dataIndex: "slug",
-      key: "slug",
+      title: "Location",
+      dataIndex: "location",
       align: "center",
-      render: (text, obj) => obj?.slug || "-",
+      key: "location",
+      render: (text, obj) => {
+        console.log("obj", obj);
+        return <p>{obj?.details?.[0]?.location}</p>;
+      },
     },
     {
-      title: "Category",
-      dataIndex: "categoryId",
-      key: "categoryId",
+      title: "Latitude / Longitude",
+      dataIndex: "latitude",
       align: "center",
-      render: (text, obj) => obj?.categoryId || "-",
+      key: "latitude",
+      render: (text, obj) => {
+        console.log("obj", obj);
+        return (
+          <p>
+            {obj?.latitude} / {obj.longitude}
+          </p>
+        );
+      },
     },
     {
       title: "Image",
-      dataIndex: "image",
-      key: "image",
+      dataIndex: "imageUrl",
+      key: "imageUrl",
       align: "center",
+
       render: (text, obj) =>
-        obj?.image?.url ? (
-          <Image width={100} src={obj.image.url} alt={"service image"} />
+        obj?.imageData?.url ? (
+          <Image width={100} src={obj.imageData.url} alt={"service image"} />
         ) : (
           "No Image"
         ),
-    },
-    {
-      title: "Active",
-      dataIndex: "active",
-      key: "active",
-      align: "center",
-      render: (text, obj) => (obj?.active ? "Yes" : "No"),
     },
     {
       title: "Action",
@@ -206,7 +255,7 @@ export default function Services({ searchParams }: IProps) {
       render: (_, record) => (
         <Space size="middle">
           <Tooltip title="Edit" placement={"bottom"}>
-            <Link href={`/services/edit/${record?._id}`}>
+            <Link href={`/service-center/edit/${record?.id}`}>
               <Button
                 shape="circle"
                 className={"flex items-center justify-center"}
@@ -214,6 +263,7 @@ export default function Services({ searchParams }: IProps) {
               />
             </Link>
           </Tooltip>
+
           <Popconfirm
             title="Delete the service center"
             description="Are you sure to delete this service center?"
@@ -235,31 +285,51 @@ export default function Services({ searchParams }: IProps) {
     },
   ];
 
-  useEffect(() => {
-    if (data?.data) setDataSource(data.data);
-  }, [data]);
-
   const handleDeleteServiceCenterById = async (
     record: DataType
   ): Promise<void> => {
-    const { _id: id } = record;
+    const { id } = record;
     try {
-      const res = await axiosWithAuth.delete(`${BASEAPI}/services/${id}`);
+      const res = await axiosWithAuth.delete(
+        `${BASEAPI}/service-center-editor/delete-service-center/${id}`
+      );
       console.log(res);
 
       notification.open({
         type: "success",
-        message: `service Id - ${id}`,
-        description: "service successfully deleted",
+        message: `service center Id - ${id}`,
+        description: "service center successfully deleted",
       });
+
       await refetch();
     } catch (error: any) {
       notification.open({
         type: "error",
-        message: `service Id - ${id}`,
+        message: `service center Id - ${id}`,
         description: "Something went wrong while deleting service center",
       });
+      console.error("Erroreeeeeee-----------:", error.message); // Log the error
     }
+  };
+  console.log("filter", filter);
+
+  const onSubmit = (values: IFilter) => {
+    setFilter((prevState: IFilter) => ({
+      ...prevState,
+      ...values,
+      pageNumber: 1,
+    }));
+
+    setIsOpenFilter(false);
+  };
+  const onReset = () => {
+    setFilter({ pageNumber: filter.pageNumber, pageSize: filter.pageSize });
+
+    // Router.push(`/service-center?page=${page}`)
+    setIsOpenFilter(false);
+    setTimeout(() => {
+      form.resetFields();
+    }, 100);
   };
 
   const onChange: TableProps<DataType>["onChange"] = (
@@ -289,34 +359,34 @@ export default function Services({ searchParams }: IProps) {
   };
 
   const postSortedData = async (sortedData: DataType[]) => {
-    const sortElements = sortedData.map((item, index) => item._id);
+    const sortElements = sortedData.map((item, index) => {
+      // console.log('item', item)
+      return {
+        serviceCenterId: item.id,
+        sortOrder: index,
+      };
+    });
 
     try {
-      await axiosWithAuth
-        .post("/services/reorder", {
-          order: sortElements,
-        })
-        .then((response) => {
-          notification.open({
-            type: "success",
-            message: `Services ordering updated successfully`,
-          });
-          setActiveOrdering(false);
-        });
+      await axiosWithAuth.post("/service-center-editor/sort-service-centers", {
+        sortElements,
+      });
     } catch (error) {
       console.error("Error posting sorted data:", error);
     }
   };
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
+    // console.log("active & over", active, over)
+
     if (active.id !== over?.id) {
-      setActiveOrdering(true);
       setDataSource((prevState) => {
         const activeIndex = prevState.findIndex(
-          (item) => item._id === active?.id
+          (item) => item.id === active?.id
         );
-        const overIndex = prevState.findIndex((item) => item._id === over?.id);
+        const overIndex = prevState.findIndex((item) => item.id === over?.id);
         const newData = arrayMove(prevState, activeIndex, overIndex);
+        // console.log('New DataSource', newData)
         return newData;
       });
     }
@@ -325,29 +395,29 @@ export default function Services({ searchParams }: IProps) {
   return (
     <>
       <div className={"w-full p-2 flex justify-between items-center"}>
-        <h2 className={"text-[25px]"}>Services</h2>
+        <h2 className={"text-[25px]"}>Service Center</h2>
+
         <div className={"flex items-center flex-nowrap gap-x-4"}>
           {dataSource?.length > 1 && (
             <Button
               type="primary"
-              className={activeOrdering ? "animate-pulse" : ""}
-              disabled={!activeOrdering}
+              className=""
               onClick={() => postSortedData(dataSource)}
             >
-              Save Services Ordering
+              Save Service Centers Ordering
             </Button>
           )}
-          <Link href={"/services/add"}>
+          <Link href={"/service-center/add"}>
             <Button type="primary" className={"flex items-center gap-x-2"}>
               <PlusOutlined />
-              <p>Add Service</p>
+              <p>Add Service Center</p>
             </Button>
           </Link>
         </div>
       </div>
       <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
         <SortableContext
-          items={dataSource.map((i: any) => i._id)}
+          items={dataSource.map((i: any) => i.id)}
           strategy={verticalListSortingStrategy}
         >
           <Table
@@ -360,15 +430,16 @@ export default function Services({ searchParams }: IProps) {
             loading={isLoading}
             columns={columns}
             pagination={{
-              total: data?.totalItems,
-              current: data?.currentPage,
-              pageSize: data?.limit || PAGE_SIZE,
+              total: data?.allRecordsSize,
+              current: filter.pageNumber,
+              pageSize: filter.pageSize || PAGE_SIZE,
               showQuickJumper: false,
               showSizeChanger: true,
               position: ["bottomCenter"],
+              // itemRender: itemRender,
             }}
             dataSource={dataSource}
-            rowKey={"_id"}
+            rowKey={"id"}
             components={{ body: { row: Row } }}
           ></Table>
         </SortableContext>
