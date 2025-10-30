@@ -39,6 +39,7 @@ export default function AddEditServiceCenter({ id }: IProps) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   const [imagesFileList, setImagesFileList] = useState<any[]>([]);
+
   const { data: dataLanguages } = useQuery<ILanguage[]>({
     queryKey: ["languages"],
     queryFn: fetchLanguages,

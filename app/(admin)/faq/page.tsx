@@ -45,7 +45,7 @@ const PAGE_SIZE = 10;
 const fetchFaq = async (filter: IFilter) => {
   try {
     const { data } = await axiosWithAuth.get(
-      `${BASEAPI}/questions?languageId=1&limit=${filter.pageSize}&page=${filter.pageNumber}`
+      `${BASEAPI}/questions?languageId=1&limit=${filter.pageSize}&page=${filter.pageNumber}&status=all`,
     );
     return data;
   } catch (error: any) {

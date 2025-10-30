@@ -46,8 +46,6 @@ export default function AddEditFaq({ id }: IProps) {
   const Router = useRouter();
   const Params = useParams();
 
-  console.log("Params", Params);
-
   const isEditPage = !!id;
   const { data: dataLanguages } = useQuery<ILanguage[]>({
     queryKey: ["languages"],
@@ -68,35 +66,16 @@ export default function AddEditFaq({ id }: IProps) {
     console.log("values", values);
     console.log("allValues", allValues);
   };
+
   const onFinish = async (values: any) => {
     console.log("vv", values);
-
-    // Prepare payload for API
-    const translations = values.details.map((detail: any) => ({
-      languageId: detail.languageId,
-      question: detail.question,
-      answer: detail.answer,
-    }));
-
-    const payload = isEditPage
-      ? {
-          active: values.status,
-          categoryId: values.categoryId || 0, // adjust as needed
-          translations,
-        }
-      : {
-          questionId: 0, // or undefined/null if not needed
-          active: values.status,
-          categoryId: values.categoryId || 0, // adjust as needed
-          translations,
-        };
 
     try {
       let res;
       if (isEditPage) {
-        res = await axiosWithAuth.patch(`${BASEAPI}/questions/${id}`, payload);
+        res = await axiosWithAuth.patch(`${BASEAPI}/questions/${id}`, values);
       } else {
-        res = await axiosWithAuth.post(`${BASEAPI}/questions`, payload);
+        res = await axiosWithAuth.post(`${BASEAPI}/questions`, values);
       }
       if (res.status === 200 || res.status === 201) {
         notification.open({
@@ -117,30 +96,17 @@ export default function AddEditFaq({ id }: IProps) {
   const getDefaultValue = () => {
     if (isEditPage) {
       if (!dataFaqDetails) return {};
-      // Map API fields to form fields
-      return {
-        id: dataFaqDetails._id,
-        status: dataFaqDetails.active,
-        details: dataFaqDetails.translations.map((t: any) => ({
-          question: t.question,
-          answer: t.answer,
-          languageId: t.languageId,
-          detailId: t._id,
-          faqId: dataFaqDetails._id,
-        })),
-      };
+      return dataFaqDetails;
     } else {
       const activeLanguages = dataLanguages?.filter((e) => e.status === true);
       return {
         id: null,
-        status: true,
-        details: activeLanguages?.map((e) => {
+        active: true,
+        translations: activeLanguages?.map((e) => {
           return {
             question: null,
             answer: null,
             languageId: e.id,
-            detailId: null,
-            faqId: null,
           };
         }),
       };
@@ -179,8 +145,8 @@ export default function AddEditFaq({ id }: IProps) {
         >
           <Form.Item
             className={"mb-0"}
-            name={"status"}
-            label="status"
+            name={"active"}
+            label="active"
             valuePropName={"value"}
           >
             <Radio.Group buttonStyle="solid">
@@ -191,19 +157,21 @@ export default function AddEditFaq({ id }: IProps) {
             </Radio.Group>
           </Form.Item>
 
-          <Form.List name="details">
+          <Form.List name="translations">
             {(fields, v) => {
               return (
                 <div className={"flex flex-col gap-y-5"}>
                   {fields.map((field, index, c) => {
                     const languageId = form.getFieldValue([
-                      "details",
+                      "translations",
                       field.name,
                       "languageId",
                     ]);
+
                     const findLang = dataLanguages?.find(
                       (e) => e.id === languageId
                     )?.language;
+
                     return (
                       <Card
                         key={fields[0].name + "" + index}
